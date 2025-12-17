@@ -25,18 +25,24 @@ public class DangNhapServiceImpl implements DangNhapServive {
 
     @Override
     public ResponseDto dangNhap(DangNhapDto dangNhapDto) {
-        TaiKhoan taiKhoan = taiKhoanRepository.findById(dangNhapDto.getEmail()).orElse(null);
-        if (taiKhoan == null) {
-            return new ResponseDto(false, "Tài khoản không tồn tại");
-        }
-        boolean isMatch = PasswordUtil.verifyPassword(dangNhapDto.getMatKhau(), taiKhoan.getMatKhau());
+    TaiKhoan taiKhoan = (TaiKhoan)this.taiKhoanRepository.findById(dangNhapDto.getEmail()).orElse(null);
+    
+    if (taiKhoan == null) {
+        return new ResponseDto(false, "Tài khoản không tồn tại");
+    } else {
+        // SỬA TẠI ĐÂY: So sánh trực tiếp chuỗi vì DB đang lưu plain text
+        // boolean isMatch = PasswordUtil.verifyPassword(dangNhapDto.getMatKhau(), taiKhoan.getMatKhau());
+        boolean isMatch = dangNhapDto.getMatKhau().equals(taiKhoan.getMatKhau());
+
         if (!isMatch) {
             return new ResponseDto(false, "Mật khẩu không đúng");
+        } else {
+            ThongTinTaiKhoanDto thongTinTaiKhoanDto = this.taiKhoanMapper.toThongTinTaiKhoanDto(taiKhoan);
+            Session.setCurrentUser(thongTinTaiKhoanDto);
+            return new ResponseDto(true, "Đăng nhập thành công");
         }
-        ThongTinTaiKhoanDto thongTinTaiKhoanDto = taiKhoanMapper.toThongTinTaiKhoanDto(taiKhoan);
-        Session.setCurrentUser(thongTinTaiKhoanDto);
-        return new ResponseDto(true, "Đăng nhập thành công");
     }
+}
 
 }
 

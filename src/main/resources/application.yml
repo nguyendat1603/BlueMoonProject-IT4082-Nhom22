@@ -4,9 +4,9 @@ spring:
 
   # PostgreSQL Configuration
   datasource:
-    url: jdbc:postgresql://ep-morning-breeze-a121mip7-pooler.ap-southeast-1.aws.neon.tech:5432/bluemoon
-    username: bluemoon_owner
-    password: npg_s4HUaljD8XAf
+    url: jdbc:postgresql://ep-late-shape-ahcz0zed-pooler.c-3.us-east-1.aws.neon.tech/neondb?user=neondb_owner&password=npg_6D5MgcNqwCvl&sslmode=require&channelBinding=require
+    username: neondb_owner
+    password: npg_6D5MgcNqwCvl
     driver-class-name: org.postgresql.Driver
 
   # JPA/Hibernate Configuration
