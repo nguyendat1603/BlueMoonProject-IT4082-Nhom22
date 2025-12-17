@@ -1,0 +1,786 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import de.jensd.fx.glyphs.fontawesome.*?>
+<?import java.lang.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.chart.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.shape.*?>
+<?import javafx.scene.text.*?>
+
+<StackPane prefHeight="620.0" prefWidth="1080.0" stylesheets="@style/dashboard_style.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="io.github.ktpm.bluemoonmanagement.controller.Home_list">
+   <children>
+      <GridPane fx:id="gridPaneTrangChu">
+         <StackPane.margin>
+            <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+         </StackPane.margin>
+         <columnConstraints>
+            <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" />
+         </columnConstraints>
+         <rowConstraints>
+            <RowConstraints minHeight="10.0" vgrow="SOMETIMES" />
+            <RowConstraints minHeight="10.0" percentHeight="66.0" prefHeight="30.0" vgrow="SOMETIMES" />
+         </rowConstraints>
+         <children>
+            <GridPane>
+               <columnConstraints>
+                  <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                  <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                  <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+               </columnConstraints>
+               <rowConstraints>
+                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+               </rowConstraints>
+               <children>
+                  <AnchorPane prefHeight="200.0" prefWidth="200.0" styleClass="dashboard-item-blue">
+                     <GridPane.margin>
+                        <Insets bottom="10.0" left="15.0" right="15.0" />
+                     </GridPane.margin>
+                     <children>
+                        <Label fx:id="labelCanHo" layoutX="39.0" layoutY="35.0" text="Căn hộ" textFill="WHITE" AnchorPane.leftAnchor="30.0" AnchorPane.topAnchor="30.0">
+                           <font>
+                              <Font name="Arial Bold" size="24.0" />
+                           </font>
+                        </Label>
+                        <Label fx:id="labelCanHoNumber" layoutX="30.0" layoutY="118.0" textFill="WHITE" AnchorPane.bottomAnchor="30.0" AnchorPane.leftAnchor="30.0">
+                           <font>
+                              <Font name="Arial Bold" size="24.0" />
+                           </font>
+                        </Label>
+                        <Label fx:id="labelTongSoCan" layoutX="30.0" layoutY="92.0" text=" Tổng số căn hộ" textFill="WHITE" AnchorPane.bottomAnchor="60.0" AnchorPane.leftAnchor="30.0">
+                           <font>
+                              <Font size="16.0" />
+                           </font>
+                        </Label>
+                        <FontAwesomeIcon fill="WHITE" glyphName="BUILDING" layoutX="222.0" layoutY="86.0" size="80px" AnchorPane.rightAnchor="30.0" AnchorPane.topAnchor="20.0" />
+                        <Button fx:id="buttonSeeAllCanHo" layoutX="199.0" layoutY="126.0" mnemonicParsing="false" onAction="#goToCanHo" styleClass="button-textlike" text="Xem tất cả &gt;&gt;" textFill="WHITE" AnchorPane.bottomAnchor="25.0" AnchorPane.rightAnchor="25.0">
+                           <font>
+                              <Font name="Arial Italic" size="14.0" />
+                           </font>
+                           <padding>
+                              <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                           </padding>
+                        </Button>
+                     </children>
+                  </AnchorPane>
+                  <AnchorPane layoutX="10.0" layoutY="10.0" prefHeight="200.0" prefWidth="200.0" styleClass="dashboard-item-blue" GridPane.columnIndex="1">
+                     <children>
+                        <Label fx:id="labelDanCu" layoutX="39.0" layoutY="35.0" text="Cư dân" textFill="WHITE" AnchorPane.leftAnchor="30.0" AnchorPane.topAnchor="30.0">
+                           <font>
+                              <Font name="Arial Bold" size="24.0" />
+                           </font>
+                        </Label>
+                        <Label fx:id="labelCuDanNumber" layoutX="30.0" layoutY="118.0" textFill="WHITE" AnchorPane.bottomAnchor="30.0" AnchorPane.leftAnchor="30.0">
+                           <font>
+                              <Font name="Arial Bold" size="24.0" />
+                           </font>
+                        </Label>
+                        <Label fx:id="labelTongSoCuDan" layoutX="30.0" layoutY="92.0" text="Tổng số cư dân" textFill="WHITE" AnchorPane.bottomAnchor="60.0" AnchorPane.leftAnchor="30.0">
+                           <font>
+                              <Font size="16.0" />
+                           </font>
+                        </Label>
+                        <FontAwesomeIcon fill="WHITE" glyphName="USER" layoutX="222.0" layoutY="86.0" size="80px" AnchorPane.rightAnchor="30.0" AnchorPane.topAnchor="20.0" />
+                        <Button fx:id="buttonSeeAllCuDan" layoutX="199.0" layoutY="126.0" mnemonicParsing="false" onAction="#gotoCuDan" styleClass="button-textlike" text="Xem tất cả &gt;&gt;" textFill="WHITE" AnchorPane.bottomAnchor="25.0" AnchorPane.rightAnchor="25.0">
+                           <font>
+                              <Font name="Arial Italic" size="14.0" />
+                           </font>
+                           <padding>
+                              <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                           </padding>
+                        </Button>
+                     </children>
+                     <GridPane.margin>
+                        <Insets bottom="10.0" left="15.0" right="15.0" />
+                     </GridPane.margin>
+                  </AnchorPane>
+                  <AnchorPane layoutX="372.0" layoutY="10.0" prefHeight="200.0" prefWidth="200.0" styleClass="dashboard-item-blue" GridPane.columnIndex="2">
+                     <children>
+                        <Label fx:id="labelDanCu1" layoutX="39.0" layoutY="35.0" text="Khoản thu" textFill="WHITE" AnchorPane.leftAnchor="30.0" AnchorPane.topAnchor="30.0">
+                           <font>
+                              <Font name="Arial Bold" size="24.0" />
+                           </font>
+                        </Label>
+                        <Label fx:id="labelCuDanNumber1" layoutX="30.0" layoutY="118.0" textFill="WHITE" AnchorPane.bottomAnchor="30.0" AnchorPane.leftAnchor="30.0">
+                           <font>
+                              <Font name="Arial Bold" size="24.0" />
+                           </font>
+                        </Label>
+                        <Label fx:id="labelTongSoCuDan1" layoutX="30.0" layoutY="92.0" text="Tổng số khoản thu tháng này" textFill="WHITE" AnchorPane.bottomAnchor="60.0" AnchorPane.leftAnchor="30.0">
+                           <font>
+                              <Font size="16.0" />
+                           </font>
+                        </Label>
+                        <FontAwesomeIcon fill="WHITE" glyphName="BOOK" layoutX="222.0" layoutY="86.0" size="80px" AnchorPane.rightAnchor="30.0" AnchorPane.topAnchor="15.0" />
+                        <Button fx:id="buttonSeeAllKhoanThu" layoutX="199.0" layoutY="126.0" mnemonicParsing="false" onAction="#gotoKhoanThu" styleClass="button-textlike" text="Xem tất cả &gt;&gt;" textFill="WHITE" AnchorPane.bottomAnchor="25.0" AnchorPane.rightAnchor="25.0">
+                           <font>
+                              <Font name="Arial Italic" size="14.0" />
+                           </font>
+                           <padding>
+                              <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                           </padding>
+                        </Button>
+                     </children>
+                     <GridPane.margin>
+                        <Insets bottom="15.0" left="15.0" right="15.0" />
+                     </GridPane.margin>
+                  </AnchorPane>
+               </children>
+            </GridPane>
+            <GridPane GridPane.rowIndex="1">
+               <columnConstraints>
+                  <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" percentWidth="66.6" prefWidth="100.0" />
+                  <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+               </columnConstraints>
+               <rowConstraints>
+                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+               </rowConstraints>
+               <children>
+                  <AnchorPane>
+                     <GridPane.margin>
+                        <Insets left="15.0" right="15.0" top="15.0" />
+                     </GridPane.margin>
+                     <styleClass>
+                        <String fx:value="white-background" />
+                        <String fx:value="round-big" />
+                     </styleClass>
+                     <children>
+                        <BarChart fx:id="barChartDanCu" layoutX="27.0" layoutY="73.6" maxHeight="1.7976931348623157E308" style="-fx-background-color: transparent;" AnchorPane.bottomAnchor="20.0" AnchorPane.leftAnchor="20.0" AnchorPane.rightAnchor="20.0" AnchorPane.topAnchor="60.0">
+                           <xAxis>
+                              <CategoryAxis side="BOTTOM" />
+                           </xAxis>
+                           <yAxis>
+                              <NumberAxis minorTickCount="0" minorTickVisible="false" side="LEFT" tickLabelGap="5.0" tickMarkVisible="false" tickUnit="10.0" />
+                           </yAxis>
+                        </BarChart>
+                        <Label fx:id="labelBienDongDanCu" layoutX="165.0" layoutY="27.0" text="Biến động dân cư theo tháng" AnchorPane.leftAnchor="165.0" AnchorPane.topAnchor="20.0">
+                           <font>
+                              <Font name="Arial Bold" size="24.0" />
+                           </font>
+                        </Label>
+                     </children>
+                  </AnchorPane>
+                  <AnchorPane GridPane.columnIndex="1">
+                     <styleClass>
+                        <String fx:value="white-background" />
+                        <String fx:value="round-big" />
+                     </styleClass>
+                     <GridPane.margin>
+                        <Insets left="15.0" right="15.0" top="15.0" />
+                     </GridPane.margin>
+                     <children>
+                        <Label fx:id="labelKhoanThuThangNay" layoutX="42.0" layoutY="14.0" text="Khoản thu tháng này" AnchorPane.leftAnchor="42.0" AnchorPane.topAnchor="20.0">
+                           <font>
+                              <Font name="Arial Bold" size="24.0" />
+                           </font>
+                        </Label>
+                        <PieChart fx:id="pieChartKhoanThu" layoutX="69.0" layoutY="-33.0" AnchorPane.bottomAnchor="80.0" AnchorPane.leftAnchor="20.0" AnchorPane.rightAnchor="20.0" AnchorPane.topAnchor="60.0" />
+                        
+                        <!-- 🎨 Chú thích tự tạo với dấu tròn cố định và phần trăm -->
+                        <HBox alignment="CENTER" spacing="50.0" AnchorPane.bottomAnchor="20.0" AnchorPane.leftAnchor="20.0" AnchorPane.rightAnchor="20.0">
+                           <children>
+                              <!-- Chú thích Bắt buộc với phần trăm -->
+                              <VBox alignment="CENTER" spacing="5.0">
+                                 <children>
+                                    <HBox alignment="CENTER_LEFT" spacing="8.0">
+                                       <children>
+                                          <Circle fill="#2196f3" radius="8.0" stroke="TRANSPARENT" />
+                                          <Label text="Bắt buộc">
+                                             <font>
+                                                <Font name="Arial" size="14.0" />
+                                             </font>
+                                          </Label>
+                                       </children>
+                                    </HBox>
+                                    <Label fx:id="labelPhanTramBatBuoc" text="0%" textAlignment="CENTER">
+                                       <font>
+                                          <Font name="Arial Bold" size="12.0" />
+                                       </font>
+                                    </Label>
+                                 </children>
+                              </VBox>
+                              
+                              <!-- Chú thích Tự nguyện với phần trăm -->
+                              <VBox alignment="CENTER" spacing="5.0">
+                                 <children>
+                                    <HBox alignment="CENTER_LEFT" spacing="8.0">
+                                       <children>
+                                          <Circle fill="#ff9800" radius="8.0" stroke="TRANSPARENT" />
+                                          <Label text="Tự nguyện">
+                                             <font>
+                                                <Font name="Arial" size="14.0" />
+                                             </font>
+                                          </Label>
+                                       </children>
+                                    </HBox>
+                                    <Label fx:id="labelPhanTramTuNguyen" text="0%" textAlignment="CENTER">
+                                       <font>
+                                          <Font name="Arial Bold" size="12.0" />
+                                       </font>
+                                    </Label>
+                                 </children>
+                              </VBox>
+                           </children>
+                        </HBox>
+                     </children>
+                  </AnchorPane>
+               </children>
+            </GridPane>
+         </children>
+      </GridPane>
+      <ScrollPane fx:id="scrollPaneCanHo" hbarPolicy="NEVER" prefHeight="200.0" prefWidth="200.0" style="-fx-background: white;" visible="false">
+         <StackPane.margin>
+            <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+         </StackPane.margin>
+         <padding>
+            <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+         </padding>
+         <content>
+            <AnchorPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308">
+               <children>
+                  <AnchorPane prefWidth="970.0" AnchorPane.topAnchor="40.0">
+                     <children>
+                        <Button fx:id="buttonThemCanHo" layoutX="42.0" layoutY="-6.0" mnemonicParsing="false" onAction="#gotothemcanho" text="Thêm căn hộ" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0">
+                           <graphic>
+                              <Group>
+                                 <children>
+                                    <FontAwesomeIcon glyphName="PLUS" styleClass="action-button-icon" />
+                                 </children>
+                              </Group>
+                           </graphic>
+                           <styleClass>
+                              <String fx:value="action-button" />
+                              <String fx:value="button-green" />
+                           </styleClass>
+                        </Button>
+                        <Button fx:id="buttonXuatExcelCanHo" layoutX="52.0" layoutY="4.0" mnemonicParsing="false" onAction="#handleXuatExcelCanHo" text="Xuất excel" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                           <graphic>
+                              <Group>
+                                 <children>
+                                    <FontAwesomeIcon glyphName="DOWNLOAD" styleClass="action-button-icon" />
+                                 </children>
+                              </Group>
+                           </graphic>
+                           <styleClass>
+                              <String fx:value="action-button" />
+                              <String fx:value="button-orange" />
+                           </styleClass>
+                        </Button>
+                        <Button fx:id="buttonNhapExcelCanHo" layoutX="884.0" layoutY="10.0" mnemonicParsing="false" onAction="#handleNhapExcelCanHo" text="Nhập excel" AnchorPane.rightAnchor="120.0" AnchorPane.topAnchor="0.0">
+                           <graphic>
+                              <Group>
+                                 <children>
+                                    <FontAwesomeIcon glyphName="FOLDER_OPEN" styleClass="action-button-icon" />
+                                 </children>
+                              </Group>
+                           </graphic>
+                           <styleClass>
+                              <String fx:value="action-button" />
+                              <String fx:value="button-sky-blue" />
+                           </styleClass>
+                        </Button>
+                        <VBox layoutY="40.0" prefWidth="970.0" spacing="10.0" AnchorPane.topAnchor="40.0">
+                           <children>
+                              <TableView fx:id="tabelViewCanHo" prefHeight="400.0" prefWidth="970.0">
+                                 <columns>
+                                    <TableColumn fx:id="tableColumnMaCanHo" prefWidth="120.00003510713577" text="Mã căn hộ" />
+                                    <TableColumn fx:id="tableColumnToaNha" prefWidth="64.0" text="Tòa nhà" />
+                                    <TableColumn fx:id="tableColumnTang" prefWidth="55.20001220703125" text="Tầng" />
+                                    <TableColumn fx:id="tableColumnSoNha" prefWidth="92.00004577636719" text="Số nhà" />
+                                    <TableColumn fx:id="tableColumnDienTich" prefWidth="96.79998779296875" text="Diện tích" />
+                                    <TableColumn fx:id="tableColumnChuSoHuu" prefWidth="192.0" text="Chủ sở hữu" />
+                                    <TableColumn fx:id="tableColumnTrangThai" prefWidth="368.0" text="Trạng thái">
+                                       <columns>
+                                          <TableColumn fx:id="tableColumnSoHuu" prefWidth="100.7999267578125" text="Tình trạng" />
+                                          <TableColumn fx:id="tableColumnKiThuat" prefWidth="117.5999755859375" text="Kĩ thuật" />
+                                          <TableColumn fx:id="tableColumnSuDung" prefWidth="128.0" text="Sử dụng" />
+                                       </columns>
+                                    </TableColumn>
+                                 </columns>
+                              </TableView>
+                              <AnchorPane prefWidth="970.0">
+                                 <children>
+                                    <Label fx:id="labelKetQuaHienThi" layoutX="662.0" layoutY="7.0" prefHeight="16.0" text="Số kết quả hiển thị" AnchorPane.rightAnchor="0.0">
+                                       <font>
+                                          <Font name="Arial" size="14.0" />
+                                       </font>
+                                    </Label>
+                                 </children>
+                              </AnchorPane>
+                           </children>
+                        </VBox>
+                     </children>
+                  </AnchorPane>
+                  <HBox alignment="TOP_RIGHT" prefWidth="970.0" spacing="20.0">
+                     <children>
+                        <TextField fx:id="textFieldMaCanHo" prefWidth="215.0" promptText="Nhập mã căn hộ" styleClass="text-field-normal" />
+                        <TextField fx:id="textFieldChuSoHuu" prefWidth="240.0" promptText="Nhập chủ sở hữu" styleClass="text-field-normal" />
+                        <TextField fx:id="textFieldToa" prefWidth="90.0" promptText="Tòa" styleClass="text-field-normal" />
+                        <TextField fx:id="textFieldTang" prefWidth="84.0" promptText="Tầng" styleClass="text-field-normal" />
+                        <ComboBox fx:id="comboBoxTrangThai" layoutX="722.0" layoutY="10.0" prefWidth="136.0" promptText="Trạng thái" style="-fx-background-color: transparent;" />
+                        <Button fx:id="buttonTimKiemCanHo" mnemonicParsing="false" text="Tìm kiếm">
+                           <styleClass>
+                              <String fx:value="action-button" />
+                              <String fx:value="button-default-blue" />
+                           </styleClass>
+                           <graphic>
+                              <Group>
+                                 <children>
+                                    <FontAwesomeIcon glyphName="SEARCH" styleClass="action-button-icon" />
+                                 </children>
+                              </Group>
+                           </graphic>
+                        </Button>
+                     </children>
+                  </HBox>
+               </children>
+            </AnchorPane>
+         </content>
+         <styleClass>
+            <String fx:value="white-background" />
+            <String fx:value="round-big" />
+         </styleClass>
+      </ScrollPane>
+      <ScrollPane fx:id="scrollPaneCuDan" fitToWidth="true" hbarPolicy="NEVER" layoutX="30.0" layoutY="30.0" prefHeight="200.0" prefWidth="200.0" style="-fx-background: white;" vbarPolicy="AS_NEEDED" visible="false">
+         <padding>
+            <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+         </padding>
+         <content>
+            <AnchorPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefWidth="960.0">
+               <children>
+                  <AnchorPane prefWidth="970.0" AnchorPane.topAnchor="40.0">
+                     <children>
+                        <Button fx:id="buttonThemCuDan" layoutX="42.0" layoutY="-6.0" mnemonicParsing="false" onAction="#themCuDanClicked" text="Thêm cư dân" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0">
+                           <graphic>
+                              <Group>
+                                 <children>
+                                    <FontAwesomeIcon glyphName="PLUS" styleClass="action-button-icon" />
+                                 </children>
+                              </Group>
+                           </graphic>
+                           <styleClass>
+                              <String fx:value="action-button" />
+                              <String fx:value="button-green" />
+                           </styleClass>
+                        </Button>
+                        <Button fx:id="buttonXuatExcelCuDan" layoutX="618.0" mnemonicParsing="false" onAction="#handleXuatExcelCuDan" text="Xuất excel" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                           <graphic>
+                              <Group>
+                                 <children>
+                                    <FontAwesomeIcon glyphName="DOWNLOAD" styleClass="action-button-icon" />
+                                 </children>
+                              </Group>
+                           </graphic>
+                           <styleClass>
+                              <String fx:value="action-button" />
+                              <String fx:value="button-orange" />
+                           </styleClass>
+                        </Button>
+                        <Button fx:id="buttonNhapExcelCuDan" layoutX="734.0" mnemonicParsing="false" onAction="#handleNhapExcelCuDan" text="Nhập excel" AnchorPane.rightAnchor="123.0" AnchorPane.topAnchor="0.0">
+                           <graphic>
+                              <Group>
+                                 <children>
+                                    <FontAwesomeIcon glyphName="FOLDER_OPEN" styleClass="action-button-icon" />
+                                 </children>
+                              </Group>
+                           </graphic>
+                           <styleClass>
+                              <String fx:value="action-button" />
+                              <String fx:value="button-sky-blue" />
+                           </styleClass>
+                        </Button>
+                        <VBox layoutY="40.0" prefWidth="970.0" spacing="10.0" AnchorPane.topAnchor="40.0">
+                           <children>
+                              <TableView fx:id="tabelViewCuDan" prefHeight="400.0" prefWidth="970.0">
+                                 <columns>
+                                                                         <TableColumn fx:id="tableColumnMaDinhDanh" prefWidth="127.99999314546585" resizable="false" text="Mã định danh" />
+                                     <TableColumn fx:id="tableColumnHoVaTen" prefWidth="154.4000244140625" resizable="false" text="Họ và tên" />
+                                     <TableColumn fx:id="tableColumnGioiTinh" prefWidth="73.60003662109375" resizable="false" text="Giới tính" />
+                                     <TableColumn fx:id="tableColumnNgaySinh" prefWidth="120.0" resizable="false" text="Ngày sinh" />
+                                     <TableColumn fx:id="tableColumnMaCanHoCuDan" prefWidth="105.0" resizable="false" text="Mã căn hộ" />
+                                     <TableColumn fx:id="tableColumnSoDienThoai" prefWidth="120.0" resizable="false" text="Số điện thoại" />
+                                     <TableColumn fx:id="tableColumnNgayChuyenDen" prefWidth="139.2000732421875" resizable="false" text="Ngày chuyển đến" />
+                                     <TableColumn fx:id="tableColumnTrangThaiCuDan" prefWidth="121.5999755859375" resizable="false" text="Trạng thái" />
+                                 </columns>
+                              </TableView>
+                              <AnchorPane prefWidth="970.0">
+                                 <children>
+                                    <Label fx:id="labelKetQuaHienThiCuDan" layoutX="768.0" layoutY="7.0" text="Số kết quả hiển thị" AnchorPane.rightAnchor="0.0">
+                                       <font>
+                                          <Font name="Arial" size="14.0" />
+                                       </font>
+                                    </Label>
+                                 </children>
+                              </AnchorPane>
+                           </children>
+                        </VBox>
+                     </children>
+                  </AnchorPane>
+                  <HBox alignment="TOP_RIGHT" prefWidth="970.0" spacing="20.0">
+                     <children>
+                        <TextField fx:id="textFieldHoVaTen" prefWidth="310.0" promptText="Nhập họ và tên" styleClass="text-field-normal" />
+                        <TextField fx:id="textFieldMaDinhDanh" prefWidth="242.0" promptText="Nhập mã định danh" styleClass="text-field-normal" />
+                        <TextField fx:id="textFieldMaCanHoCuDan" layoutX="240.0" layoutY="10.0" prefWidth="206.0" promptText="Nhập mã căn hộ" styleClass="text-field-normal" />
+                        <ComboBox fx:id="comboBoxTrangThaiCuDan" layoutX="722.0" layoutY="10.0" prefWidth="187.0" promptText="Trạng thái" style="-fx-background-color: transparent;" />
+                        <Button fx:id="buttonTimKiemCuDan" mnemonicParsing="false" prefWidth="146.0" text="Tìm kiếm">
+                           <styleClass>
+                              <String fx:value="action-button" />
+                              <String fx:value="button-default-blue" />
+                           </styleClass>
+                           <graphic>
+                              <Group>
+                                 <children>
+                                    <FontAwesomeIcon glyphName="SEARCH" styleClass="action-button-icon" />
+                                 </children>
+                              </Group>
+                           </graphic>
+                        </Button>
+                     </children>
+                  </HBox>
+               </children>
+            </AnchorPane>
+         </content>
+         <styleClass>
+            <String fx:value="white-background" />
+            <String fx:value="round-big" />
+         </styleClass>
+         <StackPane.margin>
+            <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+         </StackPane.margin>
+      </ScrollPane>
+      <ScrollPane fx:id="scrollPaneKhoanThu" hbarPolicy="NEVER" layoutX="30.0" layoutY="30.0" prefHeight="200.0" prefWidth="200.0" style="-fx-background: white;" visible="false">
+         <padding>
+            <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+         </padding>
+         <content>
+            <AnchorPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefWidth="960.0">
+               <children>
+                  <AnchorPane prefWidth="970.0" AnchorPane.topAnchor="40.0">
+                     <children>
+                        <Button fx:id="buttonThemKhoanThu" layoutX="42.0" layoutY="-6.0" mnemonicParsing="false" onAction="#ThemKhoanThuClicked" text="Thêm khoản thu" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0">
+                           <graphic>
+                              <Group>
+                                 <children>
+                                    <FontAwesomeIcon glyphName="PLUS" styleClass="action-button-icon" />
+                                 </children>
+                              </Group>
+                           </graphic>
+                           <styleClass>
+                              <String fx:value="action-button" />
+                              <String fx:value="button-green" />
+                           </styleClass>
+                        </Button>
+                        <Button fx:id="buttonXuatExcelKhoanThu" layoutX="52.0" layoutY="4.0" mnemonicParsing="false" onAction="#handleXuatExcelKhoanThu" text="Xuất excel" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                           <graphic>
+                              <Group>
+                                 <children>
+                                    <FontAwesomeIcon glyphName="DOWNLOAD" styleClass="action-button-icon" />
+                                 </children>
+                              </Group>
+                           </graphic>
+                           <styleClass>
+                              <String fx:value="action-button" />
+                              <String fx:value="button-orange" />
+                           </styleClass>
+                        </Button>
+
+                        <VBox layoutY="40.0" prefWidth="970.0" spacing="10.0" AnchorPane.topAnchor="40.0">
+                           <children>
+                              <TableView fx:id="tabelViewKhoanThu" prefWidth="970.0">
+                                 <columns>
+                                    <TableColumn fx:id="tableColumnMaKhoanThu" prefWidth="153.59999924898148" text="Mã khoản thu" />
+                                    <TableColumn fx:id="tableColumnTenKhoanThu" prefWidth="267.2000427246094" text="Tên khoản thu" />
+                                    <TableColumn fx:id="tableColumnLoaiKhoanThu" minWidth="8.79998779296875" prefWidth="112.800048828125" text="Loại khoản thu" />
+                                    <TableColumn fx:id="tableColumnBoPhanQuanLy" prefWidth="128.79998779296875" text="Bộ phận quản lý" />
+                                    <TableColumn fx:id="tableColumnNgayTao1" prefWidth="162.4000244140625" text="Ngày nộp" />
+                                    <TableColumn fx:id="tableColumnTrangThaiHoaDon" prefWidth="144.79998779296875" text="Tạo hóa đơn" />
+                                 </columns>
+                              </TableView>
+                              <AnchorPane prefWidth="970.0">
+                                 <children>
+                                    <Label fx:id="labelKetQuaHienThiKhoanThu" layoutX="768.0" layoutY="7.0" text="Số kết quả hiển thị" AnchorPane.rightAnchor="0.0">
+                                       <font>
+                                          <Font name="Arial" size="14.0" />
+                                       </font>
+                                    </Label>
+                                 </children>
+                              </AnchorPane>
+                           </children>
+                        </VBox>
+                     </children>
+                  </AnchorPane>
+                  <HBox alignment="TOP_RIGHT" prefWidth="970.0" spacing="20.0">
+                     <children>
+                        <TextField fx:id="textFieldMaKhoanThu" prefWidth="195.0" promptText="Nhập mã khoản thu" styleClass="text-field-normal" />
+                        <TextField fx:id="textFieldTenKhoanThu" prefWidth="210.0" promptText="Nhập tên khoản thu" styleClass="text-field-normal" />
+                        <TextField fx:id="textFieldBoPhanQuanLy" layoutX="421.0" layoutY="10.0" prefWidth="206.0" promptText="Nhập bộ phận quản lý" styleClass="text-field-normal" />
+                        <ComboBox fx:id="comboBoxLoaiKhoanThu" prefWidth="187.0" promptText="Bắt buộc" style="-fx-background-color: transparent;" />
+                        <ComboBox fx:id="comboBoxTrangThaiHoaDon" layoutX="722.0" layoutY="10.0" prefWidth="187.0" promptText="Trạng thái" style="-fx-background-color: transparent;" />
+                        <Button fx:id="buttonTimKiemKhoanThu" mnemonicParsing="false" prefWidth="150.0" text="Tìm kiếm">
+                           <styleClass>
+                              <String fx:value="action-button" />
+                              <String fx:value="button-default-blue" />
+                           </styleClass>
+                           <graphic>
+                              <Group>
+                                 <children>
+                                    <FontAwesomeIcon glyphName="SEARCH" styleClass="action-button-icon" />
+                                 </children>
+                              </Group>
+                           </graphic>
+                        </Button>
+                     </children>
+                  </HBox>
+               </children>
+            </AnchorPane>
+         </content>
+         <styleClass>
+            <String fx:value="white-background" />
+            <String fx:value="round-big" />
+         </styleClass>
+         <StackPane.margin>
+            <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+         </StackPane.margin>
+      </ScrollPane>
+      <ScrollPane fx:id="scrollPaneTaiKhoan" hbarPolicy="NEVER" layoutX="30.0" layoutY="30.0" prefHeight="200.0" prefWidth="200.0" style="-fx-background: white;" visible="false">
+         <padding>
+            <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+         </padding>
+         <content>
+            <AnchorPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefWidth="960.0">
+               <children>
+                  <AnchorPane prefWidth="970.0" AnchorPane.topAnchor="40.0">
+                     <children>
+                        <Button fx:id="buttonThemTaiKhoan" layoutX="42.0" layoutY="-6.0" mnemonicParsing="false" onAction="#themTaiKhoanClick" text="Thêm tài khoản" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0">
+                           <graphic>
+                              <Group>
+                                 <children>
+                                    <FontAwesomeIcon glyphName="PLUS" styleClass="action-button-icon" />
+                                 </children>
+                              </Group>
+                           </graphic>
+                           <styleClass>
+                              <String fx:value="action-button" />
+                              <String fx:value="button-green" />
+                           </styleClass>
+                        </Button>
+                        <Button fx:id="buttonXuatExcelTaiKhoan" layoutX="52.0" layoutY="4.0" mnemonicParsing="false" onAction="#handleXuatExcelTaiKhoan" text="Xuất excel" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                           <graphic>
+                              <Group>
+                                 <children>
+                                    <FontAwesomeIcon glyphName="DOWNLOAD" styleClass="action-button-icon" />
+                                 </children>
+                              </Group>
+                           </graphic>
+                           <styleClass>
+                              <String fx:value="action-button" />
+                              <String fx:value="button-orange" />
+                           </styleClass>
+                        </Button>
+                        <VBox layoutY="40.0" prefWidth="970.0" spacing="10.0" AnchorPane.topAnchor="40.0">
+                           <children>
+                              <TableView fx:id="tabelViewTaiKhoan" prefWidth="970.0">
+                                 <columns>
+                                    <TableColumn fx:id="tableColumnEmail" prefWidth="268.0000541806221" text="Email" />
+                                    <TableColumn fx:id="tableColumnHoVaTenTaiKhoan" prefWidth="185.5999755859375" text="Họ và tên" />
+                                    <TableColumn fx:id="tableColumnVaiTro" prefWidth="119.20001220703125" text="Vai trò" />
+                                    <TableColumn fx:id="tableColumnNgayTaoTK" prefWidth="183.2000732421875" text="Ngày tạo" />
+                                    <TableColumn fx:id="tableColumnNgayCapNhat" prefWidth="211.19998779296873" text="Ngày cập nhật" />
+                                 </columns>
+                              </TableView>
+                              <AnchorPane prefWidth="970.0">
+                                 <children>
+                                    <Label fx:id="labelHienThiKetQuaKhoanThu1" layoutY="8.0" text="Hiển thị 0/0 kết quả" AnchorPane.leftAnchor="0.0">
+                                       <font>
+                                          <Font name="Arial" size="14.0" />
+                                       </font>
+                                    </Label>
+                                    <Label fx:id="labelKetQuaHienThiKhoanThu1" layoutX="768.0" layoutY="7.0" text="Số kết quả hiển thị" AnchorPane.rightAnchor="0.0">
+                                       <font>
+                                          <Font name="Arial" size="14.0" />
+                                       </font>
+                                    </Label>
+                                 </children>
+                              </AnchorPane>
+                           </children>
+                        </VBox>
+                     </children>
+                  </AnchorPane>
+                  <HBox alignment="TOP_RIGHT" prefWidth="970.0" spacing="20.0">
+                     <children>
+                        <TextField fx:id="textFieldEmail" prefWidth="277.0" promptText="Nhập email" styleClass="text-field-normal" />
+                        <TextField fx:id="textFieldHoVaTenTaiKhoan" prefWidth="252.0" promptText="Nhập họ và tên" styleClass="text-field-normal" />
+                        <ComboBox fx:id="comboBoxVaiTro" layoutX="623.0" layoutY="10.0" prefWidth="128.0" promptText="Vai trò" style="-fx-background-color: transparent;" />
+                        <ComboBox fx:id="comboBoxTrangThaiTaiKhoan" layoutX="722.0" layoutY="10.0" prefWidth="132.0" promptText="Trạng thái" style="-fx-background-color: transparent;" />
+                        <Button fx:id="buttonTimKiemCuDan11" mnemonicParsing="false" prefWidth="104.0" text="Tìm kiếm">
+                           <styleClass>
+                              <String fx:value="action-button" />
+                              <String fx:value="button-default-blue" />
+                           </styleClass>
+                           <graphic>
+                              <Group>
+                                 <children>
+                                    <FontAwesomeIcon glyphName="SEARCH" styleClass="action-button-icon" />
+                                 </children>
+                              </Group>
+                           </graphic>
+                        </Button>
+                     </children>
+                  </HBox>
+               </children>
+            </AnchorPane>
+         </content>
+         <styleClass>
+            <String fx:value="white-background" />
+            <String fx:value="round-big" />
+         </styleClass>
+         <StackPane.margin>
+            <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+         </StackPane.margin>
+      </ScrollPane>
+      <ScrollPane fx:id="scrollPaneLichSuThu" hbarPolicy="NEVER" prefHeight="200.0" prefWidth="200.0" style="-fx-background: white;" visible="false">
+         <padding>
+            <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+         </padding>
+         <content>
+            <AnchorPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefWidth="960.0">
+               <children>
+                  <AnchorPane prefWidth="970.0" AnchorPane.topAnchor="40.0">
+                     <children>
+                        <Button fx:id="buttonXuatExcelThuPhi" mnemonicParsing="false" onAction="#handleXuatExcelThuPhi" text="Xuất excel" AnchorPane.rightAnchor="0.0">
+                           <graphic>
+                              <Group>
+                                 <children>
+                                    <FontAwesomeIcon glyphName="DOWNLOAD" styleClass="action-button-icon" />
+                                 </children>
+                              </Group>
+                           </graphic>
+                           <styleClass>
+                              <String fx:value="action-button" />
+                              <String fx:value="button-orange" />
+                           </styleClass>
+                        </Button>
+                        <VBox layoutY="40.0" prefWidth="970.0" spacing="10.0" AnchorPane.topAnchor="40.0">
+                           <children>
+                              <TableView fx:id="tabelViewThuPhi" prefWidth="970.0">
+                                 <columns>
+                                    <TableColumn fx:id="tableColumnMaHoaDon" prefWidth="107.19997483491898" text="Mã hóa đơn" />
+                                    <TableColumn fx:id="tableColumnMaCanHoThuPhi" prefWidth="123.20001220703125" text="Mã căn hộ" />
+                                    <TableColumn fx:id="tableColumnTenKhoanThuThuPhi" prefWidth="156.800048828125" text="Tên khoản thu" />
+                                    <TableColumn fx:id="tableColumnLoaiKhoanThuThuPhi" prefWidth="121.5999755859375" text="Loại khoản thu" />
+                                    <TableColumn fx:id="tableColumnSoTien" prefWidth="201.5999755859375" text="Số tiền" />
+                                    <TableColumn fx:id="tableColumnNgayNop" prefWidth="154.39996337890625" text="Ngày nộp" />
+                                    <TableColumn fx:id="tableColumnThaoTacLichSuThu" prefWidth="105.60009765625" text="Thao tác" />
+                                 </columns>
+                              </TableView>
+                              <AnchorPane prefWidth="970.0">
+                                 <children>
+                                    <Label layoutX="768.0" layoutY="7.0" text="Số kết quả hiển thị" AnchorPane.rightAnchor="0.0">
+                                       <font>
+                                          <Font name="Arial" size="14.0" />
+                                       </font>
+                                    </Label>
+                                 </children>
+                              </AnchorPane>
+                           </children>
+                        </VBox>
+                     </children>
+                  </AnchorPane>
+                  <HBox alignment="TOP_RIGHT" prefWidth="970.0" spacing="20.0">
+                     <children>
+                        <TextField fx:id="textFieldMaCanHoThuPhi" prefWidth="195.0" promptText="Nhập mã căn hộ" styleClass="text-field-normal" />
+                        <TextField fx:id="textFieldTenKhoanThu1" prefWidth="210.0" promptText="Nhập tên khoản thu" styleClass="text-field-normal" />
+                        <ComboBox fx:id="comboBoxLoaiKhoanThu1" layoutX="722.0" layoutY="10.0" prefWidth="187.0" promptText="Bắt buộc" style="-fx-background-color: transparent;" />
+                        <DatePicker fx:id="datePickerNgayNop" promptText="Nhập ngày nộp" />
+                        <Button fx:id="buttonTimKiemThuPhi" mnemonicParsing="false" prefWidth="150.0" text="Tìm kiếm">
+                           <styleClass>
+                              <String fx:value="action-button" />
+                              <String fx:value="button-default-blue" />
+                           </styleClass>
+                           <graphic>
+                              <Group>
+                                 <children>
+                                    <FontAwesomeIcon glyphName="SEARCH" styleClass="action-button-icon" />
+                                 </children>
+                              </Group>
+                           </graphic>
+                        </Button>
+                     </children>
+                  </HBox>
+               </children>
+            </AnchorPane>
+         </content>
+         <styleClass>
+            <String fx:value="white-background" />
+            <String fx:value="round-big" />
+         </styleClass>
+         <StackPane.margin>
+            <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+         </StackPane.margin>
+      </ScrollPane>
+      <ScrollPane fx:id="scrollPaneCanHo1" hbarPolicy="NEVER" style="-fx-background: white;" visible="false">
+         <padding>
+            <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+         </padding>
+         <content>
+            <VBox alignment="TOP_CENTER" prefWidth="960.0" spacing="20.0">
+               <children>
+                  <VBox prefWidth="640.0" spacing="15.0">
+                     <children>
+                        <Label styleClass="screen-title" text="Thông tin tài khoản">
+                           <VBox.margin>
+                              <Insets />
+                           </VBox.margin>
+                        </Label>
+                        <HBox alignment="CENTER_RIGHT" prefWidth="640.0" spacing="20.0">
+                           <children>
+                              <HBox alignment="CENTER_LEFT" spacing="10.0" HBox.hgrow="ALWAYS">
+                                 <children>
+                                    <Label fx:id="hoTenLabel" styleClass="text-bold" text="Họ và tên" />
+                                 </children>
+                              </HBox>
+                              <HBox alignment="CENTER_LEFT" spacing="10.0" HBox.hgrow="ALWAYS">
+                                 <children>
+                                    <Label fx:id="emailLabel" styleClass="text-bold" text="Email" />
+                                 </children>
+                              </HBox>
+                              <HBox fx:id="hBoxTrangThai" alignment="CENTER_LEFT" spacing="10.0" HBox.hgrow="ALWAYS">
+                                 <children>
+                                    <Label fx:id="vaiTroLabel" styleClass="text-bold" text="Vai trò" />
+                                 </children>
+                              </HBox>
+                           </children>
+                        </HBox>
+                     </children>
+                     <padding>
+                        <Insets left="10.0" top="5.0" />
+                     </padding>
+                  </VBox>
+                  <Button fx:id="buttonDoiMatKhau" mnemonicParsing="false" onAction="#DoiMatKhauClicked" text="Đổi mật khẩu">
+                     <graphic>
+                        <Group>
+                           <children>
+                              <FontAwesomeIcon glyphName="EDIT" styleClass="action-button-icon" />
+                           </children>
+                        </Group>
+                     </graphic>
+                     <styleClass>
+                        <String fx:value="action-button" />
+                        <String fx:value="button-sky-blue" />
+                     </styleClass>
+                  </Button>
+               </children>
+            </VBox>
+         </content>
+         <styleClass>
+            <String fx:value="white-background" />
+            <String fx:value="round-big" />
+         </styleClass>
+         <StackPane.margin>
+            <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+         </StackPane.margin>
+      </ScrollPane>
+   </children>
+</StackPane>

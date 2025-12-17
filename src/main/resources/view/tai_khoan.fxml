@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon?>
+<?import java.lang.String?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.Group?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+<?import javafx.scene.text.Text?>
+<?import javafx.scene.text.TextFlow?>
+
+<VBox alignment="TOP_CENTER" prefWidth="700.0" spacing="10.0" stylesheets="@style/dashboard_style.css" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="io.github.ktpm.bluemoonmanagement.controller.ChiTietTaiKhoanController">
+   <children>
+      <AnchorPane>
+         <children>
+            <Button fx:id="button_close_up" layoutX="601.5999870300293" mnemonicParsing="false" styleClass="button-close" AnchorPane.rightAnchor="-10.0">
+               <graphic>
+                  <Group>
+                     <children>
+                        <FontAwesomeIcon fx:id="buttonClose" glyphName="CLOSE" size="25px" styleClass="button-icon-close" />
+                     </children>
+                  </Group>
+               </graphic>
+            </Button>
+            <Label fx:id="labelTieuDe" layoutY="9.59999942779541" styleClass="popup-title" text="Thông tin tài khoản" />
+         </children>
+         <VBox.margin>
+            <Insets left="30.0" right="30.0" top="10.0" />
+         </VBox.margin>
+      </AnchorPane>
+      <VBox prefWidth="640.0" spacing="5.0">
+         <children>
+            <HBox spacing="20.0">
+               <children>
+                  <HBox alignment="CENTER_LEFT" prefHeight="42.0" spacing="20.0" HBox.hgrow="ALWAYS">
+                     <children>
+                        <Label prefHeight="16.0" prefWidth="63.0" styleClass="text-bold" text="Email" HBox.hgrow="ALWAYS" />
+                        <TextField fx:id="textFieldEmail" prefWidth="437.0" promptText="Nhập email" styleClass="text-field-normal" HBox.hgrow="ALWAYS" />
+                     </children>
+                     <padding>
+                        <Insets top="10.0" />
+                     </padding>
+                  </HBox>
+               </children>
+               <padding>
+                  <Insets left="30.0" right="30.0" />
+               </padding>
+            </HBox>
+            <HBox layoutX="11.0" layoutY="155.0" spacing="20.0">
+               <padding>
+                  <Insets left="30.0" right="30.0" />
+               </padding>
+            </HBox>
+            <HBox alignment="CENTER_LEFT" spacing="20.0">
+               <padding>
+                  <Insets left="30.0" right="30.0" />
+               </padding>
+               <children>
+                  <HBox alignment="CENTER_LEFT" spacing="20.0" HBox.hgrow="ALWAYS">
+                     <children>
+                        <Label prefHeight="16.0" styleClass="text-bold" text="Họ và tên" />
+                        <TextField fx:id="textFieldHoVaTen" promptText="Nhập họ và tên" styleClass="text-field-normal" HBox.hgrow="ALWAYS" />
+                     </children>
+                     <padding>
+                        <Insets top="10.0" />
+                     </padding>
+                  </HBox>
+               </children>
+            </HBox>
+            <HBox alignment="CENTER_LEFT" prefHeight="41.0" prefWidth="598.0" spacing="20.0">
+               <children>
+                  <HBox prefHeight="31.0" prefWidth="607.0">
+                     <children>
+                        <Label prefHeight="30.0" prefWidth="84.0" styleClass="text-bold" text="Vai trò" HBox.hgrow="ALWAYS">
+                           <HBox.margin>
+                              <Insets left="30.0" />
+                           </HBox.margin>
+                        </Label>
+                        <ComboBox fx:id="comboBoxVaiTro" maxWidth="1.7976931348623157E308" prefWidth="128.0" promptText="Vài trò" HBox.hgrow="ALWAYS" />
+                     </children>
+                  </HBox>
+               </children>
+               <padding>
+                  <Insets top="10.0" />
+               </padding>
+            </HBox>
+         </children>
+         <padding>
+            <Insets bottom="15.0" top="5.0" />
+         </padding>
+         <styleClass>
+            <String fx:value="white-background" />
+            <String fx:value="round-big" />
+         </styleClass>
+         <VBox.margin>
+            <Insets left="30.0" right="30.0" />
+         </VBox.margin>
+      </VBox>
+      <TextFlow prefWidth="640.0" textAlignment="CENTER">
+         <children>
+            <Text fx:id="textError" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="text-error">
+               <font>
+                  <Font size="14.0" />
+               </font>
+            </Text>
+         </children>
+         <VBox.margin>
+            <Insets left="30.0" right="30.0" />
+         </VBox.margin>
+      </TextFlow>
+      <StackPane>
+         <VBox.margin>
+            <Insets bottom="20.0" />
+         </VBox.margin>
+         <children>
+            <HBox fx:id="hBoxChinhSuaXoaTaiKhoan" alignment="CENTER" spacing="20.0">
+               <children>
+                  <Button fx:id="buttonXoaTaiKhoan" mnemonicParsing="false" onAction="#XoaTaiKhoanCicked" text="Xóa tài khoản">
+                     <graphic>
+                        <Group>
+                           <children>
+                              <FontAwesomeIcon glyphName="TRASH" styleClass="action-button-icon" />
+                           </children>
+                        </Group>
+                     </graphic>
+                     <styleClass>
+                        <String fx:value="action-button" />
+                        <String fx:value="button-red" />
+                     </styleClass>
+                  </Button>
+                  <Button fx:id="buttonChinhSua" mnemonicParsing="false" onAction="#ChinhXuaTaiKhoanClicked" prefWidth="136.0" text="Chỉnh sửa">
+                     <graphic>
+                        <Group>
+                           <children>
+                              <FontAwesomeIcon glyphName="EDIT" styleClass="action-button-icon" />
+                           </children>
+                        </Group>
+                     </graphic>
+                     <styleClass>
+                        <String fx:value="action-button" />
+                        <String fx:value="button-sky-blue" />
+                     </styleClass>
+                  </Button>
+                  <Button fx:id="buttonLuu" mnemonicParsing="false" onAction="#LuuClicked" prefWidth="133.0" text="Lưu">
+                     <graphic>
+                        <Group>
+                           <children>
+                              <FontAwesomeIcon glyphName="SAVE" styleClass="action-button-icon" />
+                           </children>
+                        </Group>
+                     </graphic>
+                     <styleClass>
+                        <String fx:value="action-button" />
+                        <String fx:value="button-orange" />
+                     </styleClass>
+                  </Button>
+               </children>
+            </HBox>
+         </children>
+      </StackPane>
+   </children>
+   <styleClass>
+      <String fx:value="round-big" />
+      <String fx:value="popup-background" />
+      <String fx:value="shadow-light" />
+   </styleClass>
+</VBox>

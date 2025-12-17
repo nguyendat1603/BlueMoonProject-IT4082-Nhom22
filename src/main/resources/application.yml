@@ -1,0 +1,46 @@
+spring:
+  application:
+    name: HomeTechManagement
+
+  # PostgreSQL Configuration
+  datasource:
+    url: jdbc:postgresql://ep-late-shape-ahcz0zed-pooler.c-3.us-east-1.aws.neon.tech/neondb?user=neondb_owner&password=npg_6D5MgcNqwCvl&sslmode=require&channelBinding=require
+    username: neondb_owner
+    password: npg_6D5MgcNqwCvl
+    driver-class-name: org.postgresql.Driver
+
+  # JPA/Hibernate Configuration
+  jpa:
+    hibernate:
+      ddl-auto: validate # Chỉ thay đổi dữ liệu, không thay đổi cấu trúc bảng
+    properties:
+      hibernate.dialect: org.hibernate.dialect.PostgreSQLDialect
+    show-sql: false
+
+  mail:
+    host: smtp.gmail.com           # Thay bằng host của dịch vụ email
+    port: 587
+    username: bluemoonnoreply@gmail.com # Thay bằng email gửi
+    password: ahylnpruyfjuddjh                        #bluemoon20242
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+# Logging Configuration
+logging:
+  level:
+    root: INFO
+    org.springframework: OFF
+    org.hibernate: OFF
+    org.springframework.web: OFF
+    org.springframework.boot.autoconfigure: OFF
+    org.springframework.context: OFF
+    org.springframework.jdbc: OFF
+    org.springframework.orm.jpa: OFF
+    org.springframework.transaction: OFF
+    org.springframework.security: OFF
+    com.zaxxer.hikari: OFF
+    com.password4j: OFF

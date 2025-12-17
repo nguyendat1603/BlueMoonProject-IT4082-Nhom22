@@ -1,0 +1,8 @@
+Một số trường hợp có thể xảy ra:
+- Khi chỉnh sửa căn hộ, chuyển trạng thái từ đã bán -> chưa bán, chủ sở hữu, cư dân sẽ thay đổi như nào
+- Khi chỉnh sửa thông tin chủ hộ, đổi mã định danh của chủ sở hữu, chủ sở hữu cũ đang sinh sống trong căn hộ thì xử lý như nào, chủ sở hữu mới cũng cần được thêm vào danh sách cư dân của căn hộ thì xử lý như nào
+- Khi đổi tình trạng sử dụng từ đang ở -> không ở, cư dân sẽ thay đổi như nào
+Ghi chú:
+- Khi chọn chủ sở hữu mới, cần hiện các thành phần liên quan (Tạo cư dân mới, thêm chủ mới vào danh sách cư dân, ngày chuyển đến) và xóa nội dung các text field thông tin hiện tại)
+- Khi bỏ chọn chủ sở hữu mới, cần ẩn các nội dung liên quan đi và khôi phục lại nội dung thông tin của chủ sở hữu ban đầu ở các text field
+- Xem xét bỏ ngày hủy đăng kí phương tiện vì nếu hủy thì xóa luôn

@@ -1,0 +1,3 @@
+Ghi chú:
+- Nếu chưa bán thì ẩn vBoxChuSoHuu
+- Khi thu phí khoản thu tự nguyện thì hiện popup thu phí tự nguyện

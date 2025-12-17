@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import de.jensd.fx.glyphs.fontawesome.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+<BorderPane fx:id="mainBorderPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="720.0" prefWidth="1280.0" stylesheets="@style/dashboard_style.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="io.github.ktpm.bluemoonmanagement.controller.KhungController">
+   <left>
+      <AnchorPane maxWidth="-Infinity" minWidth="-Infinity" prefWidth="200.0" styleClass="white-background" BorderPane.alignment="BOTTOM_LEFT">
+         <children>
+            <VBox alignment="TOP_CENTER" layoutY="14.0" maxHeight="-Infinity" maxWidth="-Infinity" prefWidth="200.0" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="14.0">
+               <children>
+                  <Button fx:id="buttonTrangChu" alignment="TOP_LEFT" mnemonicParsing="false" onAction="#goToTrangChu" styleClass="menu-button" text="Trang chủ">
+                     <graphic>
+                        <javafx.scene.Group>
+                           <FontAwesomeIcon glyphName="HOME" size="30px" styleClass="menu-icon" />
+                        </javafx.scene.Group>
+                     </graphic>
+                  </Button>
+                  <Button fx:id="buttonCanHo" alignment="TOP_LEFT" layoutX="20.0" layoutY="10.0" mnemonicParsing="false" onAction="#goToCanHo" styleClass="menu-button" text="Căn hộ">
+                     <graphic>
+                        <Group>
+                           <children>
+                              <FontAwesomeIcon glyphName="BUILDING" size="30px" styleClass="menu-icon" />
+                           </children>
+                        </Group>
+                     </graphic>
+                  </Button>
+                  <Button fx:id="buttonCuDan" alignment="TOP_LEFT" layoutX="20.0" layoutY="61.0" mnemonicParsing="false" onAction="#goToCuDan" styleClass="menu-button" text="Cư dân">
+                     <graphic>
+                        <Group>
+                           <children>
+                              <FontAwesomeIcon glyphName="USERS" size="30px" styleClass="menu-icon" />
+                           </children>
+                        </Group>
+                     </graphic>
+                  </Button>
+                  <Button fx:id="buttonKhoanThu" alignment="TOP_LEFT" layoutX="20.0" layoutY="112.0" mnemonicParsing="false" onAction="#goToKhoanThu" styleClass="menu-button" text="Khoản thu">
+                     <graphic>
+                        <Group>
+                           <children>
+                              <FontAwesomeIcon glyphName="BOOK" size="30px" styleClass="menu-icon" />
+                           </children>
+                        </Group>
+                     </graphic>
+                  </Button>
+
+                  <Button fx:id="buttonThuPhi" alignment="TOP_LEFT" layoutX="20.0" layoutY="164.0" mnemonicParsing="false" onAction="#gotoLichSuThu" styleClass="menu-button" text="Hóa đơn">
+                     <graphic>
+                        <Group>
+                           <children>
+                              <FontAwesomeIcon glyphName="DATABASE" size="30px" styleClass="menu-icon" />
+                           </children>
+                        </Group>
+                     </graphic>
+                  </Button>
+                  <Button fx:id="buttonTaiKhoan" alignment="TOP_LEFT" layoutX="20.0" layoutY="167.0" mnemonicParsing="false" onAction="#goToTaiKhoan" styleClass="menu-button" text="Tài khoản">
+                     <graphic>
+                        <Group>
+                           <children>
+                              <FontAwesomeIcon glyphName="KEY" size="30px" styleClass="menu-icon" />
+                           </children>
+                        </Group>
+                     </graphic>
+                  </Button>
+               </children>
+            </VBox>
+            <VBox alignment="BOTTOM_CENTER" layoutY="390.0" maxHeight="-Infinity" maxWidth="-Infinity" prefWidth="200.0" AnchorPane.bottomAnchor="70.0">
+               <children>
+                  <Button fx:id="buttonHoSo" alignment="TOP_LEFT" layoutX="20.0" layoutY="10.0" mnemonicParsing="false" onAction="#goToHoSo" styleClass="menu-button" text="Hồ sơ">
+                     <graphic>
+                        <Group>
+                           <children>
+                              <FontAwesomeIcon glyphName="USER" size="30px" styleClass="menu-icon" />
+                           </children>
+                        </Group>
+                     </graphic>
+                  </Button>
+                  <Button fx:id="buttonDangXuat" alignment="TOP_LEFT" layoutX="20.0" layoutY="167.0" mnemonicParsing="false" onAction="#handleDangXuat" styleClass="menu-button" text="Đăng xuất">
+                     <graphic>
+                        <Group>
+                           <children>
+                              <FontAwesomeIcon glyphName="SIGN_OUT" size="30px" styleClass="menu-icon" />
+                           </children>
+                        </Group>
+                     </graphic>
+                  </Button>
+               </children>
+            </VBox>
+         </children>
+      </AnchorPane>
+   </left>
+   <top>
+      <HBox alignment="CENTER" prefHeight="100.0" prefWidth="1186.0" styleClass="white-background" BorderPane.alignment="CENTER">
+         <children>
+            <ImageView fitHeight="150.0" fitWidth="180.0" pickOnBounds="true" preserveRatio="true">
+               <image>
+                  <Image url="@image/logo.png" />
+               </image>
+            </ImageView>
+            <Label fx:id="labelScreenName" text="Trang chủ">
+               <font>
+                  <Font name="System Bold" size="24.0" />
+               </font>
+               <HBox.margin>
+                  <Insets left="30.0" />
+               </HBox.margin>
+            </Label>
+            <Region prefHeight="200.0" prefWidth="200.0" HBox.hgrow="ALWAYS" />
+            <Label fx:id="labelAccountName" text="Xin chào, Nguyễn Văn A" textAlignment="RIGHT">
+               <font>
+                  <Font name="Arial Italic" size="18.0" />
+               </font>
+            </Label>
+         </children>
+         <BorderPane.margin>
+            <Insets />
+         </BorderPane.margin>
+         <padding>
+            <Insets left="5.0" right="30.0" />
+         </padding>
+      </HBox>
+   </top>
+</BorderPane>

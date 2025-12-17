@@ -1,0 +1,6 @@
+Ghi chú:
+- Button cho sửa, lưu đang bị ẩn, khi chuyển sang chế độ tương ứng thì cho hiển thị + đổi tên labelTieuDe
+- Khi tạo thì disable ngày chuyển đi
+- Khi chỉnh sửa thì nếu trạng thái từ ở -> không ở mới hủy disable ở ngày chuyển đi và xóa nội dung + disable mã căn hộ, chọn ngược lại thì lại disable ngày chuyển đi và khôi phục mã căn hộ gốc + hủy disable
+- Khi đổi mã căn hộ thì xóa nội dung ngày chuyển đến (ngày chuyển đi vẫn disable)
+- Nếu người xem không có quyền chỉnh sửa thì ẩn nút chỉnh sửa

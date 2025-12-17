@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+<?import javafx.geometry.Pos?>
+
+<VBox xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="io.github.ktpm.bluemoonmanagement.controller.ChatbotController"
+      spacing="10" alignment="CENTER"
+      style="-fx-background-color: #f0f2f5;">
+
+    <padding>
+        <Insets top="20" right="20" bottom="20" left="20"/>
+    </padding>
+
+    <!-- Tiêu đề -->
+    <Label text="Chat Bot"
+           style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #333333;"/>
+
+    <!-- Khu vực hiển thị tin nhắn -->
+    <TextArea fx:id="chatArea"
+              editable="false"
+              wrapText="true"
+              prefHeight="400"
+              style="-fx-background-radius: 10; -fx-border-radius: 10; -fx-padding: 10; -fx-font-size: 14px;"/>
+
+    <!-- Khu vực nhập tin nhắn -->
+    <HBox spacing="10" alignment="CENTER" style="-fx-padding: 10;">
+        <TextField fx:id="inputField" onAction="#handleSend"
+                   promptText="Nhập tin nhắn..."
+                   style="-fx-background-radius: 20; -fx-padding: 10;"
+                   HBox.hgrow="ALWAYS"/>
+        <Button text="Gửi" onAction="#handleSend"
+                style="-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-background-radius: 20; -fx-padding: 10 20;"/>
+    </HBox>
+</VBox>

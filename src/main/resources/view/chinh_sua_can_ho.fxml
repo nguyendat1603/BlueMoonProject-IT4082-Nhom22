@@ -1,0 +1,273 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon?>
+<?import java.lang.String?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.Group?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+<StackPane prefHeight="620.0" prefWidth="1080.0" stylesheets="@style/dashboard_style.css" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1">
+   <children>
+      <ScrollPane fx:id="scrollPaneCanHo" hbarPolicy="NEVER" style="-fx-background: white;">
+         <StackPane.margin>
+            <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+         </StackPane.margin>
+         <padding>
+            <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+         </padding>
+         <content>
+            <VBox alignment="TOP_CENTER" prefWidth="960.0" spacing="20.0">
+               <children>
+                  <VBox prefWidth="640.0" spacing="15.0">
+                     <children>
+                        <Label styleClass="screen-title" text="Thông tin căn hộ">
+                           <VBox.margin>
+                              <Insets />
+                           </VBox.margin>
+                        </Label>
+                        <HBox alignment="CENTER_RIGHT" prefWidth="640.0" spacing="20.0">
+                           <children>
+                              <HBox alignment="CENTER_LEFT" spacing="10.0" HBox.hgrow="ALWAYS">
+                                 <children>
+                                    <Label styleClass="text-bold" text="Tòa nhà" />
+                                    <TextField fx:id="textFieldToa" prefWidth="114.0" promptText="Nhập tòa" styleClass="text-field-normal" HBox.hgrow="ALWAYS" />
+                                 </children>
+                              </HBox>
+                              <HBox alignment="CENTER_LEFT" spacing="10.0" HBox.hgrow="ALWAYS">
+                                 <children>
+                                    <Label styleClass="text-bold" text="Tầng" />
+                                    <TextField fx:id="textFieldTang" prefWidth="92.0" promptText="Nhập tầng" styleClass="text-field-normal" HBox.hgrow="ALWAYS" />
+                                 </children>
+                              </HBox>
+                              <HBox alignment="CENTER_LEFT" spacing="10.0" HBox.hgrow="ALWAYS">
+                                 <children>
+                                    <Label styleClass="text-bold" text="Số nhà" />
+                                    <TextField fx:id="textFieldSoNha" prefWidth="170.0" promptText="Nhập số nhà" styleClass="text-field-normal" HBox.hgrow="ALWAYS" />
+                                 </children>
+                              </HBox>
+                              <HBox alignment="CENTER_LEFT" spacing="10.0" HBox.hgrow="ALWAYS">
+                                 <children>
+                                    <Label styleClass="text-bold" text="Diện tích" />
+                                    <TextField fx:id="textFieldDienTich" prefWidth="168.0" promptText="Nhập diện tích" styleClass="text-field-normal" HBox.hgrow="ALWAYS" />
+                                 </children>
+                              </HBox>
+                           </children>
+                        </HBox>
+                        <HBox alignment="CENTER_RIGHT" prefWidth="640.0" spacing="20.0">
+                           <children>
+                              <HBox fx:id="hBoxTrangThai" alignment="CENTER_LEFT" spacing="10.0" HBox.hgrow="ALWAYS">
+                                 <children>
+                                    <Label styleClass="text-bold" text="Trạng thái" />
+                                    <ComboBox fx:id="comboBoxTrangThai" maxWidth="1.7976931348623157E308" promptText="Trạng thái" HBox.hgrow="ALWAYS" />
+                                 </children>
+                              </HBox>
+                              <HBox alignment="CENTER_LEFT" spacing="10.0" HBox.hgrow="ALWAYS">
+                                 <children>
+                                    <Label styleClass="text-bold" text="Tình trạng kĩ thuật" />
+                                    <ComboBox fx:id="comboBoxTinhTrangKiThuat" maxWidth="1.7976931348623157E308" promptText="Tình trạng kĩ thuật" HBox.hgrow="ALWAYS" />
+                                 </children>
+                              </HBox>
+                           </children>
+                           <VBox.margin>
+                              <Insets />
+                           </VBox.margin>
+                        </HBox>
+                     </children>
+                     <padding>
+                        <Insets left="10.0" top="5.0" />
+                     </padding>
+                  </VBox>
+                  <VBox fx:id="vBoxChuSoHuu" prefWidth="640.0" spacing="15.0">
+                     <children>
+                        <Label styleClass="screen-title" text="Thông tin chủ sở hữu">
+                           <VBox.margin>
+                              <Insets />
+                           </VBox.margin>
+                        </Label>
+                        <HBox alignment="CENTER_RIGHT" prefWidth="640.0" spacing="20.0">
+                           <children>
+                              <CheckBox fx:id="choiceBoxChuSoHuuMoi" layoutX="125.0" layoutY="15.0" mnemonicParsing="false" text="Chủ sở hữu mới" />
+                              <HBox fx:id="hBoxMaDinhDanh" alignment="CENTER_LEFT" spacing="10.0" HBox.hgrow="ALWAYS">
+                                 <children>
+                                    <Label styleClass="text-bold" text="Mã định danh" />
+                                    <TextField fx:id="textFieldMaDinhDanh" promptText="Nhập mã định danh chủ sở hữu" styleClass="text-field-normal" HBox.hgrow="ALWAYS" />
+                                 </children>
+                              </HBox>
+                              <CheckBox fx:id="choiceBoxTaoCuDan" mnemonicParsing="false" text="Tạo cư dân mới" HBox.hgrow="ALWAYS" />
+                           </children>
+                        </HBox>
+                        <HBox fx:id="text2" alignment="CENTER_RIGHT" layoutX="20.0" layoutY="106.0" prefWidth="640.0" spacing="20.0">
+                           <children>
+                              <HBox alignment="CENTER_LEFT" spacing="10.0" HBox.hgrow="ALWAYS">
+                                 <children>
+                                    <Label styleClass="text-bold" text="Họ và tên" />
+                                    <TextField fx:id="textFieldHoVaTen" maxWidth="1.7976931348623157E308" promptText="Nhập họ và tên" styleClass="text-field-normal" HBox.hgrow="ALWAYS" />
+                                 </children>
+                              </HBox>
+                              <HBox alignment="CENTER_LEFT" spacing="10.0" HBox.hgrow="ALWAYS">
+                                 <children>
+                                    <Label styleClass="text-bold" text="Ngày sinh" />
+                                    <DatePicker fx:id="datePickerNgaySinh" maxWidth="1.7976931348623157E308" promptText="Nhập ngày sinh" HBox.hgrow="ALWAYS" />
+                                 </children>
+                              </HBox>
+                              <HBox alignment="CENTER_LEFT" spacing="10.0" HBox.hgrow="ALWAYS">
+                                 <children>
+                                    <Label styleClass="text-bold" text="Giới tính" />
+                                    <ComboBox fx:id="comboBoxGioiTinh" maxWidth="1.7976931348623157E308" promptText="Giới tính" HBox.hgrow="ALWAYS" />
+                                 </children>
+                              </HBox>
+                           </children>
+                        </HBox>
+                        <HBox fx:id="text" alignment="CENTER_RIGHT" prefWidth="640.0" spacing="20.0">
+                           <children>
+                              <HBox alignment="CENTER_LEFT" spacing="10.0" HBox.hgrow="ALWAYS">
+                                 <children>
+                                    <Label styleClass="text-bold" text="Số điện thoại" />
+                                    <TextField fx:id="textFieldSoDienThoai" promptText="Nhập số điện thoai" styleClass="text-field-normal" HBox.hgrow="ALWAYS" />
+                                 </children>
+                              </HBox>
+                              <HBox alignment="CENTER_LEFT" spacing="10.0" HBox.hgrow="ALWAYS">
+                                 <children>
+                                    <Label styleClass="text-bold" text="Email" />
+                                    <TextField fx:id="textFieldEmail" promptText="Nhập email" styleClass="text-field-normal" HBox.hgrow="ALWAYS" />
+                                 </children>
+                              </HBox>
+                           </children>
+                        </HBox>
+                        <HBox fx:id="hBoxThemChuSoHuuNgayChuyenDen" alignment="CENTER_RIGHT" layoutX="20.0" layoutY="152.0" prefWidth="640.0" spacing="20.0">
+                           <children>
+                              <CheckBox fx:id="choiceBoxThemChuSoHuu" mnemonicParsing="false" text="Thêm chủ sở hữu vào danh sách cư dân của căn hộ" />
+                              <HBox alignment="CENTER_LEFT" spacing="10.0" HBox.hgrow="ALWAYS">
+                                 <children>
+                                    <Label styleClass="text-bold" text="Ngày chuyển đến" />
+                                    <DatePicker fx:id="datePickerNgayChuyenDen" maxWidth="1.7976931348623157E308" prefWidth="202.0" promptText="Nhập ngày chuyển đến" HBox.hgrow="ALWAYS" />
+                                 </children>
+                              </HBox>
+                           </children>
+                        </HBox>
+                     </children>
+                     <padding>
+                        <Insets left="10.0" top="5.0" />
+                     </padding>
+                  </VBox>
+                  <VBox fx:id="vBoxChuSoHuu1" layoutX="10.0" layoutY="156.0" prefWidth="640.0" spacing="15.0">
+                     <children>
+                        <HBox alignment="CENTER_LEFT">
+                           <VBox.margin>
+                              <Insets />
+                           </VBox.margin>
+                           <children>
+                              <Label styleClass="screen-title" text="Danh sách cư dân" />
+                              <Region HBox.hgrow="ALWAYS" />
+                              <Button fx:id="buttonThemCuDan" mnemonicParsing="false" text="Thêm cư dân">
+                                 <graphic>
+                                    <Group>
+                                       <children>
+                                          <FontAwesomeIcon glyphName="PLUS" styleClass="action-button-icon" />
+                                       </children>
+                                    </Group>
+                                 </graphic>
+                                 <styleClass>
+                                    <String fx:value="action-button" />
+                                    <String fx:value="button-green" />
+                                 </styleClass>
+                              </Button>
+                           </children>
+                        </HBox>
+                        <ScrollPane hbarPolicy="NEVER" vbarPolicy="AS_NEEDED" pannable="true">
+                           <content>
+                              <TableView fx:id="tabelViewCuDan" prefHeight="400.0" prefWidth="970.0">
+                                 <columns>
+                                    <TableColumn fx:id="tableColumnMaDinhDanh" prefWidth="120.0" resizable="false" text="Mã định danh" />
+                                    <TableColumn fx:id="tableColumnHoVaTen" prefWidth="170.0" resizable="false" text="Họ và tên" />
+                                    <TableColumn fx:id="tableColumnGioiTinh" prefWidth="84.0" resizable="false" text="Giới tính" />
+                                    <TableColumn fx:id="tableColumnNgaySinh" prefWidth="143.0" resizable="false" text="Ngày sinh" />
+                                    <TableColumn fx:id="tableColumnNgayChuyenDen" prefWidth="120.0" resizable="false" text="Ngày chuyển đến" />
+                                    <TableColumn fx:id="tableColumnTrangThaiCuDan" prefWidth="133.0" resizable="false" text="Trạng thái" />
+                                    <TableColumn fx:id="tableColumnThaoTacCuDan" prefWidth="120.0" resizable="false" text="Thao tác" />
+                                 </columns>
+                              </TableView>
+                           </content>
+                        </ScrollPane>
+                     </children>
+                     <padding>
+                        <Insets left="10.0" top="5.0" />
+                     </padding>
+                  </VBox>
+                  <VBox fx:id="vBoxChuSoHuu11" layoutX="10.0" layoutY="394.0" prefWidth="640.0" spacing="15.0">
+                     <children>
+                        <HBox alignment="CENTER_LEFT">
+                           <VBox.margin>
+                              <Insets />
+                           </VBox.margin>
+                           <children>
+                              <Label styleClass="screen-title" text="Danh sách phương tiện" />
+                              <Region HBox.hgrow="ALWAYS" />
+                              <Button fx:id="buttonThemPhuongTien" mnemonicParsing="false" text="Thêm phương tiện">
+                                 <graphic>
+                                    <Group>
+                                       <children>
+                                          <FontAwesomeIcon glyphName="PLUS" styleClass="action-button-icon" />
+                                       </children>
+                                    </Group>
+                                 </graphic>
+                                 <styleClass>
+                                    <String fx:value="action-button" />
+                                    <String fx:value="button-green" />
+                                 </styleClass>
+                              </Button>
+                           </children>
+                        </HBox>
+                        <ScrollPane hbarPolicy="NEVER" vbarPolicy="AS_NEEDED" pannable="true">
+                           <content>
+                              <TableView fx:id="tableViewPhuongTien" prefHeight="250.0" prefWidth="970.0">
+                                 <columns>
+                                    <TableColumn fx:id="tableColumnMaPhuongTien" minWidth="-1.0" prefWidth="170.0" text="Mã phương tiện" />
+                                    <TableColumn fx:id="tableColumnBienSoXe" minWidth="-1.0" prefWidth="170.0" text="Biển số xe" />
+                                    <TableColumn fx:id="tableColumnLoaiPhuongTien" prefWidth="240.0" text="Loại phương tiện" />
+                                    <TableColumn fx:id="tableColumnNgayDangKi" prefWidth="170.0" text="Ngày đăng kí" />
+                                    <TableColumn fx:id="tableColumnThaoTacPhuongTien" prefWidth="120.0" text="Thao tác" />
+                                 </columns>
+                              </TableView>
+                           </content>
+                        </ScrollPane>
+                     </children>
+                     <padding>
+                        <Insets left="10.0" top="5.0" />
+                     </padding>
+                  </VBox>
+                  <Button fx:id="buttonLuu" mnemonicParsing="false" text="Lưu">
+                     <graphic>
+                        <Group>
+                           <children>
+                              <FontAwesomeIcon glyphName="SAVE" styleClass="action-button-icon" />
+                           </children>
+                        </Group>
+                     </graphic>
+                     <styleClass>
+                        <String fx:value="action-button" />
+                        <String fx:value="button-orange" />
+                     </styleClass>
+                  </Button>
+               </children>
+            </VBox>
+         </content>
+         <styleClass>
+            <String fx:value="white-background" />
+            <String fx:value="round-big" />
+         </styleClass>
+      </ScrollPane>
+   </children>
+</StackPane>

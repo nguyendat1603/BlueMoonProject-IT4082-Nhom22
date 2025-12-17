@@ -1,0 +1,6 @@
+Ghi chú:
+- Bỏ hết thao tác (trừ bảng Thu phí)
+- Thao tác ở bảng thu phí là
+	+ Khoản bắt buộc: hoàn tác
+	+ Khoản tự nguyện: chi tiết
+- Nếu nhập excel lỗi hoặc thành công thì có thông báo và load lại

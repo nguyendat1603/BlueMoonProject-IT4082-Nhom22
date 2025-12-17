@@ -1,0 +1,9 @@
+Ghi chú:
+- Button cho sửa, lưu đang bị ẩn trong stack pane, khi chuyển sang chế độ tương ứng thì cho hiển thị + đổi tên labelTieuDe
+- Khi chọn loại khoản thu là bắt buộc, hiện vBoxBatBuoc, còn lại thì ẩn
+- Khi chọn bộ phận quản lý là chung cư thì hiện vBoxChungCu
+- Khi chọn đơn vị tính là không có, disable hBoxDonGia
+- Khi chọn đơn vị tính là phương tiện, ẩn hBoxDonGia và hiện hBoxDonGiaPhuongTien
+- Khi chọn bộ phận quản lý là ngoài cung cư thì hiện vBoxNgoaiChungCu, lưu nội dung của tên cơ quan vào ghi chú
+- Khi chọn file excel để đưa vào xong, nếu file có vấn đề thì thông báo ở textError, nếu file không có vấn đề thì hiện hBoxFile lên và thay labelTenFile bằng tên của file
+- Sau khi tạo xong không cho phép chỉnh sửa loại khoản thu và bộ phận quản lý
