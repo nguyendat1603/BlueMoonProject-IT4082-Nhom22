@@ -26,6 +26,7 @@ import io.github.ktpm.bluemoonmanagement.util.FxViewLoader;
 import io.github.ktpm.bluemoonmanagement.util.PieChartDataUtil;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -513,20 +514,13 @@ public class Home_list implements Initializable {
         
         // Setup right-click refresh functionality with new method names
         setupRightClickRefresh();
+                
+        // Setup button permissions based on user role
+        setupButtonPermissions();
         
-        // Load data
-        loadData();
-        loadCuDanData();
-        loadTaiKhoanData();
-        loadKhoanThuData(); // Load fee data as well
-        loadHoaDonData(); // Load invoice data as well
-        
-        // Cập nhật tổng số liệu sau khi load data
-        updateTotalStatistics();
-        
-        // Load dữ liệu cho biểu đồ
-        loadChartData();
-        
+        // Setup search listeners
+        setupSearchListeners();
+
         // Show default tab
         show("TrangChu");
         
@@ -536,12 +530,33 @@ public class Home_list implements Initializable {
             emailLabel.setText("Email: " + Session.getCurrentUser().getEmail());
             vaiTroLabel.setText("Vai trò: " + Session.getCurrentUser().getVaiTro());
         }
-        
-        // Setup button permissions based on user role
-        setupButtonPermissions();
-        
-        // Setup search listeners
-        setupSearchListeners();
+
+        Task<Void> loadDataTask = new Task<>() {
+            @Override
+            protected Void call() {
+
+                loadData();
+                loadCuDanData();
+                loadTaiKhoanData();
+                loadKhoanThuData();
+                loadHoaDonData();
+
+                return null;
+            }
+        };
+
+        loadDataTask.setOnSucceeded(e -> {
+            updateTotalStatistics();
+            loadChartData();
+        });
+
+        loadDataTask.setOnFailed(e -> {
+            loadDataTask.getException().printStackTrace();
+        });
+
+        Thread thread = new Thread(loadDataTask);
+        thread.setDaemon(true);
+        thread.start();
         
         // Home_list initialization completed
     }
