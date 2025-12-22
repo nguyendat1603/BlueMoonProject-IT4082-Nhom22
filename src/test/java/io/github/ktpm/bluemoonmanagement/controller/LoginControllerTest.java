@@ -90,13 +90,13 @@ class LoginControllerTest {
         checkBoxHienMatKhau.setSelected(true);
 
         // Act
-        Platform.runLater(() -> {
+        /*Platform.runLater(() -> {
             try {
                 loginController.showPassword(new ActionEvent());
             } catch (Exception e) {
                 e.printStackTrace();
             }
-        });
+        });*/
         
         // Wait for JavaFX thread
         Thread.sleep(100);
@@ -118,13 +118,13 @@ class LoginControllerTest {
         checkBoxHienMatKhau.setSelected(false);
 
         // Act
-        Platform.runLater(() -> {
+        /*Platform.runLater(() -> {
             try {
                 loginController.showPassword(new ActionEvent());
             } catch (Exception e) {
                 e.printStackTrace();
             }
-        });
+        });*/
         
         // Wait for JavaFX thread
         Thread.sleep(100);

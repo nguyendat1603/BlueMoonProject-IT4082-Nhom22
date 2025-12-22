@@ -27,7 +27,7 @@
    <children>
       <VBox alignment="CENTER" prefHeight="200.0" prefWidth="100.0" styleClass="background" HBox.hgrow="ALWAYS">
          <children>
-            <ImageView fitHeight="461.0" fitWidth="575.0" pickOnBounds="true" preserveRatio="true">
+            <ImageView fitHeight="726.0" fitWidth="869.0" pickOnBounds="true" preserveRatio="true">
                <image>
                   <Image url="@image/logo.png" />
                </image>
@@ -56,7 +56,7 @@
                               <Insets left="5.0" />
                            </VBox.margin>
                         </Label>
-                        <TextField fx:id="textFieldEmail" prefHeight="55.0" styleClass="fb-input">
+                        <TextField fx:id="textFieldEmail" prefHeight="55.0" promptText="Email" styleClass="fb-input">
                            <font>
                               <Font name="Arial" size="18.0" />
                            </font>
@@ -71,47 +71,31 @@
                            </padding>
                         </Label>
                   <StackPane>
-
-    <PasswordField fx:id="passwordField"
-                   prefHeight="55.0"
-                   promptText="Mật khẩu"
-                   styleClass="fb-input">
-        <font>
-            <Font name="Arial" size="18.0" />
-        </font>
-    </PasswordField>
-
-    <TextField fx:id="passwordText"
-               prefHeight="55.0"
-               promptText="Mật khẩu"
-               styleClass="fb-input"
-               visible="false"
-               managed="false">
-        <font>
-            <Font name="Arial" size="18.0" />
-        </font>
-    </TextField>
-
-    <Button fx:id="toggleBtn"
-            mnemonicParsing="false"
-            onAction="#togglePassword"
-            styleClass="eye-button"
-            StackPane.alignment="CENTER_RIGHT">
-        <StackPane.margin>
-            <Insets right="12.0" />
-        </StackPane.margin>
-    </Button>
+                     <children>
+   
+       <PasswordField fx:id="passwordField" prefHeight="55.0" promptText="Mật khẩu" styleClass="fb-input">
+           <font>
+               <Font name="Arial" size="18.0" />
+           </font>
+       </PasswordField>
+   
+       <TextField fx:id="passwordText" managed="false" prefHeight="55.0" promptText="Mật khẩu" styleClass="fb-input" visible="false">
+           <font>
+               <Font name="Arial" size="18.0" />
+           </font>
+       </TextField>
+   
+       <Button fx:id="toggleBtn" mnemonicParsing="false" onAction="#togglePassword" styleClass="eye-button" StackPane.alignment="CENTER_RIGHT">
+           <StackPane.margin>
+               <Insets right="12.0" />
+           </StackPane.margin>
+       </Button>
+                     </children>
 
 </StackPane>
 
                      </children>
                   </VBox>
-                  <HBox alignment="CENTER">
-                     <children>
-                        <Region HBox.hgrow="ALWAYS" />
-                        <Button fx:id="buttonQuenMatKhau" mnemonicParsing="false" onAction="#DangNhapBangOTPClicked" styleClass="button-textlike" text="Quên mật khẩu?" />
-                     </children>
-                  </HBox>
                   <VBox spacing="10.0">
                      <children>
                         <TextFlow prefWidth="640.0" textAlignment="CENTER">
@@ -130,6 +114,11 @@
                         </Button>
                      </children>
                   </VBox>
+                  <HBox alignment="CENTER">
+                     <children>
+                        <Button fx:id="buttonQuenMatKhau" mnemonicParsing="false" onAction="#DangNhapBangOTPClicked" styleClass="link-button" text="Quên mật khẩu?" />
+                     </children>
+                  </HBox>
                </children>
                <padding>
                   <Insets left="60.0" right="60.0" />

@@ -61,3 +61,29 @@
 .eye-open {
     -fx-graphic: url("/view/image/icon/eye-off.png");
 }
+.action-button {
+    -fx-background-color: #1877f2;
+    -fx-text-fill: white;
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+
+    -fx-background-radius: 26;
+    -fx-pref-height: 52px;
+
+    -fx-cursor: hand;
+}
+
+.action-button:hover {
+    -fx-background-color: #166fe5;
+}
+.link-button {
+    -fx-background-color: transparent;
+    -fx-text-fill: #1877f2;
+    -fx-font-size: 14px;
+    -fx-cursor: hand;
+}
+
+.link-button:hover {
+    -fx-underline: true;
+}
+

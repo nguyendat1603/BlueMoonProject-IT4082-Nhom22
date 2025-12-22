@@ -22,7 +22,6 @@ import javafx.scene.Scene;
 import javafx.scene.layout.StackPane;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
-
 @Component
 public class LoginController implements Initializable {
 
@@ -58,30 +57,29 @@ public class LoginController implements Initializable {
 
     @FXML private Button toggleBtn;
 
-
-
-
     @Override
 public void initialize(URL url, ResourceBundle resourceBundle) {
-    passwordText.setVisible(false);
-    passwordText.setManaged(false);
+    if (passwordText != null) {
+        passwordText.setVisible(false);
+        passwordText.setManaged(false);
+    }
 }
 
-
-
+    
     @FXML
-    void dangNhapPressed(ActionEvent event) {
-        String email = textFieldEmail.getText().trim();
-        String password = passwordField.isVisible()
-        ? passwordField.getText().trim()
-        : passwordText.getText().trim();
+void dangNhapPressed(ActionEvent event) {
+    String email = textFieldEmail.getText().trim();
 
+    String password = passwordField.isVisible()
+            ? passwordField.getText().trim()
+            : passwordText.getText().trim();
 
-        if (email.isEmpty()) {
-            textError.setText("Vui lòng nhập đầy đủ thông tin đăng nhập.");
-            textError.setVisible(true);
-            return;
-        }
+    if (email.isEmpty() || password.isEmpty()) {
+        textError.setText("Vui lòng nhập đầy đủ thông tin đăng nhập.");
+        textError.setVisible(true);
+        return;
+    }
+
 
 
 
@@ -100,24 +98,17 @@ public void initialize(URL url, ResourceBundle resourceBundle) {
                 stage.setScene(new Scene(mainView));
                 stage.setTitle("Application");
                 stage.show();
-                FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/chat_view.fxml"));
-                Parent chatView = loader.load();
+                Parent chatView = fxViewLoader.loadView("/fxml/chat_view.fxml");
+
                 Stage chatStage = new Stage();
                 chatStage.setTitle("ChatBot");
                 chatStage.setScene(new Scene(chatView));
                 chatStage.show();
+
             } catch (IOException e) {
                 e.printStackTrace();
                 // Xử lý lỗi nếu không thể tải file FXML
             }
-        } else {
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setTitle("Đăng nhập khuôn mặt thất bại");
-            alert.setHeaderText(null);
-            alert.setContentText("Vui lòng đăng nhập lại !");
-            alert.showAndWait();
-            textError.setText(response.getMessage());
-            textError.setVisible(true);
         }
     }
 
