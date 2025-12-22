@@ -1,92 +1,63 @@
-.root {
-    -fx-background-color: #ffffff;
-    -fx-font-family: "Arial";
-    -fx-text-fill: #333333;
-    -fx-font-size: 18px;
+/* INPUT GIỐNG FACEBOOK */
+.fb-input {
+    -fx-background-color: white;
+    -fx-background-radius: 999;
+    -fx-border-radius: 999;
+    -fx-border-color: #ccd7f0;
+    -fx-border-width: 1;
+    -fx-pref-height: 52px;
+    -fx-font-size: 15px;
+    -fx-text-fill: #1c1e21;
+    -fx-prompt-text-fill: #8a8d91;
+    -fx-padding: 0 44 0 18;
 }
 
-.text-field {
-    -fx-background-color: #F0F0F0;
-    -fx-background-radius: 8;
-    -fx-pref-height: 55px;
-    -fx-text-fill: #333333;
-    -fx-prompt-text-fill: #A6A6A6;
-    -fx-font-size: 18px;
+.fb-input:focused {
+    -fx-border-color: #1877f2;
+    -fx-border-width: 2;
 }
 
-.button {
+/* NÚT ĐĂNG NHẬP FACEBOOK */
+.fb-button {
+    -fx-background-color: #1877f2;
+    -fx-text-fill: white;
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-background-radius: 999;
+    -fx-pref-height: 52px;
     -fx-cursor: hand;
 }
 
-.check-box {
-    -fx-font-size: 18px;
-    -fx-text-fill: #333333;
-    -fx-cursor: hand;
+.fb-button:hover {
+    -fx-background-color: #166fe5;
 }
 
-.check-box .box {
-    -fx-background-color: white;
-    -fx-border-color: #888888;
-    -fx-border-radius: 3;
-    -fx-background-radius: 3;
-    -fx-padding: 3;
-}
-
-.check-box:selected .box {
-    -fx-background-color: #4472C4;
-    -fx-border-color: #4472C4;
-}
-
-.check-box:selected .mark {
-    -fx-background-color: white;
-}
-
-.button-textlike {
-    /* Nút thao tác, có gạch chân, chưa đổi màu */
+/* LINK QUÊN MẬT KHẨU */
+.fb-link {
     -fx-background-color: transparent;
-    -fx-underline: true;
-    -fx-background-radius: 15;
-    -fx-text-fill: #333333;
-}
-
-.button-textlike:hover {
-    /* Nền trắng nhạt */
-    -fx-background-color: rgba(0, 0, 0, 0.1);
-}
-
-.action-button {
-    -fx-background-radius: 8;
-    -fx-pref-height: 55px;
-    -fx-font-weight: bold;
-    -fx-text-fill: #FFFFFF;
-    -fx-background-color: #4472C4;
-    -fx-font-size: 20px;
-}
-
-.action-button:hover {
-    -fx-background-color: #8FAADC;
-}
-
-.wait-button {
-    -fx-background-radius: 8;
-    -fx-pref-height: 55px;
-    -fx-background-color: #FFFFFF;
-    -fx-text-fill: #333333;
-    -fx-font-weight: bold;
-    -fx-font-size: 20px;
-    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.2), 5, 0.5, 0, 0);
-}
-
-.wait-button:hover {
-    -fx-background-color: #DAE3F3;
-}
-
-.background {
-    -fx-background-color: linear-gradient(from 0% 0% to 0% 100%, #ffffff, #ffffff);
-}
-
-.text-error {
-    -fx-fill: red;
+    -fx-text-fill: #1877f2;
     -fx-font-size: 14px;
-    -fx-font-family: "Arial";
+}
+.eye-button {
+    -fx-background-color: transparent;
+
+    /* Gán ảnh */
+    -fx-graphic: url("/view/image/icon/eye.png");
+
+    /* KÍCH THƯỚC NÚT (QUAN TRỌNG) */
+    -fx-pref-width: 24px;
+    -fx-pref-height: 24px;
+
+    /* Căn icon */
+    -fx-alignment: center;
+
+    /* Tránh icon dính sát */
+    -fx-padding: 0;
+
+    -fx-cursor: hand;
+}
+
+
+.eye-open {
+    -fx-graphic: url("/view/image/icon/eye-off.png");
 }
