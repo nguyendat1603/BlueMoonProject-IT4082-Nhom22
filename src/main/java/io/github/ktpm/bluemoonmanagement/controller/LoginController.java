@@ -126,7 +126,6 @@ public class LoginController implements Initializable {
                 FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/chat_view.fxml"));
                 Parent chatView = loader.load();
                 Stage chatStage = new Stage();
-                chatStage.setTitle("ChatBot");
                 chatStage.setScene(new Scene(chatView));
                 chatStage.show();
             } catch (IOException e) {
