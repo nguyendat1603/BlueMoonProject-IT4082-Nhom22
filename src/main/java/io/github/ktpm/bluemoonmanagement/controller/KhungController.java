@@ -2,6 +2,7 @@ package io.github.ktpm.bluemoonmanagement.controller;
 
 import java.io.IOException;
 import java.net.URL;
+import java.time.LocalDateTime;
 import java.util.ResourceBundle;
 
 import javafx.stage.Window;
@@ -22,6 +23,11 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
+import javafx.util.Duration;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 @Component
 public class KhungController implements Initializable{
@@ -61,6 +67,7 @@ public class KhungController implements Initializable{
 
 
     private Home_list centerController;
+
 
     @Autowired
     private FxViewLoader fxViewLoader;
@@ -194,6 +201,37 @@ public class KhungController implements Initializable{
             // Xử lý lỗi nếu không thể tải file FXML
         }
     }
+    @FXML
+private Label greetingLabel;
+
+private String getGreeting() {
+    int hour = LocalDateTime.now().getHour();
+    if (hour < 12) return "Chào buổi sáng";
+    else if (hour < 18) return "Chào buổi chiều";
+    else return "Chào buổi tối";
+}
+
+@FXML
+public void initialize() {
+    DateTimeFormatter formatter =
+            DateTimeFormatter.ofPattern("HH:mm");
+
+    Timeline timeline = new Timeline(
+        new KeyFrame(Duration.ZERO, e -> {
+            greetingLabel.setText(
+                getGreeting() + " • " +
+                LocalDateTime.now().format(formatter)
+            );
+        }),
+        new KeyFrame(Duration.seconds(1))
+    );
+    timeline.setCycleCount(Timeline.INDEFINITE);
+    timeline.play();
+}
+
+
+
+
 
 
 }
