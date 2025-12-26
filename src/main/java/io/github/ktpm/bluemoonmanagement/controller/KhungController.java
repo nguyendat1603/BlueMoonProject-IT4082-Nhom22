@@ -182,14 +182,7 @@ public class KhungController implements Initializable{
     @FXML
     void handleDangXuat(ActionEvent event) {
         try {
-            for (Window window : Window.getWindows()) {
-                if (window instanceof Stage) {
-                    Stage s = (Stage) window;
-                    if ("ChatBot".equals(s.getTitle())) {
-                        s.close();
-                    }
-                }
-            }
+         
             // Tải file FXML mới (khung.fxml)
             Parent mainView = fxViewLoader.loadView("/view/dang_nhap.fxml");
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();

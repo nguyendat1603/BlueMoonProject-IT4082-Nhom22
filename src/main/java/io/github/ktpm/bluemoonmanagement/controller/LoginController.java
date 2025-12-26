@@ -98,13 +98,7 @@ void dangNhapPressed(ActionEvent event) {
                 stage.setScene(new Scene(mainView));
                 stage.setTitle("Application");
                 stage.show();
-                Parent chatView = fxViewLoader.loadView("/fxml/chat_view.fxml");
-
-                Stage chatStage = new Stage();
-                chatStage.setTitle("ChatBot");
-                chatStage.setScene(new Scene(chatView));
-                chatStage.show();
-
+   
             } catch (IOException e) {
                 e.printStackTrace();
                 // Xử lý lỗi nếu không thể tải file FXML
