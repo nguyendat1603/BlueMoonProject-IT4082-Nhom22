@@ -130,31 +130,37 @@
       </AnchorPane>
    </left>
    <top>
-      <HBox alignment="CENTER_LEFT" prefHeight="100.0" prefWidth="1186.0" spacing="15.0" styleClass="white-background" BorderPane.alignment="CENTER_LEFT">
+      <StackPane prefHeight="120.0" prefWidth="120.0">
          <children>
-            <VBox alignment="CENTER" prefWidth="120.0">
+            <ImageView fitHeight="150.0" fitWidth="1280.0" pickOnBounds="true" StackPane.alignment="CENTER">
+               <image>
+                  <Image url="@image/bluemoon.png" />
+               </image>
+               <StackPane.margin>
+                  <Insets bottom="10.0" />
+               </StackPane.margin>
+            </ImageView>
+            <VBox prefHeight="130.0" prefWidth="1058.0">
                <children>
-                  <ImageView fitHeight="50.0" fitWidth="180.0" pickOnBounds="true" preserveRatio="true">
+                  <ImageView fitHeight="80.0" fitWidth="80.0" pickOnBounds="true" preserveRatio="true">
+                     <VBox.margin>
+                        <Insets left="5.0" top="40.0" />
+                     </VBox.margin>
                      <image>
-                        <Image url="@image/logo.png" />
+                        <Image url="@image/user.png" />
                      </image>
                   </ImageView>
+                  <Label fx:id="labelAccountName" text="A" textAlignment="RIGHT">
+                     <font>
+                        <Font name="Arial Italic" size="18.0" />
+                     </font>
+                     <VBox.margin>
+                        <Insets left="20.0" top="10.0" />
+                     </VBox.margin>
+                  </Label>
                </children>
             </VBox>
-            <Label fx:id="labelAccountName" text="Hello, Nguyễn Văn A" textAlignment="RIGHT">
-               <font>
-                  <Font name="Arial Italic" size="18.0" />
-               </font>
-            </Label>
-            <Region HBox.hgrow="ALWAYS" />
-            <Label fx:id="greetingLabel" style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #4A90E2;" />
          </children>
-         <BorderPane.margin>
-            <Insets />
-         </BorderPane.margin>
-         <padding>
-            <Insets left="5.0" right="30.0" />
-         </padding>
-      </HBox>
+      </StackPane>
    </top>
 </BorderPane>

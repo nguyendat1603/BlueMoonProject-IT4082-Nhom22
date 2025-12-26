@@ -124,7 +124,7 @@ public class KhungController implements Initializable{
 
     public void setAccountName(String accountName) {
         if (labelAccountName != null) {
-            labelAccountName.setText("Xin chào, " + accountName);
+            labelAccountName.setText(accountName);
         }
     }
 
@@ -201,33 +201,7 @@ public class KhungController implements Initializable{
             // Xử lý lỗi nếu không thể tải file FXML
         }
     }
-    @FXML
-private Label greetingLabel;
-
-private String getGreeting() {
-    int hour = LocalDateTime.now().getHour();
-    if (hour < 12) return "Chào buổi sáng";
-    else if (hour < 18) return "Chào buổi chiều";
-    else return "Chào buổi tối";
-}
-
-@FXML
-public void initialize() {
-    DateTimeFormatter formatter =
-            DateTimeFormatter.ofPattern("HH:mm");
-
-    Timeline timeline = new Timeline(
-        new KeyFrame(Duration.ZERO, e -> {
-            greetingLabel.setText(
-                getGreeting() + " • " +
-                LocalDateTime.now().format(formatter)
-            );
-        }),
-        new KeyFrame(Duration.seconds(1))
-    );
-    timeline.setCycleCount(Timeline.INDEFINITE);
-    timeline.play();
-}
+  
 
 
 
