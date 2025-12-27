@@ -813,74 +813,69 @@ public class ChiTietCanHoController implements Initializable {
      * @param forceFromService true để bắt buộc load từ service, false để ưu tiên cache
      */
     private void loadData(String maCanHo, boolean forceFromService) {
-        try {
-            if (maCanHo == null || maCanHo.trim().isEmpty()) {
-                showError("Lỗi dữ liệu", "Mã căn hộ không hợp lệ.");
+        if (maCanHo == null || maCanHo.trim().isEmpty()) {
+            showError("Lỗi dữ liệu", "Mã căn hộ không hợp lệ.");
+            return;
+        }
+
+        // Try cache first (fast)
+        if (!forceFromService && cacheDataService != null && cacheDataService.isCacheLoaded()) {
+            CanHoChiTietDto chiTiet = cacheDataService.getCanHoChiTietFromCache(maCanHo);
+            if (chiTiet != null) {
+                updateDetailUIFromDto(chiTiet);
                 return;
             }
+        }
 
-            CanHoChiTietDto chiTiet = null;
-            
-            if (cacheDataService != null) {
-            }
-            
-            if (!forceFromService && cacheDataService != null && cacheDataService.isCacheLoaded()) {
-                chiTiet = cacheDataService.getCanHoChiTietFromCache(maCanHo);
-
-            }
-
-            // Fallback to service if cache fails or forced
-            if (chiTiet == null) {
-                chiTiet = loadDataFromService(maCanHo);
-            }
-
-            if (chiTiet != null) {
-                currentCanHo = chiTiet;
-
-                // Load danh sách từ data và lọc chỉ hiển thị cư dân chưa bị xóa (chưa có ngày chuyển đi)
-                cuDanList.clear();
-
-
-                if (chiTiet.getCuDanList() != null) {
-
-
-                    // Hiển thị tất cả cư dân có trạng thái khác "Đã chuyển đi"
-                    // Chấp nhận: "Cư trú", "Không cư trú", hoặc null
-                    chiTiet.getCuDanList().stream()
-                        .filter(cuDan -> {
-                            String trangThai = cuDan.getTrangThaiCuTru();
-                            return trangThai == null ||
-                                   !"Đã chuyển đi".equals(trangThai);
-                        })
-                        .forEach(cuDanList::add);
-
+        // Otherwise load from service on background thread
+        new Thread(() -> {
+            try {
+                CanHoChiTietDto chiTiet = loadDataFromService(maCanHo);
+                if (chiTiet != null) {
+                    javafx.application.Platform.runLater(() -> updateDetailUIFromDto(chiTiet));
+                } else {
+                    javafx.application.Platform.runLater(() -> {
+                        showError("Không tìm thấy dữ liệu", "Không tìm thấy thông tin chi tiết cho căn hộ: " + maCanHo);
+                        clearAllData();
+                    });
                 }
-
-                phuongTienList.clear();
-                if (chiTiet.getPhuongTienList() != null) {
-                    phuongTienList.addAll(chiTiet.getPhuongTienList());
-                }
-
-                hoaDonList.clear();
-                if (chiTiet.getHoaDonList() != null) {
-                    hoaDonList.addAll(chiTiet.getHoaDonList());
-                }
-
-                // Cập nhật UI
-                updateThongTinCanHo();
-                setTableData();
-                updateTongSoTien();
-
-                // Cập nhật ComboBox với dữ liệu thực
-                updateComboBoxesWithRealData();
-
-            } else {
-                showError("Không tìm thấy dữ liệu", "Không tìm thấy thông tin chi tiết cho căn hộ: " + maCanHo);
-                clearAllData();
+            } catch (Exception e) {
+                javafx.application.Platform.runLater(() -> {
+                    showError("Lỗi kết nối", "Không thể tải dữ liệu: " + e.getMessage());
+                    clearAllData();
+                });
             }
+        }, "ChiTietCanHo-LoadData").start();
+    }
+
+    // Helper to update UI from a CanHoChiTietDto on FX thread (must be called on FX thread)
+    private void updateDetailUIFromDto(CanHoChiTietDto chiTiet) {
+        try {
+            currentCanHo = chiTiet;
+            cuDanList.clear();
+            if (chiTiet.getCuDanList() != null) {
+                chiTiet.getCuDanList().stream()
+                    .filter(cuDan -> {
+                        String trangThai = cuDan.getTrangThaiCuTru();
+                        return trangThai == null || !"Đã chuyển đi".equals(trangThai);
+                    })
+                    .forEach(cuDanList::add);
+            }
+            phuongTienList.clear();
+            if (chiTiet.getPhuongTienList() != null) {
+                phuongTienList.addAll(chiTiet.getPhuongTienList());
+            }
+            hoaDonList.clear();
+            if (chiTiet.getHoaDonList() != null) {
+                hoaDonList.addAll(chiTiet.getHoaDonList());
+            }
+            updateThongTinCanHo();
+            setTableData();
+            updateTongSoTien();
+            updateComboBoxesWithRealData();
         } catch (Exception e) {
-            showError("Lỗi kết nối", "Không thể tải dữ liệu: " + e.getMessage());
-            clearAllData();
+            System.err.println("Error updating detail UI: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
