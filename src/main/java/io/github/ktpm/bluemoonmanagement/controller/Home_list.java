@@ -140,6 +140,9 @@ public class Home_list implements Initializable {
     private ComboBox<?> comboBoxTrangThaiHoaDon;
 
     @FXML
+    private ComboBox<?> comboBoxChartType;
+
+    @FXML
     private ComboBox<?> comboBoxTrangThaiTaiKhoan;
 
     @FXML
@@ -610,6 +613,23 @@ public class Home_list implements Initializable {
             ));
             trangThaiTaiKhoanCombo.setValue("Tất cả");
         }
+
+        // Thiết lập ComboBox chọn loại biểu đồ trên trang chủ (Dân cư / Căn hộ / Khoản thu)
+        if (comboBoxChartType != null) {
+            @SuppressWarnings("unchecked")
+            ComboBox<String> chartTypeCombo = (ComboBox<String>) comboBoxChartType;
+            chartTypeCombo.setItems(javafx.collections.FXCollections.observableArrayList(
+                "Dân cư theo tháng", "Căn hộ theo tháng", "Khoản thu theo tháng"
+            ));
+            chartTypeCombo.setValue("Dân cư theo tháng");
+            chartTypeCombo.valueProperty().addListener((obs, oldVal, newVal) -> {
+                try {
+                    loadBarChartData();
+                } catch (Exception e) {
+                    System.err.println("Error reloading bar chart for selection change: " + e.getMessage());
+                }
+            });
+        }
     }
 
     public void setParentController(KhungController controller) {
@@ -788,51 +808,51 @@ public class Home_list implements Initializable {
     private void loadDataFromCache() {
         // Load apartments from cache on background thread to avoid blocking UI
         new Thread(() -> {
-            try {
-                if (cacheDataService != null) {
-                    List<CanHoDto> canHoDtoList = canHoService.getAllCanHo();
+        try {
+            if (cacheDataService != null) {
+                List<CanHoDto> canHoDtoList = canHoService.getAllCanHo();
                     java.util.List<CanHoTableData> built = new java.util.ArrayList<>();
-                    if (canHoDtoList != null) {
-                        for (CanHoDto dto : canHoDtoList) {
-                            if (true || shouldShowApartmentFromCache(dto)) {
-                                String chuHoName = dto.getChuHo() != null ? dto.getChuHo().getHoVaTen() : "";
+                if (canHoDtoList != null) {
+                    for (CanHoDto dto : canHoDtoList) {
+                        if (true || shouldShowApartmentFromCache(dto)) {
+                            String chuHoName = dto.getChuHo() != null ? dto.getChuHo().getHoVaTen() : "";
                                 String trangThaiSuDung = dto.getTrangThaiSuDung();
-                                String trangThaiBan = dto.isDaBanChua() ? "Đã bán" : "Chưa bán";
-                                CanHoTableData tableData = new CanHoTableData(
-                                    dto.getMaCanHo(),
-                                    dto.getToaNha(),
-                                    dto.getTang(),
-                                    dto.getSoNha(),
-                                    dto.getDienTich() + " m²",
-                                    chuHoName,
-                                    trangThaiSuDung,
-                                    dto.getTrangThaiKiThuat(),
-                                    trangThaiBan
-                                );
+                            String trangThaiBan = dto.isDaBanChua() ? "Đã bán" : "Chưa bán";
+                            CanHoTableData tableData = new CanHoTableData(
+                                dto.getMaCanHo(),
+                                dto.getToaNha(),
+                                dto.getTang(),
+                                dto.getSoNha(),
+                                dto.getDienTich() + " m²",
+                                chuHoName,
+                                trangThaiSuDung,
+                                dto.getTrangThaiKiThuat(),
+                                trangThaiBan
+                            );
                                 built.add(tableData);
-                            }
                         }
                     }
+                }
                     javafx.application.Platform.runLater(() -> {
                         try {
                             canHoList = FXCollections.observableArrayList(built);
-                            filteredList = FXCollections.observableArrayList(canHoList);
-                            if (tabelViewCanHo != null) {
-                                ((TableView<CanHoTableData>) tabelViewCanHo).setItems(filteredList);
-                            }
-                            updateKetQuaLabel();
+                filteredList = FXCollections.observableArrayList(canHoList);
+                if (tabelViewCanHo != null) {
+                    ((TableView<CanHoTableData>) tabelViewCanHo).setItems(filteredList);
+                }
+                updateKetQuaLabel();
                         } catch (Exception e) {
                             System.err.println("Error updating UI after loadDataFromCache: " + e.getMessage());
                             e.printStackTrace();
                         }
                     });
-                } else {
-                    loadData();
-                }
-            } catch (Exception e) {
-                System.err.println("ERROR: Failed to load data from cache: " + e.getMessage());
+            } else {
                 loadData();
             }
+        } catch (Exception e) {
+            System.err.println("ERROR: Failed to load data from cache: " + e.getMessage());
+            loadData();
+        }
         }, "HomeList-LoadDataFromCache").start();
     }
 
@@ -842,73 +862,73 @@ public class Home_list implements Initializable {
     private void loadData() {
         // Run heavy data load off the JavaFX thread to avoid freezing UI.
         new Thread(() -> {
-            try {
-                if (canHoService != null) {
-                    List<CanHoDto> canHoDtoList = canHoService.getAllCanHo();
+        try {
+            if (canHoService != null) {
+                List<CanHoDto> canHoDtoList = canHoService.getAllCanHo();
                     java.util.List<CanHoTableData> builtList = new java.util.ArrayList<>();
 
-                    if (canHoDtoList != null) {
-                        for (CanHoDto dto : canHoDtoList) {
-                            // Tạm thời hiển thị tất cả căn hộ (tắt logic ẩn căn hộ)
-                            if (true || shouldShowApartment(dto)) {
-                                String chuHoName = dto.getChuHo() != null ? dto.getChuHo().getHoVaTen() : "";
+                if (canHoDtoList != null) {
+                    for (CanHoDto dto : canHoDtoList) {
+                        // Tạm thời hiển thị tất cả căn hộ (tắt logic ẩn căn hộ)
+                        if (true || shouldShowApartment(dto)) {
+                            String chuHoName = dto.getChuHo() != null ? dto.getChuHo().getHoVaTen() : "";
                                 String trangThaiSuDung = dto.getTrangThaiSuDung();
-                                String trangThaiBan = dto.isDaBanChua() ? "Đã bán" : "Chưa bán";
-                                CanHoTableData tableData = new CanHoTableData(
-                                    dto.getMaCanHo(),
-                                    dto.getToaNha(),
-                                    dto.getTang(),
-                                    dto.getSoNha(),
-                                    dto.getDienTich() + " m²",
-                                    chuHoName,
-                                    trangThaiSuDung,
-                                    dto.getTrangThaiKiThuat(),
-                                    trangThaiBan
-                                );
+                            String trangThaiBan = dto.isDaBanChua() ? "Đã bán" : "Chưa bán";
+                            CanHoTableData tableData = new CanHoTableData(
+                                dto.getMaCanHo(),
+                                dto.getToaNha(),
+                                dto.getTang(),
+                                dto.getSoNha(),
+                                dto.getDienTich() + " m²",
+                                chuHoName,
+                                trangThaiSuDung,
+                                dto.getTrangThaiKiThuat(),
+                                trangThaiBan
+                            );
                                 builtList.add(tableData);
-                            }
                         }
                     }
+                }
 
                     // Update UI on FX thread
                     javafx.application.Platform.runLater(() -> {
                         try {
                             canHoList = FXCollections.observableArrayList(builtList);
-                            filteredList = FXCollections.observableArrayList(canHoList);
-                            if (tabelViewCanHo != null) {
-                                ((TableView<CanHoTableData>) tabelViewCanHo).setItems(filteredList);
-                            } else {
-                                System.err.println("ERROR: tabelViewCanHo is null!");
-                            }
-                            updateKetQuaLabel();
+                filteredList = FXCollections.observableArrayList(canHoList);
+                if (tabelViewCanHo != null) {
+                    ((TableView<CanHoTableData>) tabelViewCanHo).setItems(filteredList);
+                } else {
+                    System.err.println("ERROR: tabelViewCanHo is null!");
+                }
+                updateKetQuaLabel();
                         } catch (Exception e) {
                             System.err.println("Error updating UI after loadData: " + e.getMessage());
                             e.printStackTrace();
                         }
                     });
-                } else {
-                    System.err.println("ERROR: canHoService is null! Cannot load apartment data");
+                    } else {
+            System.err.println("ERROR: canHoService is null! Cannot load apartment data");
                     javafx.application.Platform.runLater(() -> {
-                        canHoList = FXCollections.observableArrayList();
-                        filteredList = FXCollections.observableArrayList(canHoList);
-                        if (tabelViewCanHo != null) {
-                            ((TableView<CanHoTableData>) tabelViewCanHo).setItems(filteredList);
-                        }
-                        updateKetQuaLabel();
+            canHoList = FXCollections.observableArrayList();
+            filteredList = FXCollections.observableArrayList(canHoList);
+            if (tabelViewCanHo != null) {
+                ((TableView<CanHoTableData>) tabelViewCanHo).setItems(filteredList);
+            }
+            updateKetQuaLabel();
                     });
-                }
-            } catch (Exception e) {
-                System.err.println("Lỗi khi tải dữ liệu từ service: " + e.getMessage());
+        }
+    } catch (Exception e) {
+        System.err.println("Lỗi khi tải dữ liệu từ service: " + e.getMessage());
                 e.printStackTrace();
                 javafx.application.Platform.runLater(() -> {
-                    canHoList = FXCollections.observableArrayList();
-                    filteredList = FXCollections.observableArrayList(canHoList);
-                    if (tabelViewCanHo != null) {
-                        ((TableView<CanHoTableData>) tabelViewCanHo).setItems(filteredList);
-                    }
-                    updateKetQuaLabel();
+        canHoList = FXCollections.observableArrayList();
+        filteredList = FXCollections.observableArrayList(canHoList);
+        if (tabelViewCanHo != null) {
+            ((TableView<CanHoTableData>) tabelViewCanHo).setItems(filteredList);
+        }
+        updateKetQuaLabel();
                 });
-            }
+    }
         }, "HomeList-LoadData").start();
     }
 
@@ -1889,45 +1909,45 @@ public class Home_list implements Initializable {
     private void loadCuDanData() {
         // Load residents off the JavaFX thread to avoid blocking UI
         new Thread(() -> {
-            try {
-                if (cuDanService != null) {
-                    List<io.github.ktpm.bluemoonmanagement.model.dto.cuDan.CudanDto> cuDanDtoList = cuDanService.getAllCuDan();
+        try {
+            if (cuDanService != null) {
+                List<io.github.ktpm.bluemoonmanagement.model.dto.cuDan.CudanDto> cuDanDtoList = cuDanService.getAllCuDan();
                     java.util.List<CuDanTableData> built = new java.util.ArrayList<>();
 
-                    if (cuDanDtoList != null) {
-                        for (io.github.ktpm.bluemoonmanagement.model.dto.cuDan.CudanDto dto : cuDanDtoList) {
-                            CuDanTableData tableData = new CuDanTableData(
-                                dto.getMaDinhDanh(),
-                                dto.getHoVaTen(),
-                                dto.getGioiTinh(),
-                                dto.getNgaySinh() != null ? dto.getNgaySinh().toString() : "",
-                                dto.getSoDienThoai(),
-                                dto.getEmail(),
-                                dto.getMaCanHo() != null ? dto.getMaCanHo() : "",
-                                dto.getTrangThaiCuTru(),
-                                dto.getNgayChuyenDen() != null ? dto.getNgayChuyenDen().toString() : ""
-                            );
+                if (cuDanDtoList != null) {
+                    for (io.github.ktpm.bluemoonmanagement.model.dto.cuDan.CudanDto dto : cuDanDtoList) {
+                        CuDanTableData tableData = new CuDanTableData(
+                            dto.getMaDinhDanh(),
+                            dto.getHoVaTen(),
+                            dto.getGioiTinh(),
+                            dto.getNgaySinh() != null ? dto.getNgaySinh().toString() : "",
+                            dto.getSoDienThoai(),
+                            dto.getEmail(),
+                            dto.getMaCanHo() != null ? dto.getMaCanHo() : "",
+                            dto.getTrangThaiCuTru(),
+                            dto.getNgayChuyenDen() != null ? dto.getNgayChuyenDen().toString() : ""
+                        );
                             built.add(tableData);
-                        }
                     }
+                }
 
                     javafx.application.Platform.runLater(() -> {
                         try {
                             cuDanList.clear();
                             cuDanList.addAll(built);
-                            filteredCuDanList = FXCollections.observableArrayList(cuDanList);
-                            if (tabelViewCuDan != null) {
-                                ((TableView<CuDanTableData>) tabelViewCuDan).setItems(filteredCuDanList);
-                            }
-                            updateCuDanKetQuaLabel();
+                filteredCuDanList = FXCollections.observableArrayList(cuDanList);
+                if (tabelViewCuDan != null) {
+                    ((TableView<CuDanTableData>) tabelViewCuDan).setItems(filteredCuDanList);
+                }
+                updateCuDanKetQuaLabel();
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
                     });
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
             }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         }, "HomeList-LoadCuDan").start();
     }
 
@@ -2784,18 +2804,18 @@ public class Home_list implements Initializable {
 
                     StringBuilder full = new StringBuilder(basicInfo);
                     if ("Phương tiện".equals(rowData.getDonViTinh())) {
-                        if (khoanThuDto != null && khoanThuDto.getPhiGuiXeList() != null && !khoanThuDto.getPhiGuiXeList().isEmpty()) {
+                    if (khoanThuDto != null && khoanThuDto.getPhiGuiXeList() != null && !khoanThuDto.getPhiGuiXeList().isEmpty()) {
                             full.append("\n\n📋 CHI TIẾT PHÍ GỬI XE:");
                             full.append("\n" + "=".repeat(30));
-                            for (io.github.ktpm.bluemoonmanagement.model.dto.phiGuiXe.PhiGuiXeDto phiXe : khoanThuDto.getPhiGuiXeList()) {
+                        for (io.github.ktpm.bluemoonmanagement.model.dto.phiGuiXe.PhiGuiXeDto phiXe : khoanThuDto.getPhiGuiXeList()) {
                                 full.append("\n• ").append(phiXe.getLoaiXe())
-                                      .append(": ").append(String.format("%,d", phiXe.getSoTien()))
-                                      .append(" VND");
-                            }
-                            full.append("\n" + "=".repeat(30));
-                        } else {
-                            full.append("\n\n⚠️ Chưa có thông tin chi tiết phí xe.");
+                                  .append(": ").append(String.format("%,d", phiXe.getSoTien()))
+                                  .append(" VND");
                         }
+                            full.append("\n" + "=".repeat(30));
+                    } else {
+                            full.append("\n\n⚠️ Chưa có thông tin chi tiết phí xe.");
+                    }
                     }
 
                     String finalText = full.toString();
@@ -2872,44 +2892,44 @@ public class Home_list implements Initializable {
     private void loadKhoanThuData() {
         // Load fee data off the JavaFX thread to avoid blocking UI.
         new Thread(() -> {
-            try {
-                if (khoanThuService != null) {
-                    List<KhoanThuDto> khoanThuDtoList = khoanThuService.getAllKhoanThu();
+        try {
+            if (khoanThuService != null) {
+                List<KhoanThuDto> khoanThuDtoList = khoanThuService.getAllKhoanThu();
                     java.util.List<KhoanThuTableData> built = new java.util.ArrayList<>();
 
-                    if (khoanThuDtoList != null) {
-                        for (KhoanThuDto dto : khoanThuDtoList) {
-                            String ngayTao = dto.getNgayTao() != null ? dto.getNgayTao().toString() : "";
-                            String thoiHan = dto.getThoiHan() != null ? dto.getThoiHan().toString() : "";
-                            String soTien = String.format("%,d VNĐ", dto.getSoTien());
-                            String loaiKhoanThu = dto.isBatBuoc() ? "Bắt buộc" : "Tự nguyện";
+                if (khoanThuDtoList != null) {
+                    for (KhoanThuDto dto : khoanThuDtoList) {
+                        String ngayTao = dto.getNgayTao() != null ? dto.getNgayTao().toString() : "";
+                        String thoiHan = dto.getThoiHan() != null ? dto.getThoiHan().toString() : "";
+                        String soTien = String.format("%,d VNĐ", dto.getSoTien());
+                        String loaiKhoanThu = dto.isBatBuoc() ? "Bắt buộc" : "Tự nguyện";
 
-                            KhoanThuTableData tableData = new KhoanThuTableData(
-                                dto.getMaKhoanThu(),
-                                dto.getTenKhoanThu(),
-                                loaiKhoanThu,
-                                dto.getDonViTinh() != null ? dto.getDonViTinh() : "",
-                                soTien,
-                                dto.getPhamVi() != null ? dto.getPhamVi() : "Tất cả",
-                                ngayTao,
-                                thoiHan,
-                                dto.getGhiChu() != null ? dto.getGhiChu() : ""
-                            );
+                        KhoanThuTableData tableData = new KhoanThuTableData(
+                            dto.getMaKhoanThu(),
+                            dto.getTenKhoanThu(),
+                            loaiKhoanThu,
+                            dto.getDonViTinh() != null ? dto.getDonViTinh() : "",
+                            soTien,
+                            dto.getPhamVi() != null ? dto.getPhamVi() : "Tất cả",
+                            ngayTao,
+                            thoiHan,
+                            dto.getGhiChu() != null ? dto.getGhiChu() : ""
+                        );
                             built.add(tableData);
-                        }
                     }
+                }
 
                     // Update UI on FX thread
                     javafx.application.Platform.runLater(() -> {
                         try {
                             khoanThuList = FXCollections.observableArrayList(built);
-                            filteredKhoanThuList = FXCollections.observableArrayList(khoanThuList);
-                            if (tabelViewKhoanThu != null) {
-                                ((TableView<KhoanThuTableData>) tabelViewKhoanThu).setItems(filteredKhoanThuList);
-                            } else {
-                                System.err.println("ERROR: tabelViewKhoanThu is null!");
-                            }
-                            updateKhoanThuKetQuaLabel();
+                filteredKhoanThuList = FXCollections.observableArrayList(khoanThuList);
+                if (tabelViewKhoanThu != null) {
+                    ((TableView<KhoanThuTableData>) tabelViewKhoanThu).setItems(filteredKhoanThuList);
+                } else {
+                    System.err.println("ERROR: tabelViewKhoanThu is null!");
+                }
+                updateKhoanThuKetQuaLabel();
 
                             // Also populate khoanThuById cache for cell factories
                             if (khoanThuById != null && khoanThuDtoList != null) {
@@ -2922,29 +2942,29 @@ public class Home_list implements Initializable {
                             e.printStackTrace();
                         }
                     });
-                } else {
-                    System.err.println("KhoanThuService is not available, cannot load data.");
+            } else {
+                System.err.println("KhoanThuService is not available, cannot load data.");
                     javafx.application.Platform.runLater(() -> {
-                        khoanThuList = FXCollections.observableArrayList();
-                        filteredKhoanThuList = FXCollections.observableArrayList(khoanThuList);
-                        if (tabelViewKhoanThu != null) {
-                            ((TableView<KhoanThuTableData>) tabelViewKhoanThu).setItems(filteredKhoanThuList);
-                        }
-                        updateKhoanThuKetQuaLabel();
-                    });
+                khoanThuList = FXCollections.observableArrayList();
+                filteredKhoanThuList = FXCollections.observableArrayList(khoanThuList);
+                if (tabelViewKhoanThu != null) {
+                    ((TableView<KhoanThuTableData>) tabelViewKhoanThu).setItems(filteredKhoanThuList);
                 }
-            } catch (Exception e) {
-                System.err.println("Error loading KhoanThu data: " + e.getMessage());
-                e.printStackTrace();
-                javafx.application.Platform.runLater(() -> {
-                    khoanThuList = FXCollections.observableArrayList();
-                    filteredKhoanThuList = FXCollections.observableArrayList(khoanThuList);
-                    if (tabelViewKhoanThu != null) {
-                        ((TableView<KhoanThuTableData>) tabelViewKhoanThu).setItems(filteredKhoanThuList);
-                    }
-                    updateKhoanThuKetQuaLabel();
-                });
+                updateKhoanThuKetQuaLabel();
+                    });
             }
+        } catch (Exception e) {
+            System.err.println("Error loading KhoanThu data: " + e.getMessage());
+            e.printStackTrace();
+                javafx.application.Platform.runLater(() -> {
+            khoanThuList = FXCollections.observableArrayList();
+            filteredKhoanThuList = FXCollections.observableArrayList(khoanThuList);
+            if (tabelViewKhoanThu != null) {
+                ((TableView<KhoanThuTableData>) tabelViewKhoanThu).setItems(filteredKhoanThuList);
+            }
+            updateKhoanThuKetQuaLabel();
+                });
+        }
         }, "HomeList-LoadKhoanThu").start();
     }
 
@@ -3051,7 +3071,7 @@ public class Home_list implements Initializable {
     private void loadChartData() {
         // Compute chart data off the UI thread, then update UI on FX thread
         new Thread(() -> {
-            try {
+        try {
                 // Prepare bar chart series data (6 months)
                 java.time.LocalDate now = java.time.LocalDate.now();
                 javafx.scene.chart.XYChart.Series<String, Number> series = new javafx.scene.chart.XYChart.Series<>();
@@ -3105,7 +3125,7 @@ public class Home_list implements Initializable {
                 java.util.Map<String, Integer> tmpFeeTypeCount = null;
                 try {
                     tmpFeeTypeCount = PieChartDataUtil.getKhoanThuDataFromDatabase(khoanThuService);
-                } catch (Exception e) {
+        } catch (Exception e) {
                     System.err.println("Error fetching pie chart data: " + e.getMessage());
                     tmpFeeTypeCount = null;
                 }
@@ -3173,8 +3193,8 @@ public class Home_list implements Initializable {
                         }
                     } catch (Exception e) {
                         System.err.println("Error updating charts on FX thread: " + e.getMessage());
-                        e.printStackTrace();
-                    }
+            e.printStackTrace();
+        }
                 });
 
             } catch (Exception e) {
@@ -3195,53 +3215,55 @@ public class Home_list implements Initializable {
             }
 
             javafx.scene.chart.BarChart<String, Number> chart = (javafx.scene.chart.BarChart<String, Number>) barChartDanCu;
-
-            // Xóa dữ liệu cũ
             chart.getData().clear();
 
-            // Tạo series dữ liệu
+            // Determine chart type selection (default to Dân cư)
+            String chartType = "Dân cư";
+            if (comboBoxChartType != null && comboBoxChartType.getValue() != null) {
+                chartType = comboBoxChartType.getValue().toString();
+            }
+
             javafx.scene.chart.XYChart.Series<String, Number> series = new javafx.scene.chart.XYChart.Series<>();
+            if (chartType.contains("Căn hộ")) {
+                series.setName("Số căn hộ");
+            } else if (chartType.contains("Khoản thu")) {
+                series.setName("Số khoản thu");
+            } else {
             series.setName("Số cư dân");
+            }
 
-            // Lấy dữ liệu thực từ database cho 6 tháng gần nhất
             java.time.LocalDate now = java.time.LocalDate.now();
-
             for (int i = 5; i >= 0; i--) {
                 java.time.LocalDate month = now.minusMonths(i);
-                // Use compact month/year label to avoid long overlapping labels (e.g. "7/25")
                 String monthLabel = String.format("%d/%02d", month.getMonthValue(), month.getYear() % 100);
-
-                // Lấy số cư dân thực tế cho tháng này từ database
-                int cuDanCount = getCuDanCountForMonth(month);
-
-                series.getData().add(new javafx.scene.chart.XYChart.Data<>(monthLabel, cuDanCount));
+                int value;
+                if (series.getName().contains("căn hộ")) {
+                    value = getCanHoCountForMonth(month);
+                } else if (series.getName().contains("khoản thu")) {
+                    value = getKhoanThuCountForMonth(month);
+                } else {
+                    value = getCuDanCountForMonth(month);
+                }
+                series.getData().add(new javafx.scene.chart.XYChart.Data<>(monthLabel, value));
             }
 
             chart.getData().add(series);
-
-            // Thiết lập style cho biểu đồ
             chart.setLegendVisible(false);
             chart.setAnimated(true);
             chart.setTitle("");
-
-            // Đổi màu thành xanh cho BarChart
             chart.setStyle("-fx-background-color: transparent;");
 
-            // Improve x-axis label layout to avoid overlapping/duplicate-looking labels
             try {
                 javafx.scene.chart.Axis<?> xAxisGeneric = chart.getXAxis();
                 if (xAxisGeneric instanceof javafx.scene.chart.CategoryAxis) {
                     javafx.scene.chart.CategoryAxis xAxis = (javafx.scene.chart.CategoryAxis) xAxisGeneric;
-                    // rotate labels to make them readable and avoid overlap
                     xAxis.setTickLabelRotation(-25.0);
-                    // use a smaller gap so labels don't wrap strangely
                     xAxis.setTickLabelGap(6.0);
                 }
             } catch (Exception ignore) {
-                // non-fatal: some charts/custom axes may not support these calls
             }
 
-            // Đặt màu xanh cho các cột trong biểu đồ
+            // color columns
             javafx.application.Platform.runLater(() -> {
                 try {
                     for (javafx.scene.chart.XYChart.Series<String, Number> s : chart.getData()) {
@@ -3256,7 +3278,6 @@ public class Home_list implements Initializable {
                     System.err.println("Error setting bar chart colors: " + e.getMessage());
                 }
             });
-
 
         } catch (Exception e) {
             System.err.println("❌ Error loading bar chart data: " + e.getMessage());
@@ -3449,6 +3470,62 @@ public class Home_list implements Initializable {
     /**
      * Generate test data cho biểu đồ khi không có dữ liệu thực
      */
+    /**
+     * Get apartment count for a month. Because CanHo doesn't carry creation date in DTO,
+     * we return current apartment count as a simple series (or test data if unavailable).
+     */
+    private int getCanHoCountForMonth(java.time.LocalDate month) {
+        try {
+            if (canHoService != null) {
+                List<io.github.ktpm.bluemoonmanagement.model.dto.canHo.CanHoDto> all = canHoService.getAllCanHo();
+                if (all != null && !all.isEmpty()) {
+                    return all.size();
+                } else {
+                    return getTestDataForMonth(month);
+                }
+            } else {
+                if (canHoList != null && !canHoList.isEmpty()) {
+                    return canHoList.size();
+                } else {
+                    return getTestDataForMonth(month);
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Error getting apartment count for month " + month + ": " + e.getMessage());
+            return getTestDataForMonth(month);
+        }
+    }
+
+    /**
+     * Get fee (KhoanThu) count created in the given month.
+     */
+    private int getKhoanThuCountForMonth(java.time.LocalDate month) {
+        try {
+            if (khoanThuService != null) {
+                List<io.github.ktpm.bluemoonmanagement.model.dto.khoanThu.KhoanThuDto> all = khoanThuService.getAllKhoanThu();
+                if (all != null && !all.isEmpty()) {
+                    java.time.LocalDate start = month.withDayOfMonth(1);
+                    java.time.LocalDate end = month.withDayOfMonth(month.lengthOfMonth());
+                    long count = all.stream()
+                            .filter(k -> k.getNgayTao() != null)
+                            .filter(k -> !k.getNgayTao().isBefore(start) && !k.getNgayTao().isAfter(end))
+                            .count();
+                    if (count == 0) {
+                        return getTestDataForMonth(month) / 2;
+                    }
+                    return (int) count;
+                } else {
+                    return getTestDataForMonth(month) / 2;
+                }
+            } else {
+                return getTestDataForMonth(month) / 2;
+            }
+        } catch (Exception e) {
+            System.err.println("Error getting KhoanThu count for month " + month + ": " + e.getMessage());
+            return getTestDataForMonth(month) / 2;
+        }
+    }
+
     private int getTestDataForMonth(java.time.LocalDate month) {
         // Tạo dữ liệu test dựa trên tháng để có biến động
         java.time.LocalDate now = java.time.LocalDate.now();
@@ -3541,68 +3618,68 @@ public class Home_list implements Initializable {
     private void loadHoaDonData() {
         // Load invoices on background thread
         new Thread(() -> {
-            try {
-                if (hoaDonService != null) {
-                    List<io.github.ktpm.bluemoonmanagement.model.dto.hoaDon.HoaDonDto> hoaDonDtoList = hoaDonService.getAllHoaDon();
+        try {
+            if (hoaDonService != null) {
+                List<io.github.ktpm.bluemoonmanagement.model.dto.hoaDon.HoaDonDto> hoaDonDtoList = hoaDonService.getAllHoaDon();
                     java.util.List<HoaDonTableData> built = new java.util.ArrayList<>();
 
-                    if (hoaDonDtoList != null) {
-                        for (io.github.ktpm.bluemoonmanagement.model.dto.hoaDon.HoaDonDto dto : hoaDonDtoList) {
-                            String ngayNop = dto.getNgayNop() != null ? dto.getNgayNop().toString() : "Chưa nộp";
-                            String soTien = String.format("%,d VNĐ", dto.getSoTien());
-                            String trangThaiThanhToan = dto.isDaNop() ? "Đã thanh toán" : "Chưa thanh toán";
+                if (hoaDonDtoList != null) {
+                    for (io.github.ktpm.bluemoonmanagement.model.dto.hoaDon.HoaDonDto dto : hoaDonDtoList) {
+                        String ngayNop = dto.getNgayNop() != null ? dto.getNgayNop().toString() : "Chưa nộp";
+                        String soTien = String.format("%,d VNĐ", dto.getSoTien());
+                        String trangThaiThanhToan = dto.isDaNop() ? "Đã thanh toán" : "Chưa thanh toán";
 
-                            HoaDonTableData tableData = new HoaDonTableData(
-                                String.valueOf(dto.getMaHoaDon()),
-                                dto.getMaCanHo() != null ? dto.getMaCanHo() : "",
-                                dto.getTenKhoanThu(),
-                                dto.getLoaiKhoanThu() != null ? dto.getLoaiKhoanThu() : "",
-                                soTien,
-                                ngayNop,
-                                trangThaiThanhToan
-                            );
+                        HoaDonTableData tableData = new HoaDonTableData(
+                            String.valueOf(dto.getMaHoaDon()),
+                            dto.getMaCanHo() != null ? dto.getMaCanHo() : "",
+                            dto.getTenKhoanThu(),
+                            dto.getLoaiKhoanThu() != null ? dto.getLoaiKhoanThu() : "",
+                            soTien,
+                            ngayNop,
+                            trangThaiThanhToan
+                        );
                             built.add(tableData);
-                        }
                     }
+                }
 
                     javafx.application.Platform.runLater(() -> {
                         try {
                             hoaDonList = FXCollections.observableArrayList(built);
-                            filteredHoaDonList = FXCollections.observableArrayList(hoaDonList);
-                            if (tabelViewThuPhi != null) {
-                                ((TableView<HoaDonTableData>) tabelViewThuPhi).setItems(filteredHoaDonList);
-                            } else {
-                                System.err.println("ERROR: tabelViewThuPhi is null!");
-                            }
-                            updateHoaDonKetQuaLabel();
+                filteredHoaDonList = FXCollections.observableArrayList(hoaDonList);
+                if (tabelViewThuPhi != null) {
+                    ((TableView<HoaDonTableData>) tabelViewThuPhi).setItems(filteredHoaDonList);
+                } else {
+                    System.err.println("ERROR: tabelViewThuPhi is null!");
+                }
+                updateHoaDonKetQuaLabel();
                         } catch (Exception e) {
                             System.err.println("Error updating HoaDon UI: " + e.getMessage());
                             e.printStackTrace();
                         }
                     });
-                } else {
-                    System.err.println("HoaDonService is not available, cannot load data.");
+            } else {
+                System.err.println("HoaDonService is not available, cannot load data.");
                     javafx.application.Platform.runLater(() -> {
-                        hoaDonList = FXCollections.observableArrayList();
-                        filteredHoaDonList = FXCollections.observableArrayList(hoaDonList);
-                        if (tabelViewThuPhi != null) {
-                            ((TableView<HoaDonTableData>) tabelViewThuPhi).setItems(filteredHoaDonList);
-                        }
-                        updateHoaDonKetQuaLabel();
-                    });
+                hoaDonList = FXCollections.observableArrayList();
+                filteredHoaDonList = FXCollections.observableArrayList(hoaDonList);
+                if (tabelViewThuPhi != null) {
+                    ((TableView<HoaDonTableData>) tabelViewThuPhi).setItems(filteredHoaDonList);
                 }
-            } catch (Exception e) {
-                System.err.println("Error loading HoaDon data: " + e.getMessage());
-                e.printStackTrace();
-                javafx.application.Platform.runLater(() -> {
-                    hoaDonList = FXCollections.observableArrayList();
-                    filteredHoaDonList = FXCollections.observableArrayList(hoaDonList);
-                    if (tabelViewThuPhi != null) {
-                        ((TableView<HoaDonTableData>) tabelViewThuPhi).setItems(filteredHoaDonList);
-                    }
-                    updateHoaDonKetQuaLabel();
-                });
+                updateHoaDonKetQuaLabel();
+                    });
             }
+        } catch (Exception e) {
+            System.err.println("Error loading HoaDon data: " + e.getMessage());
+            e.printStackTrace();
+                javafx.application.Platform.runLater(() -> {
+            hoaDonList = FXCollections.observableArrayList();
+            filteredHoaDonList = FXCollections.observableArrayList(hoaDonList);
+            if (tabelViewThuPhi != null) {
+                ((TableView<HoaDonTableData>) tabelViewThuPhi).setItems(filteredHoaDonList);
+            }
+            updateHoaDonKetQuaLabel();
+                });
+        }
         }, "HomeList-LoadHoaDon").start();
     }
 
