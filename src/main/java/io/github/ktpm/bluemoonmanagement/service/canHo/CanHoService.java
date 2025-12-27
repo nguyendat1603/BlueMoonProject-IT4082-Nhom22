@@ -9,6 +9,13 @@ import io.github.ktpm.bluemoonmanagement.model.dto.canHo.CanHoDto;
 
 public interface CanHoService {
     List<CanHoDto> getAllCanHo();
+    
+    /**
+     * Return a limited number of CanHo entries as DTOs (useful for initial load).
+     * @param limit max number of entries to return
+     * @return list of CanHoDto
+     */
+    List<CanHoDto> getCanHoPage(int limit);
 
     ResponseDto addCanHo(CanHoDto canHoDto);
 

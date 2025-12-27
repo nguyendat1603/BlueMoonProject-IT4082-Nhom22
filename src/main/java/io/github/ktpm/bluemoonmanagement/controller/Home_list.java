@@ -140,6 +140,9 @@ public class Home_list implements Initializable {
     private ComboBox<?> comboBoxTrangThaiHoaDon;
 
     @FXML
+    private ComboBox<?> comboBoxChartType;
+
+    @FXML
     private ComboBox<?> comboBoxTrangThaiTaiKhoan;
 
     @FXML
@@ -474,6 +477,7 @@ public class Home_list implements Initializable {
     
     private ObservableList<KhoanThuTableData> khoanThuList;
     private ObservableList<KhoanThuTableData> filteredKhoanThuList;
+    private final java.util.Map<String, io.github.ktpm.bluemoonmanagement.model.dto.khoanThu.KhoanThuDto> khoanThuById = new java.util.concurrent.ConcurrentHashMap<>();
     
     private ObservableList<HoaDonTableData> hoaDonList;
     private ObservableList<HoaDonTableData> filteredHoaDonList;
@@ -608,6 +612,23 @@ public class Home_list implements Initializable {
                 "Tất cả", "Hoạt động", "Không hoạt động"
             ));
             trangThaiTaiKhoanCombo.setValue("Tất cả");
+        }
+
+        // Thiết lập ComboBox chọn loại biểu đồ trên trang chủ (Dân cư / Căn hộ / Khoản thu)
+        if (comboBoxChartType != null) {
+            @SuppressWarnings("unchecked")
+            ComboBox<String> chartTypeCombo = (ComboBox<String>) comboBoxChartType;
+            chartTypeCombo.setItems(javafx.collections.FXCollections.observableArrayList(
+                "Dân cư theo tháng", "Căn hộ theo tháng", "Khoản thu theo tháng"
+            ));
+            chartTypeCombo.setValue("Dân cư theo tháng");
+            chartTypeCombo.valueProperty().addListener((obs, oldVal, newVal) -> {
+                try {
+                    loadBarChartData();
+                } catch (Exception e) {
+                    System.err.println("Error reloading bar chart for selection change: " + e.getMessage());
+                }
+            });
         }
     }
 
@@ -785,20 +806,17 @@ public class Home_list implements Initializable {
      * Loads data from cache (no database refresh)
      */
     private void loadDataFromCache() {
+        // Load apartments from cache on background thread to avoid blocking UI
+        new Thread(() -> {
         try {
             if (cacheDataService != null) {
-                // Loading apartment data from cache
                 List<CanHoDto> canHoDtoList = canHoService.getAllCanHo();
-                canHoList = FXCollections.observableArrayList();
-
+                    java.util.List<CanHoTableData> built = new java.util.ArrayList<>();
                 if (canHoDtoList != null) {
                     for (CanHoDto dto : canHoDtoList) {
-                        // Tạm thời hiển thị tất cả căn hộ (tắt logic ẩn căn hộ)
                         if (true || shouldShowApartmentFromCache(dto)) {
                             String chuHoName = dto.getChuHo() != null ? dto.getChuHo().getHoVaTen() : "";
-                            // Cột "Sử dụng" chỉ hiển thị "Trống" hoặc "Đang sử dụng"
-                            String trangThaiSuDung = dto.getTrangThaiSuDung(); // Không hiển thị "Đã bán" ở cột này
-                            // Cột "Tình trạng" hiển thị trạng thái bán
+                                String trangThaiSuDung = dto.getTrangThaiSuDung();
                             String trangThaiBan = dto.isDaBanChua() ? "Đã bán" : "Chưa bán";
                             CanHoTableData tableData = new CanHoTableData(
                                 dto.getMaCanHo(),
@@ -811,45 +829,50 @@ public class Home_list implements Initializable {
                                 dto.getTrangThaiKiThuat(),
                                 trangThaiBan
                             );
-                            canHoList.add(tableData);
+                                built.add(tableData);
                         }
                     }
                 }
-
+                    javafx.application.Platform.runLater(() -> {
+                        try {
+                            canHoList = FXCollections.observableArrayList(built);
                 filteredList = FXCollections.observableArrayList(canHoList);
                 if (tabelViewCanHo != null) {
                     ((TableView<CanHoTableData>) tabelViewCanHo).setItems(filteredList);
                 }
                 updateKetQuaLabel();
-                // Successfully loaded apartments from cache
+                        } catch (Exception e) {
+                            System.err.println("Error updating UI after loadDataFromCache: " + e.getMessage());
+                            e.printStackTrace();
+                        }
+                    });
             } else {
-                // Cache service not available, falling back to database load
                 loadData();
             }
         } catch (Exception e) {
             System.err.println("ERROR: Failed to load data from cache: " + e.getMessage());
-            // Fallback to database load
             loadData();
         }
+        }, "HomeList-LoadDataFromCache").start();
     }
 
     /**
      * Reloads data for all tables and views
      */
     private void loadData() {
+        // Run heavy data load off the JavaFX thread to avoid freezing UI.
+        new Thread(() -> {
         try {
             if (canHoService != null) {
                 List<CanHoDto> canHoDtoList = canHoService.getAllCanHo();
-                canHoList = FXCollections.observableArrayList();
+                    java.util.List<CanHoTableData> builtList = new java.util.ArrayList<>();
 
                 if (canHoDtoList != null) {
                     for (CanHoDto dto : canHoDtoList) {
                         // Tạm thời hiển thị tất cả căn hộ (tắt logic ẩn căn hộ)
                         if (true || shouldShowApartment(dto)) {
                             String chuHoName = dto.getChuHo() != null ? dto.getChuHo().getHoVaTen() : "";
-                            // Cột "Sử dụng" chỉ hiển thị "Trống" hoặc "Đang sử dụng"
-                            String trangThaiSuDung = dto.getTrangThaiSuDung(); // Không hiển thị "Đã bán" ở cột này
-                            // Cột "Tình trạng" hiển thị trạng thái bán
+                                String trangThaiSuDung = dto.getTrangThaiSuDung();
                             String trangThaiBan = dto.isDaBanChua() ? "Đã bán" : "Chưa bán";
                             CanHoTableData tableData = new CanHoTableData(
                                 dto.getMaCanHo(),
@@ -862,11 +885,15 @@ public class Home_list implements Initializable {
                                 dto.getTrangThaiKiThuat(),
                                 trangThaiBan
                             );
-                            canHoList.add(tableData);
+                                builtList.add(tableData);
                         }
                     }
                 }
 
+                    // Update UI on FX thread
+                    javafx.application.Platform.runLater(() -> {
+                        try {
+                            canHoList = FXCollections.observableArrayList(builtList);
                 filteredList = FXCollections.observableArrayList(canHoList);
                 if (tabelViewCanHo != null) {
                     ((TableView<CanHoTableData>) tabelViewCanHo).setItems(filteredList);
@@ -874,26 +901,35 @@ public class Home_list implements Initializable {
                     System.err.println("ERROR: tabelViewCanHo is null!");
                 }
                 updateKetQuaLabel();
+                        } catch (Exception e) {
+                            System.err.println("Error updating UI after loadData: " + e.getMessage());
+                            e.printStackTrace();
+                        }
+                    });
                     } else {
             System.err.println("ERROR: canHoService is null! Cannot load apartment data");
-            // Initialize empty lists without sample data
+                    javafx.application.Platform.runLater(() -> {
             canHoList = FXCollections.observableArrayList();
             filteredList = FXCollections.observableArrayList(canHoList);
             if (tabelViewCanHo != null) {
                 ((TableView<CanHoTableData>) tabelViewCanHo).setItems(filteredList);
             }
             updateKetQuaLabel();
+                    });
         }
     } catch (Exception e) {
         System.err.println("Lỗi khi tải dữ liệu từ service: " + e.getMessage());
-        // Initialize empty lists without sample data
+                e.printStackTrace();
+                javafx.application.Platform.runLater(() -> {
         canHoList = FXCollections.observableArrayList();
         filteredList = FXCollections.observableArrayList(canHoList);
         if (tabelViewCanHo != null) {
             ((TableView<CanHoTableData>) tabelViewCanHo).setItems(filteredList);
         }
         updateKetQuaLabel();
+                });
     }
+        }, "HomeList-LoadData").start();
     }
 
     /**
@@ -1871,10 +1907,12 @@ public class Home_list implements Initializable {
      * Load dữ liệu cư dân từ service
      */
     private void loadCuDanData() {
+        // Load residents off the JavaFX thread to avoid blocking UI
+        new Thread(() -> {
         try {
             if (cuDanService != null) {
                 List<io.github.ktpm.bluemoonmanagement.model.dto.cuDan.CudanDto> cuDanDtoList = cuDanService.getAllCuDan();
-                cuDanList.clear();
+                    java.util.List<CuDanTableData> built = new java.util.ArrayList<>();
 
                 if (cuDanDtoList != null) {
                     for (io.github.ktpm.bluemoonmanagement.model.dto.cuDan.CudanDto dto : cuDanDtoList) {
@@ -1889,19 +1927,28 @@ public class Home_list implements Initializable {
                             dto.getTrangThaiCuTru(),
                             dto.getNgayChuyenDen() != null ? dto.getNgayChuyenDen().toString() : ""
                         );
-                        cuDanList.add(tableData);
+                            built.add(tableData);
                     }
                 }
 
+                    javafx.application.Platform.runLater(() -> {
+                        try {
+                            cuDanList.clear();
+                            cuDanList.addAll(built);
                 filteredCuDanList = FXCollections.observableArrayList(cuDanList);
                 if (tabelViewCuDan != null) {
                     ((TableView<CuDanTableData>) tabelViewCuDan).setItems(filteredCuDanList);
                 }
                 updateCuDanKetQuaLabel();
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    });
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
+        }, "HomeList-LoadCuDan").start();
     }
 
     /**
@@ -2603,26 +2650,14 @@ public class Home_list implements Initializable {
                 ((TableColumn<KhoanThuTableData, String>) tableColumnNgayTao1).setCellValueFactory(new PropertyValueFactory<>("thoiHan"));
             }
 
-            // "Trạng thái hóa đơn" -> hiển thị dựa trên dữ liệu từ database
+            // "Trạng thái hóa đơn" -> hiển thị dựa trên dữ liệu từ cache
             if (tableColumnTrangThaiHoaDon != null) {
                 ((TableColumn<KhoanThuTableData, String>) tableColumnTrangThaiHoaDon).setCellValueFactory(cellData -> {
                     KhoanThuTableData khoanThu = cellData.getValue();
-                    if (khoanThu != null && khoanThuService != null) {
-                        try {
-                            // Lấy thông tin chi tiết khoản thu từ service để check trạng thái tạo hóa đơn
-                            List<io.github.ktpm.bluemoonmanagement.model.dto.khoanThu.KhoanThuDto> khoanThuList = khoanThuService.getAllKhoanThu();
-                            io.github.ktpm.bluemoonmanagement.model.dto.khoanThu.KhoanThuDto khoanThuDto = khoanThuList.stream()
-                                .filter(kt -> kt.getMaKhoanThu().equals(khoanThu.getMaKhoanThu()))
-                                .findFirst()
-                                .orElse(null);
-
-                            if (khoanThuDto != null) {
-                                return new javafx.beans.property.SimpleStringProperty(
-                                    khoanThuDto.isTaoHoaDon() ? "Đã tạo" : "Chưa tạo"
-                                );
-                            }
-                        } catch (Exception e) {
-                            System.err.println("Error checking invoice status: " + e.getMessage());
+                    if (khoanThu != null) {
+                        io.github.ktpm.bluemoonmanagement.model.dto.khoanThu.KhoanThuDto dto = khoanThuById.get(khoanThu.getMaKhoanThu());
+                        if (dto != null) {
+                            return new javafx.beans.property.SimpleStringProperty(dto.isTaoHoaDon() ? "Đã tạo" : "Chưa tạo");
                         }
                     }
                     return new javafx.beans.property.SimpleStringProperty("Chưa tạo");
@@ -2690,42 +2725,44 @@ public class Home_list implements Initializable {
             phiXeDetails.append("📋 CHI TIẾT PHÍ GỬI XE - ").append(rowData.getTenKhoanThu()).append("\n");
             phiXeDetails.append("Mã khoản thu: ").append(rowData.getMaKhoanThu()).append("\n\n");
 
-            if (khoanThuService != null) {
+            // Fetch detailed KhoanThu data from cache or service asynchronously to avoid blocking UI
+            javafx.application.Platform.runLater(() -> showInfo("Chi tiết phí gửi xe", "Đang tải thông tin..."));
+            new Thread(() -> {
                 try {
-                    // Lấy thông tin chi tiết khoản thu từ service
-                    List<io.github.ktpm.bluemoonmanagement.model.dto.khoanThu.KhoanThuDto> khoanThuList = khoanThuService.getAllKhoanThu();
-                    io.github.ktpm.bluemoonmanagement.model.dto.khoanThu.KhoanThuDto khoanThuDto = khoanThuList.stream()
-                        .filter(kt -> kt.getMaKhoanThu().equals(rowData.getMaKhoanThu()))
-                        .findFirst()
-                        .orElse(null);
+                    io.github.ktpm.bluemoonmanagement.model.dto.khoanThu.KhoanThuDto khoanThuDto = khoanThuById.get(rowData.getMaKhoanThu());
+                    if (khoanThuDto == null && khoanThuService != null) {
+                        List<io.github.ktpm.bluemoonmanagement.model.dto.khoanThu.KhoanThuDto> list = khoanThuService.getAllKhoanThu();
+                        if (list != null) {
+                            for (io.github.ktpm.bluemoonmanagement.model.dto.khoanThu.KhoanThuDto k : list) {
+                                khoanThuById.put(k.getMaKhoanThu(), k);
+                            }
+                            khoanThuDto = khoanThuById.get(rowData.getMaKhoanThu());
+                        }
+                    }
 
+                    StringBuilder details2 = new StringBuilder();
                     if (khoanThuDto != null && khoanThuDto.getPhiGuiXeList() != null && !khoanThuDto.getPhiGuiXeList().isEmpty()) {
-                        phiXeDetails.append("🚗 BẢNG GIÁ PHÍ GỬI XE:");
-                        phiXeDetails.append("\n" + "=".repeat(35));
-
+                        details2.append("🚗 BẢNG GIÁ PHÍ GỬI XE:");
+                        details2.append("\n" + "=".repeat(35));
                         for (io.github.ktpm.bluemoonmanagement.model.dto.phiGuiXe.PhiGuiXeDto phiXe : khoanThuDto.getPhiGuiXeList()) {
-                            phiXeDetails.append("\n🔸 ").append(phiXe.getLoaiXe())
+                            details2.append("\n🔸 ").append(phiXe.getLoaiXe())
                                       .append(": ").append(String.format("%,d", phiXe.getSoTien()))
                                       .append(" VND");
                         }
-                        phiXeDetails.append("\n" + "=".repeat(35));
-
-                        // Thêm ghi chú
-                        phiXeDetails.append("\n\n📝 Ghi chú: Phí được tính theo tháng cho mỗi loại phương tiện.");
+                        details2.append("\n" + "=".repeat(35));
+                        details2.append("\n\n📝 Ghi chú: Phí được tính theo tháng cho mỗi loại phương tiện.");
                     } else {
-                        phiXeDetails.append("⚠️ Chưa có thông tin chi tiết phí xe.");
-                        phiXeDetails.append("\nVui lòng liên hệ ban quản lý để biết thêm thông tin.");
+                        details2.append("⚠️ Chưa có thông tin chi tiết phí xe.");
+                        details2.append("\nVui lòng liên hệ ban quản lý để biết thêm thông tin.");
                     }
-                } catch (Exception ex) {
-                    System.err.println("Error loading vehicle fee details: " + ex.getMessage());
-                    phiXeDetails.append("❌ Không thể tải thông tin chi tiết phí xe.");
-                    phiXeDetails.append("\nLỗi: ").append(ex.getMessage());
-                }
-            } else {
-                phiXeDetails.append("❌ Dịch vụ không khả dụng.");
-            }
 
-            showInfo("Chi tiết phí gửi xe", phiXeDetails.toString());
+                    String finalDetails = details2.toString();
+                    javafx.application.Platform.runLater(() -> showInfo("Chi tiết phí gửi xe", finalDetails));
+                } catch (Exception ex) {
+                    System.err.println("Error loading vehicle fee details async: " + ex.getMessage());
+                    javafx.application.Platform.runLater(() -> showError("Lỗi", "Không thể tải thông tin chi tiết phí xe: " + ex.getMessage()));
+                }
+            }, "KhoanThu-DetailLoader").start();
         } catch (Exception e) {
             showError("Lỗi khi xem chi tiết phí xe", "Chi tiết: " + e.getMessage());
         }
@@ -2747,36 +2784,47 @@ public class Home_list implements Initializable {
             details.append(" Ngày tạo: ").append(rowData.getNgayTao()).append("\n");
             details.append(" Thời hạn: ").append(rowData.getThoiHan());
 
-            // Nếu là khoản thu phương tiện, hiển thị chi tiết phí xe luôn
-            if ("Phương tiện".equals(rowData.getDonViTinh()) && khoanThuService != null) {
+            // Show basic info immediately, then load details (including vehicle fees) asynchronously
+            String basicInfo = details.toString();
+            javafx.application.Platform.runLater(() -> showInfo("Chi tiết khoản thu", basicInfo + "\n\n⏳ Đang tải chi tiết..."));
+
+            new Thread(() -> {
                 try {
-                    // Lấy thông tin chi tiết khoản thu từ service
-                    List<io.github.ktpm.bluemoonmanagement.model.dto.khoanThu.KhoanThuDto> khoanThuList = khoanThuService.getAllKhoanThu();
-                    io.github.ktpm.bluemoonmanagement.model.dto.khoanThu.KhoanThuDto khoanThuDto = khoanThuList.stream()
-                        .filter(kt -> kt.getMaKhoanThu().equals(rowData.getMaKhoanThu()))
-                        .findFirst()
-                        .orElse(null);
+                    // Try cache first
+                    io.github.ktpm.bluemoonmanagement.model.dto.khoanThu.KhoanThuDto khoanThuDto = khoanThuById.get(rowData.getMaKhoanThu());
+                    if (khoanThuDto == null && khoanThuService != null) {
+                        List<io.github.ktpm.bluemoonmanagement.model.dto.khoanThu.KhoanThuDto> list = khoanThuService.getAllKhoanThu();
+                        if (list != null) {
+                            for (io.github.ktpm.bluemoonmanagement.model.dto.khoanThu.KhoanThuDto k : list) {
+                                khoanThuById.putIfAbsent(k.getMaKhoanThu(), k);
+                            }
+                            khoanThuDto = khoanThuById.get(rowData.getMaKhoanThu());
+                        }
+                    }
 
+                    StringBuilder full = new StringBuilder(basicInfo);
+                    if ("Phương tiện".equals(rowData.getDonViTinh())) {
                     if (khoanThuDto != null && khoanThuDto.getPhiGuiXeList() != null && !khoanThuDto.getPhiGuiXeList().isEmpty()) {
-                        details.append("\n\n📋 CHI TIẾT PHÍ GỬI XE:");
-                        details.append("\n" + "=".repeat(30));
-
+                            full.append("\n\n📋 CHI TIẾT PHÍ GỬI XE:");
+                            full.append("\n" + "=".repeat(30));
                         for (io.github.ktpm.bluemoonmanagement.model.dto.phiGuiXe.PhiGuiXeDto phiXe : khoanThuDto.getPhiGuiXeList()) {
-                            details.append("\n• ").append(phiXe.getLoaiXe())
+                                full.append("\n• ").append(phiXe.getLoaiXe())
                                   .append(": ").append(String.format("%,d", phiXe.getSoTien()))
                                   .append(" VND");
                         }
-                        details.append("\n" + "=".repeat(30));
+                            full.append("\n" + "=".repeat(30));
                     } else {
-                        details.append("\n\n⚠️ Chưa có thông tin chi tiết phí xe.");
+                            full.append("\n\n⚠️ Chưa có thông tin chi tiết phí xe.");
                     }
-                } catch (Exception ex) {
-                    System.err.println("Error loading vehicle fee details: " + ex.getMessage());
-                    details.append("\n\n❌ Không thể tải thông tin chi tiết phí xe.");
-                }
-            }
+                    }
 
-            showInfo("Chi tiết khoản thu", details.toString());
+                    String finalText = full.toString();
+                    javafx.application.Platform.runLater(() -> showInfo("Chi tiết khoản thu", finalText));
+                } catch (Exception e) {
+                    System.err.println("Error loading khoan thu details async: " + e.getMessage());
+                    javafx.application.Platform.runLater(() -> showError("Lỗi", "Không thể tải chi tiết khoản thu: " + e.getMessage()));
+                }
+            }, "KhoanThu-DetailFetch").start();
         } catch (Exception e) {
             showError("Lỗi khi xem chi tiết", "Chi tiết: " + e.getMessage());
         }
@@ -2842,11 +2890,12 @@ public class Home_list implements Initializable {
      * Load Khoản Thu data
      */
     private void loadKhoanThuData() {
-
+        // Load fee data off the JavaFX thread to avoid blocking UI.
+        new Thread(() -> {
         try {
             if (khoanThuService != null) {
                 List<KhoanThuDto> khoanThuDtoList = khoanThuService.getAllKhoanThu();
-                khoanThuList = FXCollections.observableArrayList();
+                    java.util.List<KhoanThuTableData> built = new java.util.ArrayList<>();
 
                 if (khoanThuDtoList != null) {
                     for (KhoanThuDto dto : khoanThuDtoList) {
@@ -2866,10 +2915,14 @@ public class Home_list implements Initializable {
                             thoiHan,
                             dto.getGhiChu() != null ? dto.getGhiChu() : ""
                         );
-                        khoanThuList.add(tableData);
+                            built.add(tableData);
                     }
                 }
 
+                    // Update UI on FX thread
+                    javafx.application.Platform.runLater(() -> {
+                        try {
+                            khoanThuList = FXCollections.observableArrayList(built);
                 filteredKhoanThuList = FXCollections.observableArrayList(khoanThuList);
                 if (tabelViewKhoanThu != null) {
                     ((TableView<KhoanThuTableData>) tabelViewKhoanThu).setItems(filteredKhoanThuList);
@@ -2877,27 +2930,42 @@ public class Home_list implements Initializable {
                     System.err.println("ERROR: tabelViewKhoanThu is null!");
                 }
                 updateKhoanThuKetQuaLabel();
+
+                            // Also populate khoanThuById cache for cell factories
+                            if (khoanThuById != null && khoanThuDtoList != null) {
+                                for (KhoanThuDto dto : khoanThuDtoList) {
+                                    khoanThuById.put(dto.getMaKhoanThu(), dto);
+                                }
+                            }
+                        } catch (Exception e) {
+                            System.err.println("Error updating KhoanThu UI: " + e.getMessage());
+                            e.printStackTrace();
+                        }
+                    });
             } else {
                 System.err.println("KhoanThuService is not available, cannot load data.");
-                // Initialize empty lists without sample data
+                    javafx.application.Platform.runLater(() -> {
                 khoanThuList = FXCollections.observableArrayList();
                 filteredKhoanThuList = FXCollections.observableArrayList(khoanThuList);
                 if (tabelViewKhoanThu != null) {
                     ((TableView<KhoanThuTableData>) tabelViewKhoanThu).setItems(filteredKhoanThuList);
                 }
                 updateKhoanThuKetQuaLabel();
+                    });
             }
         } catch (Exception e) {
             System.err.println("Error loading KhoanThu data: " + e.getMessage());
             e.printStackTrace();
-            // Initialize empty lists without sample data
+                javafx.application.Platform.runLater(() -> {
             khoanThuList = FXCollections.observableArrayList();
             filteredKhoanThuList = FXCollections.observableArrayList(khoanThuList);
             if (tabelViewKhoanThu != null) {
                 ((TableView<KhoanThuTableData>) tabelViewKhoanThu).setItems(filteredKhoanThuList);
             }
             updateKhoanThuKetQuaLabel();
+                });
         }
+        }, "HomeList-LoadKhoanThu").start();
     }
 
 
@@ -3001,19 +3069,139 @@ public class Home_list implements Initializable {
      * Load dữ liệu cho biểu đồ
      */
     private void loadChartData() {
-
+        // Compute chart data off the UI thread, then update UI on FX thread
+        new Thread(() -> {
         try {
-            // Load dữ liệu cho BarChart (Biến động dân cư theo tháng)
-            loadBarChartData();
+                // Prepare bar chart series data (6 months)
+                java.time.LocalDate now = java.time.LocalDate.now();
+                javafx.scene.chart.XYChart.Series<String, Number> series = new javafx.scene.chart.XYChart.Series<>();
+                series.setName("Số cư dân");
 
-            // Load dữ liệu cho PieChart (Khoản thu tháng này)
-            loadPieChartData();
+                // Fetch residents once to avoid repeated DB calls
+                List<io.github.ktpm.bluemoonmanagement.model.dto.cuDan.CudanDto> allCuDan = null;
+                try {
+                    if (cuDanService != null) {
+                        allCuDan = cuDanService.getAllCuDan();
+                    }
+                } catch (Exception e) {
+                    System.err.println("Error fetching allCuDan for charts: " + e.getMessage());
+                    allCuDan = null;
+                }
 
+                for (int i = 5; i >= 0; i--) {
+                    java.time.LocalDate month = now.minusMonths(i);
+                    String monthLabel = month.getMonth().getDisplayName(java.time.format.TextStyle.SHORT, java.util.Locale.forLanguageTag("vi")) + " " + month.getYear();
 
+                    int cuDanCount;
+                    if (allCuDan == null || allCuDan.isEmpty()) {
+                        cuDanCount = getTestDataForMonth(month);
+                    } else {
+                        java.time.LocalDate endOfMonth = month.withDayOfMonth(month.lengthOfMonth());
+                        long count = allCuDan.stream()
+                            .filter(cuDan -> {
+                                if (cuDan.getNgayChuyenDen() != null) {
+                                    return !cuDan.getNgayChuyenDen().isAfter(endOfMonth);
+                                }
+                                return true;
+                            })
+                            .filter(cuDan -> {
+                                String trangThai = cuDan.getTrangThaiCuTru();
+                                if (trangThai == null || trangThai.trim().isEmpty()) {
+                                    return false;
+                                }
+                                return trangThai.contains("Đang cư trú") ||
+                                       trangThai.contains("Thường trú") ||
+                                       trangThai.contains("Tạm trú") ||
+                                       trangThai.equals("Active") ||
+                                       (!trangThai.contains("Chuyển đi") && !trangThai.contains("Inactive"));
+                            })
+                            .count();
+                        cuDanCount = count == 0 ? getTestDataForMonth(month) : (int) count;
+                    }
+                    series.getData().add(new javafx.scene.chart.XYChart.Data<>(monthLabel, cuDanCount));
+                }
+
+                // Prepare pie chart data by calling PieChartDataUtil (may query DB)
+                java.util.Map<String, Integer> tmpFeeTypeCount = null;
+                try {
+                    tmpFeeTypeCount = PieChartDataUtil.getKhoanThuDataFromDatabase(khoanThuService);
         } catch (Exception e) {
-            System.err.println("❌ Error loading chart data: " + e.getMessage());
+                    System.err.println("Error fetching pie chart data: " + e.getMessage());
+                    tmpFeeTypeCount = null;
+                }
+                final java.util.Map<String, Integer> feeTypeCount = (tmpFeeTypeCount != null) ? tmpFeeTypeCount : java.util.Map.of();
+
+                // Update charts on FX thread
+                javafx.application.Platform.runLater(() -> {
+                    try {
+                        // Bar chart update
+                        if (barChartDanCu != null) {
+                            javafx.scene.chart.BarChart<String, Number> chart = (javafx.scene.chart.BarChart<String, Number>) barChartDanCu;
+                            chart.getData().clear();
+                            chart.getData().add(series);
+                            chart.setLegendVisible(false);
+                            chart.setAnimated(true);
+                            chart.setTitle("");
+                            chart.setStyle("-fx-background-color: transparent;");
+                            // color series
+                            try {
+                                for (javafx.scene.chart.XYChart.Series<String, Number> s : chart.getData()) {
+                                    for (javafx.scene.chart.XYChart.Data<String, Number> data : s.getData()) {
+                                        javafx.scene.Node node = data.getNode();
+                                        if (node != null) {
+                                            node.setStyle("-fx-bar-fill: #2196F3; -fx-background-color: #2196F3;");
+                                        }
+                                    }
+                                }
+                            } catch (Exception e) {
+                                System.err.println("Error styling bar chart: " + e.getMessage());
+                            }
+                        }
+
+                        // Pie chart update
+                        if (pieChartKhoanThu != null) {
+                            pieChartKhoanThu.getData().clear();
+                            if (feeTypeCount != null && !feeTypeCount.isEmpty()) {
+                                for (java.util.Map.Entry<String, Integer> entry : feeTypeCount.entrySet()) {
+                                    javafx.scene.chart.PieChart.Data slice = new javafx.scene.chart.PieChart.Data(entry.getKey(), entry.getValue());
+                                    pieChartKhoanThu.getData().add(slice);
+                                }
+                            } else {
+                                javafx.scene.chart.PieChart.Data emptySlice = new javafx.scene.chart.PieChart.Data("Chưa có khoản thu nào", 1);
+                                pieChartKhoanThu.getData().add(emptySlice);
+                            }
+                            pieChartKhoanThu.setLegendVisible(false);
+                            pieChartKhoanThu.setAnimated(true);
+                            pieChartKhoanThu.setLabelsVisible(false);
+                            pieChartKhoanThu.setTitle("");
+
+                            // style pie slices
+                            try {
+                                int colorIndex = 0;
+                                for (javafx.scene.chart.PieChart.Data data : pieChartKhoanThu.getData()) {
+                                    javafx.scene.Node node = data.getNode();
+                                    if (node != null) {
+                                        String color = PieChartDataUtil.getSliceColor(data.getName(), colorIndex);
+                                        node.setStyle("-fx-pie-color: " + color + ";");
+                                        colorIndex++;
+                                    }
+                                }
+                                updateLegendPercentages();
+                            } catch (Exception e) {
+                                System.err.println("Error styling pie chart: " + e.getMessage());
+                            }
+                        }
+                    } catch (Exception e) {
+                        System.err.println("Error updating charts on FX thread: " + e.getMessage());
             e.printStackTrace();
         }
+                });
+
+            } catch (Exception e) {
+                System.err.println("❌ Error computing chart data: " + e.getMessage());
+                e.printStackTrace();
+            }
+        }, "HomeList-LoadCharts").start();
     }
 
     /**
@@ -3027,38 +3215,55 @@ public class Home_list implements Initializable {
             }
 
             javafx.scene.chart.BarChart<String, Number> chart = (javafx.scene.chart.BarChart<String, Number>) barChartDanCu;
-
-            // Xóa dữ liệu cũ
             chart.getData().clear();
 
-            // Tạo series dữ liệu
+            // Determine chart type selection (default to Dân cư)
+            String chartType = "Dân cư";
+            if (comboBoxChartType != null && comboBoxChartType.getValue() != null) {
+                chartType = comboBoxChartType.getValue().toString();
+            }
+
             javafx.scene.chart.XYChart.Series<String, Number> series = new javafx.scene.chart.XYChart.Series<>();
+            if (chartType.contains("Căn hộ")) {
+                series.setName("Số căn hộ");
+            } else if (chartType.contains("Khoản thu")) {
+                series.setName("Số khoản thu");
+            } else {
             series.setName("Số cư dân");
+            }
 
-            // Lấy dữ liệu thực từ database cho 6 tháng gần nhất
             java.time.LocalDate now = java.time.LocalDate.now();
-
             for (int i = 5; i >= 0; i--) {
                 java.time.LocalDate month = now.minusMonths(i);
-                String monthLabel = month.getMonth().getDisplayName(java.time.format.TextStyle.SHORT, java.util.Locale.forLanguageTag("vi")) + " " + month.getYear();
-
-                // Lấy số cư dân thực tế cho tháng này từ database
-                int cuDanCount = getCuDanCountForMonth(month);
-
-                series.getData().add(new javafx.scene.chart.XYChart.Data<>(monthLabel, cuDanCount));
+                String monthLabel = String.format("%d/%02d", month.getMonthValue(), month.getYear() % 100);
+                int value;
+                if (series.getName().contains("căn hộ")) {
+                    value = getCanHoCountForMonth(month);
+                } else if (series.getName().contains("khoản thu")) {
+                    value = getKhoanThuCountForMonth(month);
+                } else {
+                    value = getCuDanCountForMonth(month);
+                }
+                series.getData().add(new javafx.scene.chart.XYChart.Data<>(monthLabel, value));
             }
 
             chart.getData().add(series);
-
-            // Thiết lập style cho biểu đồ
             chart.setLegendVisible(false);
             chart.setAnimated(true);
             chart.setTitle("");
-
-            // Đổi màu thành xanh cho BarChart
             chart.setStyle("-fx-background-color: transparent;");
 
-            // Đặt màu xanh cho các cột trong biểu đồ
+            try {
+                javafx.scene.chart.Axis<?> xAxisGeneric = chart.getXAxis();
+                if (xAxisGeneric instanceof javafx.scene.chart.CategoryAxis) {
+                    javafx.scene.chart.CategoryAxis xAxis = (javafx.scene.chart.CategoryAxis) xAxisGeneric;
+                    xAxis.setTickLabelRotation(-25.0);
+                    xAxis.setTickLabelGap(6.0);
+                }
+            } catch (Exception ignore) {
+            }
+
+            // color columns
             javafx.application.Platform.runLater(() -> {
                 try {
                     for (javafx.scene.chart.XYChart.Series<String, Number> s : chart.getData()) {
@@ -3073,7 +3278,6 @@ public class Home_list implements Initializable {
                     System.err.println("Error setting bar chart colors: " + e.getMessage());
                 }
             });
-
 
         } catch (Exception e) {
             System.err.println("❌ Error loading bar chart data: " + e.getMessage());
@@ -3145,6 +3349,39 @@ public class Home_list implements Initializable {
             System.err.println("❌ Error loading pie chart data: " + e.getMessage());
             e.printStackTrace();
         }
+    }
+
+    /**
+     * Ensure khoanThu cache is loaded (background). If already loaded, no-op.
+     */
+    private void ensureKhoanThuCacheLoaded() {
+        if (khoanThuById != null && !khoanThuById.isEmpty()) {
+            return;
+        }
+        new Thread(() -> {
+            try {
+                if (khoanThuService != null) {
+                    List<io.github.ktpm.bluemoonmanagement.model.dto.khoanThu.KhoanThuDto> list = khoanThuService.getAllKhoanThu();
+                    if (list != null) {
+                        for (io.github.ktpm.bluemoonmanagement.model.dto.khoanThu.KhoanThuDto k : list) {
+                            khoanThuById.putIfAbsent(k.getMaKhoanThu(), k);
+                        }
+                        javafx.application.Platform.runLater(() -> {
+                            try {
+                                if (tabelViewKhoanThu != null) {
+                                    tabelViewKhoanThu.refresh();
+                                }
+                            } catch (Exception e) {
+                                System.err.println("Error refreshing khoanThu table after cache load: " + e.getMessage());
+                            }
+                        });
+                    }
+                }
+            } catch (Exception e) {
+                System.err.println("Error loading khoanThu cache: " + e.getMessage());
+                e.printStackTrace();
+            }
+        }, "HomeList-KhoanThuCacheLoader").start();
     }
 
 
@@ -3233,6 +3470,62 @@ public class Home_list implements Initializable {
     /**
      * Generate test data cho biểu đồ khi không có dữ liệu thực
      */
+    /**
+     * Get apartment count for a month. Because CanHo doesn't carry creation date in DTO,
+     * we return current apartment count as a simple series (or test data if unavailable).
+     */
+    private int getCanHoCountForMonth(java.time.LocalDate month) {
+        try {
+            if (canHoService != null) {
+                List<io.github.ktpm.bluemoonmanagement.model.dto.canHo.CanHoDto> all = canHoService.getAllCanHo();
+                if (all != null && !all.isEmpty()) {
+                    return all.size();
+                } else {
+                    return getTestDataForMonth(month);
+                }
+            } else {
+                if (canHoList != null && !canHoList.isEmpty()) {
+                    return canHoList.size();
+                } else {
+                    return getTestDataForMonth(month);
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Error getting apartment count for month " + month + ": " + e.getMessage());
+            return getTestDataForMonth(month);
+        }
+    }
+
+    /**
+     * Get fee (KhoanThu) count created in the given month.
+     */
+    private int getKhoanThuCountForMonth(java.time.LocalDate month) {
+        try {
+            if (khoanThuService != null) {
+                List<io.github.ktpm.bluemoonmanagement.model.dto.khoanThu.KhoanThuDto> all = khoanThuService.getAllKhoanThu();
+                if (all != null && !all.isEmpty()) {
+                    java.time.LocalDate start = month.withDayOfMonth(1);
+                    java.time.LocalDate end = month.withDayOfMonth(month.lengthOfMonth());
+                    long count = all.stream()
+                            .filter(k -> k.getNgayTao() != null)
+                            .filter(k -> !k.getNgayTao().isBefore(start) && !k.getNgayTao().isAfter(end))
+                            .count();
+                    if (count == 0) {
+                        return getTestDataForMonth(month) / 2;
+                    }
+                    return (int) count;
+                } else {
+                    return getTestDataForMonth(month) / 2;
+                }
+            } else {
+                return getTestDataForMonth(month) / 2;
+            }
+        } catch (Exception e) {
+            System.err.println("Error getting KhoanThu count for month " + month + ": " + e.getMessage());
+            return getTestDataForMonth(month) / 2;
+        }
+    }
+
     private int getTestDataForMonth(java.time.LocalDate month) {
         // Tạo dữ liệu test dựa trên tháng để có biến động
         java.time.LocalDate now = java.time.LocalDate.now();
@@ -3323,10 +3616,12 @@ public class Home_list implements Initializable {
      * Load HoaDon data from service
      */
     private void loadHoaDonData() {
+        // Load invoices on background thread
+        new Thread(() -> {
         try {
             if (hoaDonService != null) {
                 List<io.github.ktpm.bluemoonmanagement.model.dto.hoaDon.HoaDonDto> hoaDonDtoList = hoaDonService.getAllHoaDon();
-                hoaDonList = FXCollections.observableArrayList();
+                    java.util.List<HoaDonTableData> built = new java.util.ArrayList<>();
 
                 if (hoaDonDtoList != null) {
                     for (io.github.ktpm.bluemoonmanagement.model.dto.hoaDon.HoaDonDto dto : hoaDonDtoList) {
@@ -3343,10 +3638,13 @@ public class Home_list implements Initializable {
                             ngayNop,
                             trangThaiThanhToan
                         );
-                        hoaDonList.add(tableData);
+                            built.add(tableData);
                     }
                 }
 
+                    javafx.application.Platform.runLater(() -> {
+                        try {
+                            hoaDonList = FXCollections.observableArrayList(built);
                 filteredHoaDonList = FXCollections.observableArrayList(hoaDonList);
                 if (tabelViewThuPhi != null) {
                     ((TableView<HoaDonTableData>) tabelViewThuPhi).setItems(filteredHoaDonList);
@@ -3354,27 +3652,35 @@ public class Home_list implements Initializable {
                     System.err.println("ERROR: tabelViewThuPhi is null!");
                 }
                 updateHoaDonKetQuaLabel();
+                        } catch (Exception e) {
+                            System.err.println("Error updating HoaDon UI: " + e.getMessage());
+                            e.printStackTrace();
+                        }
+                    });
             } else {
                 System.err.println("HoaDonService is not available, cannot load data.");
-                // Initialize empty lists without sample data
+                    javafx.application.Platform.runLater(() -> {
                 hoaDonList = FXCollections.observableArrayList();
                 filteredHoaDonList = FXCollections.observableArrayList(hoaDonList);
                 if (tabelViewThuPhi != null) {
                     ((TableView<HoaDonTableData>) tabelViewThuPhi).setItems(filteredHoaDonList);
                 }
                 updateHoaDonKetQuaLabel();
+                    });
             }
         } catch (Exception e) {
             System.err.println("Error loading HoaDon data: " + e.getMessage());
             e.printStackTrace();
-            // Initialize empty lists without sample data
+                javafx.application.Platform.runLater(() -> {
             hoaDonList = FXCollections.observableArrayList();
             filteredHoaDonList = FXCollections.observableArrayList(hoaDonList);
             if (tabelViewThuPhi != null) {
                 ((TableView<HoaDonTableData>) tabelViewThuPhi).setItems(filteredHoaDonList);
             }
             updateHoaDonKetQuaLabel();
+                });
         }
+        }, "HomeList-LoadHoaDon").start();
     }
 
 

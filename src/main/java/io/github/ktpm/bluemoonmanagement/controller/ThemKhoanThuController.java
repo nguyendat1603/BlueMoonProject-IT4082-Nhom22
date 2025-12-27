@@ -453,16 +453,16 @@ public class ThemKhoanThuController {
             // Refresh khoản thu table ngay lập tức
             refreshKhoanThuTable();
             
-            // Close window after successful addition với delay ngắn hơn
-            javafx.application.Platform.runLater(() -> {
+            // Close window after successful addition with delay (do not block UI thread)
+            new Thread(() -> {
                 try {
                     Thread.sleep(1000); // Show success message for 1 second
-                    handleClose(null);
+                    javafx.application.Platform.runLater(() -> handleClose(null));
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
-                    handleClose(null);
+                    javafx.application.Platform.runLater(() -> handleClose(null));
                 }
-            });
+            }, "ThemKhoanThu-CloseDelay").start();
 
         } else {
             textError.setText("Lỗi: " + response.getMessage());
@@ -737,16 +737,16 @@ public class ThemKhoanThuController {
                 } else {
                 }
                 
-                // Đóng form chính sau khi xử lý xong
-                javafx.application.Platform.runLater(() -> {
+                // Đóng form chính sau khi xử lý xong (do not block UI thread)
+                new Thread(() -> {
                     try {
                         Thread.sleep(500);
-                        handleClose(null);
+                        javafx.application.Platform.runLater(() -> handleClose(null));
                     } catch (InterruptedException e) {
                         Thread.currentThread().interrupt();
-                        handleClose(null);
+                        javafx.application.Platform.runLater(() -> handleClose(null));
                     }
-                });
+                }, "ThemKhoanThu-CloseDelay").start();
             });
             
         } catch (Exception e) {
@@ -1092,16 +1092,16 @@ public class ThemKhoanThuController {
                     buttonChinhSua.setVisible(true);
                 }
                 
-                // Close window after successful update với delay ngắn hơn
-                javafx.application.Platform.runLater(() -> {
+                // Close window after successful update with delay (do not block UI thread)
+                new Thread(() -> {
                     try {
                         Thread.sleep(1000); // Show success message for 1 second
-                        handleClose(null);
+                        javafx.application.Platform.runLater(() -> handleClose(null));
                     } catch (InterruptedException e) {
                         Thread.currentThread().interrupt();
-                        handleClose(null);
+                        javafx.application.Platform.runLater(() -> handleClose(null));
                     }
-                });
+                }, "ThemKhoanThu-UpdateCloseDelay").start();
                 
             } else {
                 textError.setText("Lỗi: " + response.getMessage());

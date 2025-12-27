@@ -56,8 +56,36 @@ public class CanHoServiceImpl implements CanHoService {
 
     @Override
     public List<CanHoDto> getAllCanHo() {
-        List<CanHo> canHoList = canHoRepository.findAll();
-        return canHoList.stream()
+        // Use a projection query to avoid loading full entity graphs into memory.
+        List<io.github.ktpm.bluemoonmanagement.model.dto.canHo.CanHoSummaryDto> summaries = canHoRepository.findAllSummary();
+        return summaries.stream().map(s -> {
+            io.github.ktpm.bluemoonmanagement.model.dto.canHo.CanHoDto dto = new io.github.ktpm.bluemoonmanagement.model.dto.canHo.CanHoDto();
+            dto.setMaCanHo(s.getMaCanHo());
+            dto.setToaNha(s.getToaNha());
+            dto.setTang(s.getTang());
+            dto.setSoNha(s.getSoNha());
+            dto.setDienTich(s.getDienTich());
+            dto.setDaBanChua(s.isDaBanChua());
+            dto.setTrangThaiKiThuat(s.getTrangThaiKiThuat());
+            dto.setTrangThaiSuDung(s.getTrangThaiSuDung());
+            // Create minimal ChuHoDto with name only
+            if (s.getChuHoName() != null) {
+                io.github.ktpm.bluemoonmanagement.model.dto.cuDan.ChuHoDto chu = new io.github.ktpm.bluemoonmanagement.model.dto.cuDan.ChuHoDto();
+                chu.setHoVaTen(s.getChuHoName());
+                dto.setChuHo(chu);
+            } else {
+                dto.setChuHo(null);
+            }
+            return dto;
+        }).collect(Collectors.toList());
+    }
+
+    @Override
+    public List<CanHoDto> getCanHoPage(int limit) {
+        // Use pagination to limit initial load
+        org.springframework.data.domain.PageRequest page = org.springframework.data.domain.PageRequest.of(0, Math.max(1, limit));
+        org.springframework.data.domain.Page<CanHo> pageResult = canHoRepository.findAll(page);
+        return pageResult.stream()
                 .map(canHoMapper::toCanHoDto)
                 .collect(Collectors.toList());
     }

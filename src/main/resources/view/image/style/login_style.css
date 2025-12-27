@@ -1,84 +1,69 @@
+/* Tổng thể nền */
 .root {
-    -fx-background-color: #ffffff;
-    -fx-font-family: "Arial";
-    -fx-text-fill: #333333;
-    -fx-font-size: 18px;
+    -fx-background-color: #f0f2f5; /* Màu xám nhạt nền Facebook */
+    -fx-font-family: "Segoe UI", "Helvetica Neue", Arial;
 }
 
-.text-field {
-    -fx-background-color: #F0F0F0;
-    -fx-background-radius: 8;
-    -fx-pref-height: 55px;
-    -fx-text-fill: #333333;
-    -fx-prompt-text-fill: #A6A6A6;
-    -fx-font-size: 18px;
+/* Ô nhập liệu (Email, Mật khẩu) */
+.text-field, .password-field {
+    -fx-background-color: white;
+    -fx-border-color: #dddfe2; /* Viền nhạt */
+    -fx-border-width: 1;
+    -fx-border-radius: 6; /* ĐỘ BO GÓC GIỐNG FB */
+    -fx-background-radius: 6;
+    -fx-padding: 14 16;
+    -fx-font-size: 16px;
+    -fx-text-fill: #1c1e21;
+    -fx-prompt-text-fill: #8d949e;
 }
 
-.button {
+/* Hiệu ứng khi click vào ô nhập liệu */
+.text-field:focused, .password-field:focused {
+    -fx-border-color: #1877f2; /* Viền xanh khi focus */
+    -fx-border-width: 1.5;
+}
+
+/* Nút Đăng nhập chính (Action Button) */
+.action-button {
+    -fx-background-color: #1877f2; /* Xanh Facebook */
+    -fx-background-radius: 6; /* Bo góc nút */
+    -fx-text-fill: white;
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
     -fx-cursor: hand;
+    -fx-pref-height: 50px;
 }
 
+.action-button:hover {
+    -fx-background-color: #166fe5; /* Màu đậm hơn tí khi di chuột */
+}
+
+/* Nút Quên mật khẩu (Button kiểu link) */
+.button-textlike {
+    -fx-background-color: transparent;
+    -fx-text-fill: #1877f2;
+    -fx-font-size: 14px;
+    -fx-underline: false; /* Facebook hiện đại thường không gạch chân */
+}
+
+.button-textlike:hover {
+    -fx-underline: true;
+    -fx-background-color: transparent;
+}
+
+/* Checkbox (Hiện mật khẩu) */
 .check-box {
-    -fx-font-size: 18px;
-    -fx-text-fill: #333333;
-    -fx-cursor: hand;
+    -fx-font-size: 14px;
+    -fx-text-fill: #606770;
 }
 
 .check-box .box {
     -fx-background-color: white;
-    -fx-border-color: #888888;
+    -fx-border-color: #dddfe2;
     -fx-border-radius: 3;
     -fx-background-radius: 3;
-    -fx-padding: 3;
-}
-
-.check-box:selected .box {
-    -fx-background-color: #4472C4;
-    -fx-border-color: #4472C4;
 }
 
 .check-box:selected .mark {
-    -fx-background-color: white;
-}
-
-.button-textlike { /* Nút thao tác, có gạch chân, chưa đổi màu */
-    -fx-background-color: transparent;
-    -fx-underline: true;
-    -fx-background-radius: 15;
-    -fx-text-fill: #333333;
-}
-
-.button-textlike:hover { /* Nền trắng nhạt */
-    -fx-background-color: rgba(0, 0, 0, 0.1);
-}
-
-.action-button {
-    -fx-background-radius: 8;
-    -fx-pref-height: 55px;
-    -fx-font-weight: bold;
-    -fx-text-fill: #FFFFFF;
-    -fx-background-color: #4472C4;
-    -fx-font-size: 20px;
-}
-
-.action-button:hover {
-    -fx-background-color: #8FAADC;
-}
-
-.wait-button {
-    -fx-background-radius: 8;
-    -fx-pref-height: 55px;
-    -fx-background-color: #FFFFFF;
-    -fx-text-fill: #333333;
-    -fx-font-weight: bold;
-    -fx-font-size: 20px;
-    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.2), 5, 0.5, 0, 0);
-}
-
-.wait-button:hover {
-    -fx-background-color: #DAE3F3;
-}
-
-.background {
-    -fx-background-color: linear-gradient(from 0% 0% to 0% 100%, #FFFFFF, #9FD7F9);
+    -fx-background-color: #1877f2;
 }

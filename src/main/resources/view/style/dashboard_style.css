@@ -41,6 +41,9 @@
     /* Con trỏ hình bàn tay */
     -fx-cursor: hand;
 }
+.menu-icon {
+    -fx-fill: #4A90E2;   /* màu xanh ngọc */
+}
 
 
 

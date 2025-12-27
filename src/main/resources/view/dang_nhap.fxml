@@ -1,5 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import java.lang.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
 <?import java.lang.String?>
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
@@ -17,11 +23,11 @@
 <?import javafx.scene.text.Text?>
 <?import javafx.scene.text.TextFlow?>
 
-<HBox prefHeight="720.0" prefWidth="1280.0" stylesheets="@style/login_style.css" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="io.github.ktpm.bluemoonmanagement.controller.LoginController">
+<HBox prefHeight="720.0" prefWidth="1280.0" stylesheets="@style/login_style.css" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="io.github.ktpm.bluemoonmanagement.controller.LoginController">
    <children>
       <VBox alignment="CENTER" prefHeight="200.0" prefWidth="100.0" styleClass="background" HBox.hgrow="ALWAYS">
          <children>
-            <ImageView fitHeight="461.0" fitWidth="575.0" pickOnBounds="true" preserveRatio="true">
+            <ImageView fitHeight="726.0" fitWidth="869.0" pickOnBounds="true" preserveRatio="true">
                <image>
                   <Image url="@image/logo.png" />
                </image>
@@ -35,7 +41,7 @@
          <children>
             <VBox alignment="CENTER" spacing="20.0">
                <children>
-                  <Label styleClass="theme-text-color" text="Đăng nhập bằng email">
+                  <Label styleClass="theme-text-color" text="Đăng nhập ">
                      <font>
                         <Font name="Arial Bold" size="36.0" />
                      </font>
@@ -50,7 +56,7 @@
                               <Insets left="5.0" />
                            </VBox.margin>
                         </Label>
-                        <TextField fx:id="textFieldEmail" prefHeight="55.0" promptText="Nhập địa chỉ email">
+                        <TextField fx:id="textFieldEmail" prefHeight="55.0" promptText="Email" styleClass="fb-input">
                            <font>
                               <Font name="Arial" size="18.0" />
                            </font>
@@ -64,39 +70,32 @@
                               <Insets left="5.0" />
                            </padding>
                         </Label>
-                        <StackPane>
-                           <children>
-                              <PasswordField fx:id="passwordFieldMatKhau" prefHeight="55.0" promptText="Nhập mật khẩu">
-                                 <font>
-                                    <Font name="Arial" size="18.0" />
-                                 </font>
-                              </PasswordField>
-                              <TextField fx:id="textFieldMatKhau" prefHeight="55.0" promptText="Nhập mật khẩu">
-                                 <font>
-                                    <Font name="Arial" size="18.0" />
-                                 </font>
-                              </TextField>
-                           </children>
-                        </StackPane>
+                  <StackPane>
+                     <children>
+   
+       <PasswordField fx:id="passwordField" prefHeight="55.0" promptText="Mật khẩu" styleClass="fb-input">
+           <font>
+               <Font name="Arial" size="18.0" />
+           </font>
+       </PasswordField>
+   
+       <TextField fx:id="passwordText" managed="false" prefHeight="55.0" promptText="Mật khẩu" styleClass="fb-input" visible="false">
+           <font>
+               <Font name="Arial" size="18.0" />
+           </font>
+       </TextField>
+   
+       <Button fx:id="toggleBtn" mnemonicParsing="false" onAction="#togglePassword" styleClass="eye-button" StackPane.alignment="CENTER_RIGHT">
+           <StackPane.margin>
+               <Insets right="12.0" />
+           </StackPane.margin>
+       </Button>
+                     </children>
+
+</StackPane>
+
                      </children>
                   </VBox>
-                  <HBox alignment="CENTER">
-                     <children>
-                        <CheckBox fx:id="checkBoxHienMatKhau" mnemonicParsing="false" onAction="#showPassword" text="Hiện mật khẩu">
-                           <font>
-                              <Font name="Arial" size="18.0" />
-                           </font>
-                           <styleClass>
-                              <String fx:value="item-text" />
-                              <String fx:value="theme-text-color" />
-                              <String fx:value="having-action" />
-                              <String fx:value="theme-labellike-button" />
-                           </styleClass>
-                        </CheckBox>
-                        <Region HBox.hgrow="ALWAYS" />
-                        <Button fx:id="buttonQuenMatKhau" mnemonicParsing="false" onAction="#DangNhapBangOTPClicked" styleClass="button-textlike" text="Quên mật khẩu?" />
-                     </children>
-                  </HBox>
                   <VBox spacing="10.0">
                      <children>
                         <TextFlow prefWidth="640.0" textAlignment="CENTER">
@@ -115,6 +114,11 @@
                         </Button>
                      </children>
                   </VBox>
+                  <HBox alignment="CENTER">
+                     <children>
+                        <Button fx:id="buttonQuenMatKhau" mnemonicParsing="false" onAction="#DangNhapBangOTPClicked" styleClass="link-button" text="Quên mật khẩu?" />
+                     </children>
+                  </HBox>
                </children>
                <padding>
                   <Insets left="60.0" right="60.0" />

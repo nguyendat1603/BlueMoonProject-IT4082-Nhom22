@@ -1,5 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import java.lang.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
 <?import java.lang.String?>
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
@@ -17,13 +23,13 @@
 <?import javafx.scene.text.Text?>
 <?import javafx.scene.text.TextFlow?>
 
-<HBox prefHeight="720.0" prefWidth="1280.0" stylesheets="@style/login_style.css" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1">
+<HBox prefHeight="720.0" prefWidth="1280.0" stylesheets="@style/login_style.css" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1">
    <children>
       <VBox alignment="CENTER" prefHeight="200.0" prefWidth="100.0" styleClass="background" HBox.hgrow="ALWAYS">
          <children>
-            <ImageView fitHeight="461.0" fitWidth="575.0" pickOnBounds="true" preserveRatio="true">
+            <ImageView fitHeight="717.0" fitWidth="760.0" pickOnBounds="true" preserveRatio="true">
                <image>
-                  <Image url="@image/logo_white.png" />
+                  <Image url="@image/logo.png" />
                </image>
                <VBox.margin>
                   <Insets bottom="40.0" />
@@ -53,17 +59,6 @@
                                  </padding>
                               </Label>
                               <Region HBox.hgrow="ALWAYS" />
-                              <CheckBox fx:id="checkBoxHienMatKhau" mnemonicParsing="false" onAction="#showPassword" text="Hiện mật khẩu">
-                                 <font>
-                                    <Font name="Arial" size="18.0" />
-                                 </font>
-                                 <styleClass>
-                                    <String fx:value="item-text" />
-                                    <String fx:value="theme-text-color" />
-                                    <String fx:value="having-action" />
-                                    <String fx:value="theme-labellike-button" />
-                                 </styleClass>
-                              </CheckBox>
                            </children>
                         </HBox>
                         <StackPane>
@@ -78,6 +73,11 @@
                                     <Font name="Arial" size="18.0" />
                                  </font>
                               </TextField>
+                              <Button mnemonicParsing="false" styleClass="eye-button" StackPane.alignment="CENTER_RIGHT">
+                                 <StackPane.margin>
+                                    <Insets right="12.0" />
+                                 </StackPane.margin>
+                              </Button>
                            </children>
                         </StackPane>
                      </children>
@@ -92,17 +92,6 @@
                                  </padding>
                               </Label>
                               <Region HBox.hgrow="ALWAYS" />
-                              <CheckBox fx:id="checkBoxHienXacNhanMatKhau" mnemonicParsing="false" onAction="#showPassword" text="Hiện mật khẩu">
-                                 <font>
-                                    <Font name="Arial" size="18.0" />
-                                 </font>
-                                 <styleClass>
-                                    <String fx:value="item-text" />
-                                    <String fx:value="theme-text-color" />
-                                    <String fx:value="having-action" />
-                                    <String fx:value="theme-labellike-button" />
-                                 </styleClass>
-                              </CheckBox>
                            </children>
                         </HBox>
                         <StackPane>
@@ -117,6 +106,11 @@
                                     <Font name="Arial" size="18.0" />
                                  </font>
                               </TextField>
+                              <Button mnemonicParsing="false" styleClass="eye-button" StackPane.alignment="CENTER_RIGHT">
+                                 <StackPane.margin>
+                                    <Insets right="12.0" />
+                                 </StackPane.margin>
+                              </Button>
                            </children>
                         </StackPane>
                      </children>

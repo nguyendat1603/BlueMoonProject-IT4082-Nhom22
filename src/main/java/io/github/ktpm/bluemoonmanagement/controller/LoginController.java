@@ -22,7 +22,6 @@ import javafx.scene.Scene;
 import javafx.scene.layout.StackPane;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
-
 @Component
 public class LoginController implements Initializable {
 
@@ -39,9 +38,6 @@ public class LoginController implements Initializable {
     private CheckBox checkBoxHienMatKhau;
 
     @FXML
-    private PasswordField passwordFieldMatKhau;
-
-    @FXML
     private StackPane stackRoot;
 
     @FXML
@@ -49,9 +45,6 @@ public class LoginController implements Initializable {
 
     @FXML
     private TextField textFieldEmail;
-
-    @FXML
-    private TextField textFieldMatKhau;
     @FXML
     private Label labelScreenName;
     @Autowired
@@ -59,55 +52,37 @@ public class LoginController implements Initializable {
     @Autowired
     private FxViewLoader fxViewLoader;
 
+    @FXML private PasswordField passwordField;   // mật khẩu ẩn
+    @FXML private TextField passwordText;         // mật khẩu hiện
+
+    @FXML private Button toggleBtn;
 
     @Override
-    public void initialize(URL url, ResourceBundle resourceBundle) {
+public void initialize(URL url, ResourceBundle resourceBundle) {
+    if (passwordText != null) {
+        passwordText.setVisible(false);
+        passwordText.setManaged(false);
+    }
+}
 
-        textFieldMatKhau.setVisible(false);
-        passwordFieldMatKhau.setVisible(true);
-        checkBoxHienMatKhau.setSelected(false);
+    
+    @FXML
+void dangNhapPressed(ActionEvent event) {
+    String email = textFieldEmail.getText().trim();
+
+    String password = passwordField.isVisible()
+            ? passwordField.getText().trim()
+            : passwordText.getText().trim();
+
+    if (email.isEmpty() || password.isEmpty()) {
+        textError.setText("Vui lòng nhập đầy đủ thông tin đăng nhập.");
+        textError.setVisible(true);
+        return;
     }
 
-    @FXML
-    void showPassword(ActionEvent event) {
-        if (checkBoxHienMatKhau.isSelected()) {
-            // Nếu được chọn thì hiển thị mật khẩu
-            textFieldMatKhau.setText(passwordFieldMatKhau.getText());
-            textFieldMatKhau.setVisible(true);
-            passwordFieldMatKhau.setVisible(false);
-        } else {
-            // Nếu bỏ chọn thì ẩn mật khẩu
-            passwordFieldMatKhau.setText(textFieldMatKhau.getText());
-            passwordFieldMatKhau.setVisible(true);
-            textFieldMatKhau.setVisible(false);
-        }
-    }
 
-    @FXML
-    void dangNhapPressed(ActionEvent event) {
-        String email = textFieldEmail.getText().trim();
-        String password = passwordFieldMatKhau.getText().trim();
-        if (password.isEmpty()) {
-            password = textFieldMatKhau.getText().trim();
-        }
 
-        if (email.isEmpty()) {
-            textError.setText("Vui lòng nhập đầy đủ thông tin đăng nhập.");
-            textError.setVisible(true);
-            return;
-        }
 
-//        // Xác thực khuôn mặt trước khi đăng nhập
-//        //FaceRecognitionService faceRecognitionService = new FaceRecognitionService();
-//       //boolean faceMatched = faceRecognitionService.recognizeFace(email);
-//
-//        //if (!faceMatched) {
-//            textError.setText("Không nhận diện được khuôn mặt hoặc khuôn mặt không khớp với tài khoản đã nhập.");
-//            textError.setVisible(true);
-//            return;
-//        }
-
-        // Nếu qua xác thực khuôn mặt -> tiếp tục đăng nhập
         DangNhapDto dangNhapDto = new DangNhapDto(email, password);
         ResponseDto response = dangNhapServive.dangNhap(dangNhapDto);
         if (response.isSuccess()) {
@@ -123,26 +98,43 @@ public class LoginController implements Initializable {
                 stage.setScene(new Scene(mainView));
                 stage.setTitle("Application");
                 stage.show();
-                FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/chat_view.fxml"));
-                Parent chatView = loader.load();
-                Stage chatStage = new Stage();
-                chatStage.setTitle("ChatBot");
-                chatStage.setScene(new Scene(chatView));
-                chatStage.show();
+
             } catch (IOException e) {
                 e.printStackTrace();
                 // Xử lý lỗi nếu không thể tải file FXML
             }
-        } else {
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setTitle("Đăng nhập khuôn mặt thất bại");
-            alert.setHeaderText(null);
-            alert.setContentText("Vui lòng đăng nhập lại !");
-            alert.showAndWait();
-            textError.setText(response.getMessage());
-            textError.setVisible(true);
         }
     }
+
+ @FXML
+private void togglePassword() {
+
+    boolean showing = passwordText.isVisible();
+
+    if (showing) {
+        passwordField.setText(passwordText.getText());
+        passwordText.setVisible(false);
+        passwordText.setManaged(false);
+
+        passwordField.setVisible(true);
+        passwordField.setManaged(true);
+
+        toggleBtn.getStyleClass().remove("eye-open");
+
+    } else {
+        passwordText.setText(passwordField.getText());
+        passwordField.setVisible(false);
+        passwordField.setManaged(false);
+
+        passwordText.setVisible(true);
+        passwordText.setManaged(true);
+
+        if (!toggleBtn.getStyleClass().contains("eye-open")) {
+            toggleBtn.getStyleClass().add("eye-open");
+        }
+    }
+}
+
 
 
     @FXML

@@ -588,8 +588,8 @@ public class HoaDonServiceImpl implements HoaDonService {
     
     @Override
     public List<HoaDonDto> getAllHoaDon() {
-        // Get all bills from repository
-        List<HoaDon> hoaDonList = hoaDonRepository.findAll();
+        // Get all bills from repository with eager loading to prevent N+1 queries
+        List<HoaDon> hoaDonList = hoaDonRepository.findAllWithRelationships();
         // Convert entities to DTOs and return
         return hoaDonList.stream()
                 .map(hoaDonMapper::toHoaDonDto)
