@@ -8,6 +8,13 @@ spring:
     username: neondb_owner
     password: npg_6D5MgcNqwCvl
     driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+      connection-timeout: 60000
+      idle-timeout: 300000
+      max-lifetime: 1800000
+      leak-detection-threshold: 10000
 
   # JPA/Hibernate Configuration
   jpa:
@@ -29,18 +36,13 @@ spring:
           starttls:
             enable: true
 
-# Logging Configuration
+# Logging Configuration (merged with debug levels)
 logging:
   level:
     root: INFO
-    org.springframework: OFF
-    org.hibernate: OFF
-    org.springframework.web: OFF
-    org.springframework.boot.autoconfigure: OFF
-    org.springframework.context: OFF
-    org.springframework.jdbc: OFF
-    org.springframework.orm.jpa: OFF
-    org.springframework.transaction: OFF
-    org.springframework.security: OFF
-    com.zaxxer.hikari: OFF
-    com.password4j: OFF
+    org.springframework: INFO
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+    org.springframework.transaction: DEBUG
+    com.zaxxer.hikari: DEBUG
+    io.github.ktpm.bluemoonmanagement: DEBUG

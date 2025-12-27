@@ -2630,7 +2630,7 @@ public class Home_list implements Initializable {
                 ((TableColumn<KhoanThuTableData, String>) tableColumnNgayTao1).setCellValueFactory(new PropertyValueFactory<>("thoiHan"));
             }
 
-            // "Trạng thái hóa đơn" -> hiển thị dựa trên dữ liệu từ database
+            // "Trạng thái hóa đơn" -> hiển thị dựa trên dữ liệu từ cache
             if (tableColumnTrangThaiHoaDon != null) {
                 ((TableColumn<KhoanThuTableData, String>) tableColumnTrangThaiHoaDon).setCellValueFactory(cellData -> {
                     KhoanThuTableData khoanThu = cellData.getValue();
@@ -2638,9 +2638,6 @@ public class Home_list implements Initializable {
                         io.github.ktpm.bluemoonmanagement.model.dto.khoanThu.KhoanThuDto dto = khoanThuById.get(khoanThu.getMaKhoanThu());
                         if (dto != null) {
                             return new javafx.beans.property.SimpleStringProperty(dto.isTaoHoaDon() ? "Đã tạo" : "Chưa tạo");
-                        } else {
-                            // ensure cache loaded asynchronously
-                            ensureKhoanThuCacheLoaded();
                         }
                     }
                     return new javafx.beans.property.SimpleStringProperty("Chưa tạo");
@@ -2913,6 +2910,13 @@ public class Home_list implements Initializable {
                                 System.err.println("ERROR: tabelViewKhoanThu is null!");
                             }
                             updateKhoanThuKetQuaLabel();
+
+                            // Also populate khoanThuById cache for cell factories
+                            if (khoanThuById != null && khoanThuDtoList != null) {
+                                for (KhoanThuDto dto : khoanThuDtoList) {
+                                    khoanThuById.put(dto.getMaKhoanThu(), dto);
+                                }
+                            }
                         } catch (Exception e) {
                             System.err.println("Error updating KhoanThu UI: " + e.getMessage());
                             e.printStackTrace();
@@ -3204,7 +3208,8 @@ public class Home_list implements Initializable {
 
             for (int i = 5; i >= 0; i--) {
                 java.time.LocalDate month = now.minusMonths(i);
-                String monthLabel = month.getMonth().getDisplayName(java.time.format.TextStyle.SHORT, java.util.Locale.forLanguageTag("vi")) + " " + month.getYear();
+                // Use compact month/year label to avoid long overlapping labels (e.g. "7/25")
+                String monthLabel = String.format("%d/%02d", month.getMonthValue(), month.getYear() % 100);
 
                 // Lấy số cư dân thực tế cho tháng này từ database
                 int cuDanCount = getCuDanCountForMonth(month);
@@ -3221,6 +3226,20 @@ public class Home_list implements Initializable {
 
             // Đổi màu thành xanh cho BarChart
             chart.setStyle("-fx-background-color: transparent;");
+
+            // Improve x-axis label layout to avoid overlapping/duplicate-looking labels
+            try {
+                javafx.scene.chart.Axis<?> xAxisGeneric = chart.getXAxis();
+                if (xAxisGeneric instanceof javafx.scene.chart.CategoryAxis) {
+                    javafx.scene.chart.CategoryAxis xAxis = (javafx.scene.chart.CategoryAxis) xAxisGeneric;
+                    // rotate labels to make them readable and avoid overlap
+                    xAxis.setTickLabelRotation(-25.0);
+                    // use a smaller gap so labels don't wrap strangely
+                    xAxis.setTickLabelGap(6.0);
+                }
+            } catch (Exception ignore) {
+                // non-fatal: some charts/custom axes may not support these calls
+            }
 
             // Đặt màu xanh cho các cột trong biểu đồ
             javafx.application.Platform.runLater(() -> {
