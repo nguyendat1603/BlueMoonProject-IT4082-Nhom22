@@ -39,10 +39,7 @@ spring:
 # Logging Configuration (merged with debug levels)
 logging:
   level:
-    root: INFO
-    org.springframework: INFO
-    org.hibernate.SQL: DEBUG
-    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
-    org.springframework.transaction: DEBUG
-    com.zaxxer.hikari: DEBUG
-    io.github.ktpm.bluemoonmanagement: DEBUG
+    root: ERROR
+    io.github.ktpm.bluemoonmanagement.startup.DataLoader: INFO
+  pattern:
+    console: "%d{HH:mm:ss} %-5p %c{1} - %m%n"
