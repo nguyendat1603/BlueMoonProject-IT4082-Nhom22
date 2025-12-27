@@ -2,7 +2,6 @@ package io.github.ktpm.bluemoonmanagement.controller;
 
 import java.io.IOException;
 import java.net.URL;
-import java.time.LocalDateTime;
 import java.util.ResourceBundle;
 
 import javafx.stage.Window;
@@ -23,11 +22,11 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
-import javafx.animation.KeyFrame;
-import javafx.animation.Timeline;
-import javafx.util.Duration;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+ 
+import javafx.application.Platform;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 @Component
 public class KhungController implements Initializable{
@@ -67,6 +66,8 @@ public class KhungController implements Initializable{
 
 
     private Home_list centerController;
+    private final AtomicBoolean centerLoaded = new AtomicBoolean(false);
+    private final Queue<Runnable> pendingActions = new ConcurrentLinkedQueue<>();
 
 
     @Autowired
@@ -88,27 +89,55 @@ public class KhungController implements Initializable{
         
         String name = Session.getCurrentUser().getHoTen();
         setAccountName(name);
-        try {
-            FxView<Home_list> fxView = fxViewLoader.loadFxView("/view/trang_chu_danh_sach.fxml");
-            mainBorderPane.setCenter(fxView.getView());
-            this.centerController = fxView.getController(); // Gán đúng controller
-            
-            // Inject services vào Home_list controller
-            if (this.centerController != null) {
-                this.centerController.injectServices(canHoService);
-                this.centerController.setParentController(this);
-                // Inject ApplicationContext nếu có
-                try {
-                    this.centerController.setApplicationContext(applicationContext);
-                } catch (Exception e) {
-                    System.err.println("Could not inject ApplicationContext: " + e.getMessage());
-                }
+        // Lazy-load center view to avoid blocking UI initialization.
+        Label placeholder = new Label("Đang tải giao diện...");
+        mainBorderPane.setCenter(placeholder);
+
+       
+        Thread loaderThread = new Thread(() -> {
+            try {
+                FxView<Home_list> fxView = fxViewLoader.loadFxView("/view/trang_chu_danh_sach.fxml");
+                Platform.runLater(() -> {
+                    try {
+                        mainBorderPane.setCenter(fxView.getView());
+                        this.centerController = fxView.getController(); // Gán đúng controller
+
+                        // Inject services vào Home_list controller
+                        if (this.centerController != null) {
+                            this.centerController.injectServices(canHoService);
+                            this.centerController.setParentController(this);
+                            // Inject ApplicationContext nếu có
+                            try {
+                                this.centerController.setApplicationContext(applicationContext);
+                            } catch (Exception e) {
+                                System.err.println("Could not inject ApplicationContext: " + e.getMessage());
+                            }
+                        }
+
+                        updateScreenLabel("Trang chủ");
+                        centerLoaded.set(true);
+                        // execute any queued actions
+                        Runnable act;
+                        while ((act = pendingActions.poll()) != null) {
+                            try {
+                                Platform.runLater(act);
+                            } catch (Exception ex) {
+                                System.err.println("Error executing queued action: " + ex.getMessage());
+                                ex.printStackTrace();
+                            }
+                        }
+                    } catch (Exception e) {
+                        System.err.println("Error setting center view: " + e.getMessage());
+                        e.printStackTrace();
+                    }
+                });
+            } catch (IOException e) {
+                System.err.println("Không thể load trang chủ (background): " + e.getMessage());
+                e.printStackTrace();
             }
-            
-            updateScreenLabel("Trang chủ");
-        } catch (IOException e) {
-            System.err.println("Không thể load trang chủ: " + e.getMessage());
-        }
+        }, "KhungCenterLoader");
+        loaderThread.setDaemon(true);
+        loaderThread.start();
 
         if (Session.getCurrentUser().getVaiTro().equals("Tổ trưởng")) {
             buttonTaiKhoan.setDisable(false);
@@ -128,55 +157,95 @@ public class KhungController implements Initializable{
         }
     }
 
+    private void runOrQueue(Runnable action) {
+        if (centerLoaded.get() && centerController != null) {
+            Platform.runLater(action);
+        } else {
+            pendingActions.add(action);
+            ThongBaoController.showInfo("Đang tải", "Giao diện đang tải, vui lòng chờ...");
+        }
+    }
+
     @FXML
     void goToCanHo(ActionEvent event) {
-        if (centerController != null) {
-            centerController.goToCanHo(event);
-        }
+        runOrQueue(() -> {
+            try {
+                centerController.goToCanHo(event);
+            } catch (Exception ex) {
+                System.err.println("Error running queued goToCanHo: " + ex.getMessage());
+            }
+        });
     }
 
     @FXML
     void goToCuDan(ActionEvent event) {
-        if (centerController != null) {
-            centerController.gotoCuDan(event);
-        }
+        runOrQueue(() -> {
+            try {
+                centerController.gotoCuDan(event);
+            } catch (Exception ex) {
+                System.err.println("Error running queued goToCuDan: " + ex.getMessage());
+            }
+        });
     }
 
     @FXML
     void goToHoSo(ActionEvent event) {
-        if (centerController != null) {
-            centerController.goToHoSo(event);
-        }
+        runOrQueue(() -> {
+            try {
+                centerController.goToHoSo(event);
+            } catch (Exception ex) {
+                System.err.println("Error running queued goToHoSo: " + ex.getMessage());
+            }
+        });
     }
 
     @FXML
     void goToKhoanThu(ActionEvent event) {
-        if (centerController != null) {
-            centerController.gotoKhoanThu(event);
-        }
+        runOrQueue(() -> {
+            try {
+                centerController.gotoKhoanThu(event);
+            } catch (Exception ex) {
+                System.err.println("Error running queued goToKhoanThu: " + ex.getMessage());
+            }
+        });
     }
 
     @FXML
     void goToTaiKhoan(ActionEvent event) {
-        centerController.show("TaiKhoan");
-        updateScreenLabel("Danh sách tài khoản");
+        runOrQueue(() -> {
+            try {
+                centerController.show("TaiKhoan");
+                updateScreenLabel("Danh sách tài khoản");
+            } catch (Exception ex) {
+                System.err.println("Error running queued goToTaiKhoan: " + ex.getMessage());
+            }
+        });
     }
 
     @FXML
     void goToTrangChu(ActionEvent event) {
-        centerController.show("TrangChu");
-        updateScreenLabel("Trang chủ");
+        runOrQueue(() -> {
+            try {
+                centerController.show("TrangChu");
+                updateScreenLabel("Trang chủ");
+            } catch (Exception ex) {
+                System.err.println("Error running queued goToTrangChu: " + ex.getMessage());
+            }
+        });
     }
 
     @FXML
     void gotoLichSuThu(ActionEvent event) {
-        centerController.show("LichSuThu");
-        updateScreenLabel("Hóa đơn");
-        
-        // Auto-refresh invoice data when switching to History tab
-        if (centerController != null) {
-            centerController.refreshHoaDonData();
-        }
+        runOrQueue(() -> {
+            try {
+                centerController.show("LichSuThu");
+                updateScreenLabel("Hóa đơn");
+                // Auto-refresh invoice data when switching to History tab
+                centerController.refreshHoaDonData();
+            } catch (Exception ex) {
+                System.err.println("Error running queued gotoLichSuThu: " + ex.getMessage());
+            }
+        });
     }
 
     @FXML

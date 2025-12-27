@@ -368,16 +368,16 @@ public class ThemCuDanController implements Initializable {
                         
                         showSuccessMessage("Đã xóa cư dân khỏi căn hộ.");
                         
-                        // Close window after successful deletion
-                        javafx.application.Platform.runLater(() -> {
+                        // Close window after successful deletion (delay off the UI thread)
+                        new Thread(() -> {
                             try {
                                 Thread.sleep(1000); // Show success message for 1 second
-                                closeWindow();
+                                javafx.application.Platform.runLater(this::closeWindow);
                             } catch (InterruptedException e) {
                                 Thread.currentThread().interrupt();
-                                closeWindow();
+                                javafx.application.Platform.runLater(this::closeWindow);
                             }
-                        });
+                        }, "ThemCuDan-CloseDelay").start();
                     } else {
                         showErrorMessage("Không thể xóa cư dân: " + response.getMessage());
                     }
@@ -480,17 +480,23 @@ public class ThemCuDanController implements Initializable {
                 if (cuDanDto.getMaCanHo() != null && !cuDanDto.getMaCanHo().trim().isEmpty()) {
 
                     
-                    // Use Platform.runLater to refresh on JavaFX thread with slight delay
-                    javafx.application.Platform.runLater(() -> {
+                    // Schedule apartment detail refresh without blocking UI thread
+                    new Thread(() -> {
                         try {
                             Thread.sleep(100); // Small delay to ensure main table refresh completes first
-
-                            ChiTietCanHoController.refreshAllWindowsForApartment(cuDanDto.getMaCanHo());
+                            javafx.application.Platform.runLater(() ->
+                                ChiTietCanHoController.refreshAllWindowsForApartment(cuDanDto.getMaCanHo())
+                            );
+                        } catch (InterruptedException e) {
+                            Thread.currentThread().interrupt();
+                            javafx.application.Platform.runLater(() ->
+                                ChiTietCanHoController.refreshAllWindowsForApartment(cuDanDto.getMaCanHo())
+                            );
                         } catch (Exception e) {
                             System.err.println("ERROR: Exception during apartment refresh: " + e.getMessage());
                             e.printStackTrace();
                         }
-                    });
+                    }, "ThemCuDan-ApartmentRefresh").start();
                 }
                 
                 // Show success message and close window
@@ -841,14 +847,17 @@ public class ThemCuDanController implements Initializable {
                                     // Try to find Home_list controller from scene graph and refresh
                                     refreshResidentsTableDirectly();
 
-                                    
-                                    // Wait a bit more then hide loading
-                                    Thread.sleep(200);
-                                    javafx.application.Platform.runLater(() -> {
-                                        showLoadingState(false);
+                                    // Schedule hiding loading indicator without blocking UI thread
+                                    new Thread(() -> {
+                                        try {
+                                            Thread.sleep(200);
+                                            javafx.application.Platform.runLater(() -> showLoadingState(false));
+                                        } catch (InterruptedException ie) {
+                                            Thread.currentThread().interrupt();
+                                            javafx.application.Platform.runLater(() -> showLoadingState(false));
+                                        }
+                                    }, "ThemCuDan-HideLoadingDelay").start();
 
-                                    });
-                                    
                                 } catch (Exception e) {
                                     javafx.application.Platform.runLater(() -> showLoadingState(false));
                                     System.err.println("ERROR: Failed to refresh residents data: " + e.getMessage());

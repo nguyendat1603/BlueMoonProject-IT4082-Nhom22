@@ -10,4 +10,9 @@ public interface CanHoRepository extends JpaRepository<CanHo, String>, io.github
     @Query("SELECT DISTINCT c FROM CanHo c LEFT JOIN FETCH c.phuongTienList")
     List<CanHo> findAllWithPhuongTien();
     
+    @Query("SELECT new io.github.ktpm.bluemoonmanagement.model.dto.canHo.CanHoSummaryDto(" +
+           "c.maCanHo, c.toaNha, c.tang, c.soNha, c.dienTich, c.daBanChua, c.trangThaiKiThuat, c.trangThaiSuDung, ch.hoVaTen) " +
+           "FROM CanHo c LEFT JOIN c.chuHo ch")
+    List<io.github.ktpm.bluemoonmanagement.model.dto.canHo.CanHoSummaryDto> findAllSummary();
+    
 }

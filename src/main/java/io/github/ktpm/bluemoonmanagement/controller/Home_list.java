@@ -837,63 +837,76 @@ public class Home_list implements Initializable {
      * Reloads data for all tables and views
      */
     private void loadData() {
-        try {
-            if (canHoService != null) {
-                List<CanHoDto> canHoDtoList = canHoService.getAllCanHo();
-                canHoList = FXCollections.observableArrayList();
+        // Run heavy data load off the JavaFX thread to avoid freezing UI.
+        new Thread(() -> {
+            try {
+                if (canHoService != null) {
+                    List<CanHoDto> canHoDtoList = canHoService.getAllCanHo();
+                    java.util.List<CanHoTableData> builtList = new java.util.ArrayList<>();
 
-                if (canHoDtoList != null) {
-                    for (CanHoDto dto : canHoDtoList) {
-                        // Tạm thời hiển thị tất cả căn hộ (tắt logic ẩn căn hộ)
-                        if (true || shouldShowApartment(dto)) {
-                            String chuHoName = dto.getChuHo() != null ? dto.getChuHo().getHoVaTen() : "";
-                            // Cột "Sử dụng" chỉ hiển thị "Trống" hoặc "Đang sử dụng"
-                            String trangThaiSuDung = dto.getTrangThaiSuDung(); // Không hiển thị "Đã bán" ở cột này
-                            // Cột "Tình trạng" hiển thị trạng thái bán
-                            String trangThaiBan = dto.isDaBanChua() ? "Đã bán" : "Chưa bán";
-                            CanHoTableData tableData = new CanHoTableData(
-                                dto.getMaCanHo(),
-                                dto.getToaNha(),
-                                dto.getTang(),
-                                dto.getSoNha(),
-                                dto.getDienTich() + " m²",
-                                chuHoName,
-                                trangThaiSuDung,
-                                dto.getTrangThaiKiThuat(),
-                                trangThaiBan
-                            );
-                            canHoList.add(tableData);
+                    if (canHoDtoList != null) {
+                        for (CanHoDto dto : canHoDtoList) {
+                            // Tạm thời hiển thị tất cả căn hộ (tắt logic ẩn căn hộ)
+                            if (true || shouldShowApartment(dto)) {
+                                String chuHoName = dto.getChuHo() != null ? dto.getChuHo().getHoVaTen() : "";
+                                String trangThaiSuDung = dto.getTrangThaiSuDung();
+                                String trangThaiBan = dto.isDaBanChua() ? "Đã bán" : "Chưa bán";
+                                CanHoTableData tableData = new CanHoTableData(
+                                    dto.getMaCanHo(),
+                                    dto.getToaNha(),
+                                    dto.getTang(),
+                                    dto.getSoNha(),
+                                    dto.getDienTich() + " m²",
+                                    chuHoName,
+                                    trangThaiSuDung,
+                                    dto.getTrangThaiKiThuat(),
+                                    trangThaiBan
+                                );
+                                builtList.add(tableData);
+                            }
                         }
                     }
-                }
 
-                filteredList = FXCollections.observableArrayList(canHoList);
-                if (tabelViewCanHo != null) {
-                    ((TableView<CanHoTableData>) tabelViewCanHo).setItems(filteredList);
+                    // Update UI on FX thread
+                    javafx.application.Platform.runLater(() -> {
+                        try {
+                            canHoList = FXCollections.observableArrayList(builtList);
+                            filteredList = FXCollections.observableArrayList(canHoList);
+                            if (tabelViewCanHo != null) {
+                                ((TableView<CanHoTableData>) tabelViewCanHo).setItems(filteredList);
+                            } else {
+                                System.err.println("ERROR: tabelViewCanHo is null!");
+                            }
+                            updateKetQuaLabel();
+                        } catch (Exception e) {
+                            System.err.println("Error updating UI after loadData: " + e.getMessage());
+                            e.printStackTrace();
+                        }
+                    });
                 } else {
-                    System.err.println("ERROR: tabelViewCanHo is null!");
+                    System.err.println("ERROR: canHoService is null! Cannot load apartment data");
+                    javafx.application.Platform.runLater(() -> {
+                        canHoList = FXCollections.observableArrayList();
+                        filteredList = FXCollections.observableArrayList(canHoList);
+                        if (tabelViewCanHo != null) {
+                            ((TableView<CanHoTableData>) tabelViewCanHo).setItems(filteredList);
+                        }
+                        updateKetQuaLabel();
+                    });
                 }
-                updateKetQuaLabel();
-                    } else {
-            System.err.println("ERROR: canHoService is null! Cannot load apartment data");
-            // Initialize empty lists without sample data
-            canHoList = FXCollections.observableArrayList();
-            filteredList = FXCollections.observableArrayList(canHoList);
-            if (tabelViewCanHo != null) {
-                ((TableView<CanHoTableData>) tabelViewCanHo).setItems(filteredList);
+            } catch (Exception e) {
+                System.err.println("Lỗi khi tải dữ liệu từ service: " + e.getMessage());
+                e.printStackTrace();
+                javafx.application.Platform.runLater(() -> {
+                    canHoList = FXCollections.observableArrayList();
+                    filteredList = FXCollections.observableArrayList(canHoList);
+                    if (tabelViewCanHo != null) {
+                        ((TableView<CanHoTableData>) tabelViewCanHo).setItems(filteredList);
+                    }
+                    updateKetQuaLabel();
+                });
             }
-            updateKetQuaLabel();
-        }
-    } catch (Exception e) {
-        System.err.println("Lỗi khi tải dữ liệu từ service: " + e.getMessage());
-        // Initialize empty lists without sample data
-        canHoList = FXCollections.observableArrayList();
-        filteredList = FXCollections.observableArrayList(canHoList);
-        if (tabelViewCanHo != null) {
-            ((TableView<CanHoTableData>) tabelViewCanHo).setItems(filteredList);
-        }
-        updateKetQuaLabel();
-    }
+        }, "HomeList-LoadData").start();
     }
 
     /**
@@ -2842,62 +2855,75 @@ public class Home_list implements Initializable {
      * Load Khoản Thu data
      */
     private void loadKhoanThuData() {
+        // Load fee data off the JavaFX thread to avoid blocking UI.
+        new Thread(() -> {
+            try {
+                if (khoanThuService != null) {
+                    List<KhoanThuDto> khoanThuDtoList = khoanThuService.getAllKhoanThu();
+                    java.util.List<KhoanThuTableData> built = new java.util.ArrayList<>();
 
-        try {
-            if (khoanThuService != null) {
-                List<KhoanThuDto> khoanThuDtoList = khoanThuService.getAllKhoanThu();
-                khoanThuList = FXCollections.observableArrayList();
+                    if (khoanThuDtoList != null) {
+                        for (KhoanThuDto dto : khoanThuDtoList) {
+                            String ngayTao = dto.getNgayTao() != null ? dto.getNgayTao().toString() : "";
+                            String thoiHan = dto.getThoiHan() != null ? dto.getThoiHan().toString() : "";
+                            String soTien = String.format("%,d VNĐ", dto.getSoTien());
+                            String loaiKhoanThu = dto.isBatBuoc() ? "Bắt buộc" : "Tự nguyện";
 
-                if (khoanThuDtoList != null) {
-                    for (KhoanThuDto dto : khoanThuDtoList) {
-                        String ngayTao = dto.getNgayTao() != null ? dto.getNgayTao().toString() : "";
-                        String thoiHan = dto.getThoiHan() != null ? dto.getThoiHan().toString() : "";
-                        String soTien = String.format("%,d VNĐ", dto.getSoTien());
-                        String loaiKhoanThu = dto.isBatBuoc() ? "Bắt buộc" : "Tự nguyện";
-
-                        KhoanThuTableData tableData = new KhoanThuTableData(
-                            dto.getMaKhoanThu(),
-                            dto.getTenKhoanThu(),
-                            loaiKhoanThu,
-                            dto.getDonViTinh() != null ? dto.getDonViTinh() : "",
-                            soTien,
-                            dto.getPhamVi() != null ? dto.getPhamVi() : "Tất cả",
-                            ngayTao,
-                            thoiHan,
-                            dto.getGhiChu() != null ? dto.getGhiChu() : ""
-                        );
-                        khoanThuList.add(tableData);
+                            KhoanThuTableData tableData = new KhoanThuTableData(
+                                dto.getMaKhoanThu(),
+                                dto.getTenKhoanThu(),
+                                loaiKhoanThu,
+                                dto.getDonViTinh() != null ? dto.getDonViTinh() : "",
+                                soTien,
+                                dto.getPhamVi() != null ? dto.getPhamVi() : "Tất cả",
+                                ngayTao,
+                                thoiHan,
+                                dto.getGhiChu() != null ? dto.getGhiChu() : ""
+                            );
+                            built.add(tableData);
+                        }
                     }
-                }
 
-                filteredKhoanThuList = FXCollections.observableArrayList(khoanThuList);
-                if (tabelViewKhoanThu != null) {
-                    ((TableView<KhoanThuTableData>) tabelViewKhoanThu).setItems(filteredKhoanThuList);
+                    // Update UI on FX thread
+                    javafx.application.Platform.runLater(() -> {
+                        try {
+                            khoanThuList = FXCollections.observableArrayList(built);
+                            filteredKhoanThuList = FXCollections.observableArrayList(khoanThuList);
+                            if (tabelViewKhoanThu != null) {
+                                ((TableView<KhoanThuTableData>) tabelViewKhoanThu).setItems(filteredKhoanThuList);
+                            } else {
+                                System.err.println("ERROR: tabelViewKhoanThu is null!");
+                            }
+                            updateKhoanThuKetQuaLabel();
+                        } catch (Exception e) {
+                            System.err.println("Error updating KhoanThu UI: " + e.getMessage());
+                            e.printStackTrace();
+                        }
+                    });
                 } else {
-                    System.err.println("ERROR: tabelViewKhoanThu is null!");
+                    System.err.println("KhoanThuService is not available, cannot load data.");
+                    javafx.application.Platform.runLater(() -> {
+                        khoanThuList = FXCollections.observableArrayList();
+                        filteredKhoanThuList = FXCollections.observableArrayList(khoanThuList);
+                        if (tabelViewKhoanThu != null) {
+                            ((TableView<KhoanThuTableData>) tabelViewKhoanThu).setItems(filteredKhoanThuList);
+                        }
+                        updateKhoanThuKetQuaLabel();
+                    });
                 }
-                updateKhoanThuKetQuaLabel();
-            } else {
-                System.err.println("KhoanThuService is not available, cannot load data.");
-                // Initialize empty lists without sample data
-                khoanThuList = FXCollections.observableArrayList();
-                filteredKhoanThuList = FXCollections.observableArrayList(khoanThuList);
-                if (tabelViewKhoanThu != null) {
-                    ((TableView<KhoanThuTableData>) tabelViewKhoanThu).setItems(filteredKhoanThuList);
-                }
-                updateKhoanThuKetQuaLabel();
+            } catch (Exception e) {
+                System.err.println("Error loading KhoanThu data: " + e.getMessage());
+                e.printStackTrace();
+                javafx.application.Platform.runLater(() -> {
+                    khoanThuList = FXCollections.observableArrayList();
+                    filteredKhoanThuList = FXCollections.observableArrayList(khoanThuList);
+                    if (tabelViewKhoanThu != null) {
+                        ((TableView<KhoanThuTableData>) tabelViewKhoanThu).setItems(filteredKhoanThuList);
+                    }
+                    updateKhoanThuKetQuaLabel();
+                });
             }
-        } catch (Exception e) {
-            System.err.println("Error loading KhoanThu data: " + e.getMessage());
-            e.printStackTrace();
-            // Initialize empty lists without sample data
-            khoanThuList = FXCollections.observableArrayList();
-            filteredKhoanThuList = FXCollections.observableArrayList(khoanThuList);
-            if (tabelViewKhoanThu != null) {
-                ((TableView<KhoanThuTableData>) tabelViewKhoanThu).setItems(filteredKhoanThuList);
-            }
-            updateKhoanThuKetQuaLabel();
-        }
+        }, "HomeList-LoadKhoanThu").start();
     }
 
 
@@ -3001,19 +3027,139 @@ public class Home_list implements Initializable {
      * Load dữ liệu cho biểu đồ
      */
     private void loadChartData() {
+        // Compute chart data off the UI thread, then update UI on FX thread
+        new Thread(() -> {
+            try {
+                // Prepare bar chart series data (6 months)
+                java.time.LocalDate now = java.time.LocalDate.now();
+                javafx.scene.chart.XYChart.Series<String, Number> series = new javafx.scene.chart.XYChart.Series<>();
+                series.setName("Số cư dân");
 
-        try {
-            // Load dữ liệu cho BarChart (Biến động dân cư theo tháng)
-            loadBarChartData();
+                // Fetch residents once to avoid repeated DB calls
+                List<io.github.ktpm.bluemoonmanagement.model.dto.cuDan.CudanDto> allCuDan = null;
+                try {
+                    if (cuDanService != null) {
+                        allCuDan = cuDanService.getAllCuDan();
+                    }
+                } catch (Exception e) {
+                    System.err.println("Error fetching allCuDan for charts: " + e.getMessage());
+                    allCuDan = null;
+                }
 
-            // Load dữ liệu cho PieChart (Khoản thu tháng này)
-            loadPieChartData();
+                for (int i = 5; i >= 0; i--) {
+                    java.time.LocalDate month = now.minusMonths(i);
+                    String monthLabel = month.getMonth().getDisplayName(java.time.format.TextStyle.SHORT, java.util.Locale.forLanguageTag("vi")) + " " + month.getYear();
 
+                    int cuDanCount;
+                    if (allCuDan == null || allCuDan.isEmpty()) {
+                        cuDanCount = getTestDataForMonth(month);
+                    } else {
+                        java.time.LocalDate endOfMonth = month.withDayOfMonth(month.lengthOfMonth());
+                        long count = allCuDan.stream()
+                            .filter(cuDan -> {
+                                if (cuDan.getNgayChuyenDen() != null) {
+                                    return !cuDan.getNgayChuyenDen().isAfter(endOfMonth);
+                                }
+                                return true;
+                            })
+                            .filter(cuDan -> {
+                                String trangThai = cuDan.getTrangThaiCuTru();
+                                if (trangThai == null || trangThai.trim().isEmpty()) {
+                                    return false;
+                                }
+                                return trangThai.contains("Đang cư trú") ||
+                                       trangThai.contains("Thường trú") ||
+                                       trangThai.contains("Tạm trú") ||
+                                       trangThai.equals("Active") ||
+                                       (!trangThai.contains("Chuyển đi") && !trangThai.contains("Inactive"));
+                            })
+                            .count();
+                        cuDanCount = count == 0 ? getTestDataForMonth(month) : (int) count;
+                    }
+                    series.getData().add(new javafx.scene.chart.XYChart.Data<>(monthLabel, cuDanCount));
+                }
 
-        } catch (Exception e) {
-            System.err.println("❌ Error loading chart data: " + e.getMessage());
-            e.printStackTrace();
-        }
+                // Prepare pie chart data by calling PieChartDataUtil (may query DB)
+                java.util.Map<String, Integer> tmpFeeTypeCount = null;
+                try {
+                    tmpFeeTypeCount = PieChartDataUtil.getKhoanThuDataFromDatabase(khoanThuService);
+                } catch (Exception e) {
+                    System.err.println("Error fetching pie chart data: " + e.getMessage());
+                    tmpFeeTypeCount = null;
+                }
+                final java.util.Map<String, Integer> feeTypeCount = (tmpFeeTypeCount != null) ? tmpFeeTypeCount : java.util.Map.of();
+
+                // Update charts on FX thread
+                javafx.application.Platform.runLater(() -> {
+                    try {
+                        // Bar chart update
+                        if (barChartDanCu != null) {
+                            javafx.scene.chart.BarChart<String, Number> chart = (javafx.scene.chart.BarChart<String, Number>) barChartDanCu;
+                            chart.getData().clear();
+                            chart.getData().add(series);
+                            chart.setLegendVisible(false);
+                            chart.setAnimated(true);
+                            chart.setTitle("");
+                            chart.setStyle("-fx-background-color: transparent;");
+                            // color series
+                            try {
+                                for (javafx.scene.chart.XYChart.Series<String, Number> s : chart.getData()) {
+                                    for (javafx.scene.chart.XYChart.Data<String, Number> data : s.getData()) {
+                                        javafx.scene.Node node = data.getNode();
+                                        if (node != null) {
+                                            node.setStyle("-fx-bar-fill: #2196F3; -fx-background-color: #2196F3;");
+                                        }
+                                    }
+                                }
+                            } catch (Exception e) {
+                                System.err.println("Error styling bar chart: " + e.getMessage());
+                            }
+                        }
+
+                        // Pie chart update
+                        if (pieChartKhoanThu != null) {
+                            pieChartKhoanThu.getData().clear();
+                            if (feeTypeCount != null && !feeTypeCount.isEmpty()) {
+                                for (java.util.Map.Entry<String, Integer> entry : feeTypeCount.entrySet()) {
+                                    javafx.scene.chart.PieChart.Data slice = new javafx.scene.chart.PieChart.Data(entry.getKey(), entry.getValue());
+                                    pieChartKhoanThu.getData().add(slice);
+                                }
+                            } else {
+                                javafx.scene.chart.PieChart.Data emptySlice = new javafx.scene.chart.PieChart.Data("Chưa có khoản thu nào", 1);
+                                pieChartKhoanThu.getData().add(emptySlice);
+                            }
+                            pieChartKhoanThu.setLegendVisible(false);
+                            pieChartKhoanThu.setAnimated(true);
+                            pieChartKhoanThu.setLabelsVisible(false);
+                            pieChartKhoanThu.setTitle("");
+
+                            // style pie slices
+                            try {
+                                int colorIndex = 0;
+                                for (javafx.scene.chart.PieChart.Data data : pieChartKhoanThu.getData()) {
+                                    javafx.scene.Node node = data.getNode();
+                                    if (node != null) {
+                                        String color = PieChartDataUtil.getSliceColor(data.getName(), colorIndex);
+                                        node.setStyle("-fx-pie-color: " + color + ";");
+                                        colorIndex++;
+                                    }
+                                }
+                                updateLegendPercentages();
+                            } catch (Exception e) {
+                                System.err.println("Error styling pie chart: " + e.getMessage());
+                            }
+                        }
+                    } catch (Exception e) {
+                        System.err.println("Error updating charts on FX thread: " + e.getMessage());
+                        e.printStackTrace();
+                    }
+                });
+
+            } catch (Exception e) {
+                System.err.println("❌ Error computing chart data: " + e.getMessage());
+                e.printStackTrace();
+            }
+        }, "HomeList-LoadCharts").start();
     }
 
     /**

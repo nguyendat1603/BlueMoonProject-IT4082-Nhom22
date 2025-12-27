@@ -16,9 +16,19 @@ public class HomeTechManagementApplication extends Application {
 
     @Override
     public void init() {
-        context = new SpringApplicationBuilder(SpringBootApp.class) //
-                .web(WebApplicationType.NONE)
-                .run(getParameters().getRaw().toArray(new String[0]));
+        long start = System.currentTimeMillis();
+        try {
+            context = new SpringApplicationBuilder(SpringBootApp.class) //
+                    .web(WebApplicationType.NONE)
+                    .properties("spring.main.lazy-initialization=true")
+                    .run(getParameters().getRaw().toArray(new String[0]));
+            long took = System.currentTimeMillis() - start;
+            System.out.println("Spring context initialized in " + took + " ms");
+        } catch (Exception e) {
+            long took = System.currentTimeMillis() - start;
+            System.err.println("Failed to initialize Spring context after " + took + " ms: " + e.getMessage());
+            throw e;
+        }
     }
 
     @Override

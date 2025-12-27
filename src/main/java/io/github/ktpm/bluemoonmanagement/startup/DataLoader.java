@@ -39,35 +39,61 @@ public class DataLoader implements ApplicationRunner {
     
     @Override
     public void run(ApplicationArguments args) throws Exception {
-        long startTime = System.currentTimeMillis();
-        
-        try {
-            // Load căn hộ
-            loadCanHoData();
-            
-            // Load cư dân
-            loadCuDanData();
-            
-            // Load khoản thu
-            loadKhoanThuData();
-            
-            // Mark cache as loaded
-            dataCache.setLoaded(true);
-            
-            long endTime = System.currentTimeMillis();
-            
-        } catch (Exception e) {
-            System.err.println("LỖI KHI LOAD DỮ LIỆU: " + e.getMessage());
-            e.printStackTrace();
-            // Không throw exception để ứng dụng vẫn có thể khởi động
-        }
+        // Start data loading on a background thread so Spring context initialization and JavaFX UI are not blocked.
+        Thread bg = new Thread(() -> {
+            long totalStart = System.currentTimeMillis();
+            try {
+                long s = System.currentTimeMillis();
+                // Load căn hộ
+                loadCanHoData();
+                System.out.println("DataLoader(background): loadCanHoData took " + (System.currentTimeMillis() - s) + " ms");
+
+                s = System.currentTimeMillis();
+                // Load cư dân
+                loadCuDanData();
+                System.out.println("DataLoader(background): loadCuDanData took " + (System.currentTimeMillis() - s) + " ms");
+
+                s = System.currentTimeMillis();
+                // Load khoản thu
+                loadKhoanThuData();
+                System.out.println("DataLoader(background): loadKhoanThuData took " + (System.currentTimeMillis() - s) + " ms");
+
+                // Mark cache as loaded
+                dataCache.setLoaded(true);
+
+                long total = System.currentTimeMillis() - totalStart;
+                System.out.println("DataLoader(background): total data load time = " + total + " ms");
+
+            } catch (Exception e) {
+                System.err.println("LỖI KHI LOAD DỮ LIỆU (background): " + e.getMessage());
+                e.printStackTrace();
+            }
+        }, "DataLoader-Background");
+        bg.setDaemon(true);
+        bg.start();
+        System.out.println("DataLoader: started background data loading thread");
     }
     
     private void loadCanHoData() {
         try {
             if (canHoService != null) {
-                var canHoList = canHoService.getAllCanHo();
-                dataCache.setCanHoList(canHoList);
+                // Phase 1: fast initial load (limited) to populate cache quickly
+                var initialList = canHoService.getCanHoPage(200);
+                dataCache.setCanHoList(initialList);
+                System.out.println("DataLoader: initial canHo cache size = " + (initialList == null ? 0 : initialList.size()));
+
+                // Phase 2: continue loading full dataset in background (non-blocking)
+                Thread fullLoader = new Thread(() -> {
+                    try {
+                        var fullList = canHoService.getAllCanHo();
+                        dataCache.setCanHoList(fullList);
+                        System.out.println("DataLoader: full canHo cache size = " + (fullList == null ? 0 : fullList.size()));
+                    } catch (Exception ex) {
+                        System.err.println("✗ Lỗi load full danh sách căn hộ: " + ex.getMessage());
+                    }
+                }, "CanHo-FullLoader");
+                fullLoader.setDaemon(true);
+                fullLoader.start();
             }
         } catch (Exception e) {
             System.err.println("✗ Lỗi load căn hộ: " + e.getMessage());
