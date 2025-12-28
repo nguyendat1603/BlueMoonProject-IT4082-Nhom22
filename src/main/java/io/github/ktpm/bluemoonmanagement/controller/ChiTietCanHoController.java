@@ -37,6 +37,8 @@ import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.css.PseudoClass;
+
 
 /**
  * Controller cho trang chi tiết căn hộ
@@ -128,6 +130,13 @@ public class ChiTietCanHoController implements Initializable {
     @FXML private Button buttonThuToanBo;
     @FXML private Button buttonXemLichSu;
     @FXML private CheckBox checkBoxKhongTinhBatBuoc;
+
+    //Nút bấm thông tin
+    @FXML private Label lblCanHo;
+    @FXML private Label lblChuSoHuu;
+
+    @FXML private AnchorPane apCanHo;
+    @FXML private AnchorPane apChuSoHuu;
     
     // Edit button in thông tin tab 
     @FXML private Button buttonChinhSua;
@@ -2065,4 +2074,37 @@ public class ChiTietCanHoController implements Initializable {
             }
         });
   }
+  private final PseudoClass SELECTED =
+        PseudoClass.getPseudoClass("selected");
+  @FXML
+public void initialize() {
+    showCanHo(); // mặc định mở Thông tin căn hộ
+}
+@FXML
+private void showCanHo() {
+    apCanHo.setVisible(true);
+    apCanHo.setManaged(true);
+
+    apChuSoHuu.setVisible(false);
+    apChuSoHuu.setManaged(false);
+
+    setActive(lblCanHo, lblChuSoHuu);
+}
+
+@FXML
+private void showChuSoHuu() {
+    apChuSoHuu.setVisible(true);
+    apChuSoHuu.setManaged(true);
+
+    apCanHo.setVisible(false);
+    apCanHo.setManaged(false);
+
+    setActive(lblChuSoHuu, lblCanHo);
+}
+private void setActive(Label active, Label inactive) {
+    active.pseudoClassStateChanged(SELECTED, true);
+    inactive.pseudoClassStateChanged(SELECTED, false);
+}
+
+  
 } 

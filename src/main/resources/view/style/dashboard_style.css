@@ -299,14 +299,24 @@
     -fx-font-weight: bold;
     -fx-font-size: 20px;
     -fx-pref-height: 40px;
-    -fx-border-width: 0 0 0 0;
+    -fx-border-width: 0;
+    -fx-border-color: transparent;
     -fx-background-color: transparent;
 }
 
+/* Khi hover */
 .popup-title-multiple:hover {
     -fx-text-fill: #333333;
 }
 
+/* Khi đang bấm */
+.popup-title-multiple:pressed {
+    -fx-text-fill: #333333;
+    -fx-border-width: 0 0 3 0;
+    -fx-border-color: #4472C4;
+}
+
+/* Khi đang active (đang ở tab đó) */
 .popup-title-multiple.active {
     -fx-text-fill: #333333;
     -fx-border-width: 0 0 3 0;
@@ -407,4 +417,31 @@
 
 .button-delete-file:hover .button-delete-file-icon {
     -fx-fill: #C0504D;
+}
+
+/* tab bình thường */
+.label.tab {
+    -fx-text-fill: #999;
+    -fx-font-size: 14px;
+    -fx-font-weight: normal;
+    -fx-padding: 8 20 8 20;
+    -fx-cursor: hand;
+
+    /* không gạch chân */
+    -fx-border-width: 0;
+}
+
+/* tab đang chọn */
+.label.tab:selected {
+    -fx-text-fill: #1976d2;          /* chữ xanh */
+    -fx-font-weight: bold;
+
+    /* gạch chân bên dưới */
+    -fx-border-color: #1976d2;
+    -fx-border-width: 0 0 3 0;
+}
+
+/* hover cho mượt */
+.label.tab:hover {
+    -fx-text-fill: #1565c0;
 }
