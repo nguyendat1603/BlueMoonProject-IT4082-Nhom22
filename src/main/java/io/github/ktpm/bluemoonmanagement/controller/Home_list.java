@@ -19,6 +19,7 @@ import io.github.ktpm.bluemoonmanagement.model.dto.khoanThu.KhoanThuDto;
 import io.github.ktpm.bluemoonmanagement.model.dto.taiKhoan.ThongTinTaiKhoanDto;
 import io.github.ktpm.bluemoonmanagement.service.canHo.CanHoService;
 import io.github.ktpm.bluemoonmanagement.service.taiKhoan.QuanLyTaiKhoanService;
+import io.github.ktpm.bluemoonmanagement.service.activityLog.ActivityLogService;
 import io.github.ktpm.bluemoonmanagement.session.Session;
 import io.github.ktpm.bluemoonmanagement.util.FileMultipartUtil;
 import io.github.ktpm.bluemoonmanagement.util.FxView;
@@ -475,6 +476,9 @@ public class Home_list implements Initializable {
 
     @Autowired
     private io.github.ktpm.bluemoonmanagement.service.hoaDon.HoaDonService hoaDonService;
+
+    @Autowired
+    private ActivityLogService activityLogService;
 
     private List<Node> allPanes;
     private KhungController parentController;
@@ -1835,41 +1839,38 @@ public class Home_list implements Initializable {
 
         java.util.Map<String, SessionRecord> sessions = new java.util.LinkedHashMap<>();
 
-        // Load activity log from ~/.hometech/activity_log.txt if present
+        // Load activity log from database
         Runnable loadSessions = () -> {
             sessions.clear();
-            Path logPath = Path.of(System.getProperty("user.home"), ".hometech", "activity_log.txt");
-            if (Files.exists(logPath)) {
-                try {
-                    java.util.List<String> lines = Files.readAllLines(logPath, StandardCharsets.UTF_8);
-                    for (String line : lines) {
-                        // expected format: sessionId|user|timestamp|actionDescription|actionType
-                        String[] parts = line.split("\\|", 5);
-                        if (parts.length < 4) continue;
-                        String sid = parts[0];
-                        String user = parts[1];
-                        String ts = parts[2];
-                        String desc = parts.length >= 4 ? parts[3] : "";
-                        String type = parts.length >= 5 ? parts[4] : "";
-                        SessionRecord sr = sessions.computeIfAbsent(sid, k -> {
-                            SessionRecord s = new SessionRecord();
-                            s.sessionId = sid;
-                            s.user = user;
-                            s.start = ts;
-                            s.end = null;
-                            return s;
-                        });
-                        sr.actions.add(ts + " - " + desc + (type != null && !type.isEmpty() ? " (" + type + ")" : ""));
-                        // mark end if action type is LOGOUT
-                        if ("LOGOUT".equalsIgnoreCase(type)) {
-                            sr.end = ts;
-                        }
+            try {
+                List<io.github.ktpm.bluemoonmanagement.model.entity.ActivityLog> activities = activityLogService.getAllActivities();
+                for (io.github.ktpm.bluemoonmanagement.model.entity.ActivityLog activity : activities) {
+                    String sid = activity.getSessionId();
+                    String user = activity.getUser();
+                    String ts = activity.getTimestamp().toString();
+                    String desc = activity.getActionDescription();
+                    String type = activity.getActionType();
+                    SessionRecord sr = sessions.computeIfAbsent(sid, k -> {
+                        SessionRecord s = new SessionRecord();
+                        s.sessionId = sid;
+                        s.user = user;
+                        s.start = ts;
+                        s.end = null;
+                        return s;
+                    });
+                    sr.actions.add(ts + " - " + desc + (type != null && !type.isEmpty() ? " (" + type + ")" : ""));
+                    // mark end if action type is LOGOUT
+                    if ("LOGOUT".equalsIgnoreCase(type)) {
+                        sr.end = ts;
                     }
-                } catch (Exception e) {
-                    System.err.println("Error reading activity log: " + e.getMessage());
-                    e.printStackTrace();
                 }
-            } else {
+            } catch (Exception e) {
+                System.err.println("Error reading activity log from database: " + e.getMessage());
+                e.printStackTrace();
+            }
+
+            // If no data from database, use fallback
+            if (sessions.isEmpty()) {
                 // fallback: create sample sessions
                 for (int i = 1; i <= 3; i++) {
                     String sid = "S" + i;
@@ -1977,7 +1978,7 @@ public class Home_list implements Initializable {
      * Overload để gọi từ Button onAction (ActionEvent)
      */
     @FXML
-    public void openCanHoPopup(javafx.event.ActionEvent event) {
+    public void openCanHoPopup(javafx.event.Event event) {
         Window owner = null;
         if (event != null && event.getSource() instanceof Node) {
             owner = ((Node) event.getSource()).getScene().getWindow();
@@ -2243,19 +2244,14 @@ public class Home_list implements Initializable {
     }
 
     /**
-     * Append an activity line to ~/.hometech/activity_log.txt
+     * Save activity to database
      * Format: sessionId|user|timestamp|actionDescription|actionType
      */
     private void writeActivityLog(String actionCode, String user, String actionDescription, String actionType) {
         try {
             String sid = currentSessionId != null ? currentSessionId : ("s-" + System.currentTimeMillis());
             String who = user != null ? user : (currentSessionUser != null ? currentSessionUser : "unknown");
-            String ts = java.time.Instant.now().toString();
-            String line = String.join("|", sid, who, ts, actionDescription != null ? actionDescription : actionCode, actionType != null ? actionType : "") + System.lineSeparator();
-            Path dir = Path.of(System.getProperty("user.home"), ".hometech");
-            if (!Files.exists(dir)) Files.createDirectories(dir);
-            Path log = dir.resolve("activity_log.txt");
-            Files.write(log, line.getBytes(StandardCharsets.UTF_8), java.nio.file.StandardOpenOption.CREATE, java.nio.file.StandardOpenOption.APPEND);
+            activityLogService.saveActivity(sid, who, actionDescription != null ? actionDescription : actionCode, actionType != null ? actionType : "");
         } catch (Exception e) {
             System.err.println("Failed to write activity log: " + e.getMessage());
             e.printStackTrace();
