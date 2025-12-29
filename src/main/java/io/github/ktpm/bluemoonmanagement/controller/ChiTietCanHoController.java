@@ -517,8 +517,7 @@ public class ChiTietCanHoController implements Initializable {
 
                 // Disable nút cho tất cả trừ Tổ phó (chỉ Tổ phó được phép sửa/xóa cư dân)
                 try {
-                    String userRole = getCurrentUserRole();
-                    if (!"Tổ phó".equals(userRole)) {
+                    if (!Session.hasRole("Tổ phó")) {
                         editButton.setDisable(true);
                         deleteButton.setDisable(true);
                         editButton.setOpacity(0.5);
@@ -1464,8 +1463,7 @@ public class ChiTietCanHoController implements Initializable {
     private void handleThuToanBo() {
         // Kiểm tra quyền
         try {
-            String userRole = getCurrentUserRole();
-            if (!"Kế toán".equals(userRole)) {
+            if (!Session.hasRole("Kế toán")) {
                 showError("Không có quyền", "Bạn không có quyền thực hiện thu toàn bộ. Chỉ có Kế toán mới có thể thực hiện.");
                 return;
             }
@@ -1623,9 +1621,8 @@ public class ChiTietCanHoController implements Initializable {
     private void handleChinhSuaCanHo() {
         try {
 
-            // Kiểm tra quyền
-            String userRole = getCurrentUserRole();
-            if ("Tổ trưởng".equals(userRole) || "Kế toán".equals(userRole)) {
+            // Kiểm tra quyền - chỉ Tổ phó mới được chỉnh sửa căn hộ
+            if (!Session.hasRole("Tổ phó")) {
                 showError("Không có quyền", "Bạn không có quyền chỉnh sửa căn hộ. Chỉ được xem thông tin.");
                 return;
             }

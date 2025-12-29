@@ -478,11 +478,8 @@ public class ChinhSuaCanHoController implements Initializable {
                 return;
             }
             
-            String userRole = Session.getCurrentUser().getVaiTro();
-
-            
-            if ("Tổ trưởng".equals(userRole) || "Kế toán".equals(userRole)) {
-
+            // Kiểm tra quyền - chỉ Tổ phó mới được chỉnh sửa căn hộ
+            if (!Session.hasRole("Tổ phó")) {
                 showError("Lỗi quyền", "Bạn không có quyền chỉnh sửa căn hộ. Chỉ được xem thông tin.");
                 return;
             }

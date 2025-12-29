@@ -626,8 +626,7 @@ public class ThemCuDanController implements Initializable {
      * Check user permission
      */
     private boolean hasPermission() {
-        return Session.getCurrentUser() != null && 
-               "Tổ phó".equals(Session.getCurrentUser().getVaiTro());
+        return Session.hasRole("Tổ phó");
     }
 
     /**

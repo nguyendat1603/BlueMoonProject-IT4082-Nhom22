@@ -140,7 +140,7 @@ public class KhungController implements Initializable{
         loaderThread.setDaemon(true);
         loaderThread.start();
 
-        if (Session.getCurrentUser().getVaiTro().equals("Tổ trưởng")) {
+        if (Session.hasRole("Tổ trưởng")) {
             buttonTaiKhoan.setDisable(false);
         }
 

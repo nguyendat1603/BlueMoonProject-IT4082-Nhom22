@@ -820,13 +820,8 @@ public class ThemKhoanThuController {
 
     private boolean hasPermission() {
         try {
-            ThongTinTaiKhoanDto currentUser = Session.getCurrentUser();
-            if (currentUser == null) {
-                return false;
-            }
-            String vaiTro = currentUser.getVaiTro();
             // Chỉ Kế toán mới được phép thêm/sửa khoản thu
-            return "Kế toán".equals(vaiTro);
+            return Session.hasRole("Kế toán");
         } catch (Exception e) {
             System.err.println("Lỗi khi kiểm tra quyền: " + e.getMessage());
             return false;
@@ -1632,11 +1627,7 @@ public class ThemKhoanThuController {
      */
     private boolean hasHoaDonPermission() {
         try {
-            ThongTinTaiKhoanDto currentUser = Session.getCurrentUser();
-            if (currentUser != null && currentUser.getVaiTro() != null) {
-                return "Kế toán".equals(currentUser.getVaiTro());
-            }
-            return false;
+            return Session.hasRole("Kế toán");
         } catch (Exception e) {
             System.err.println("Error checking invoice permission: " + e.getMessage());
             return false;
