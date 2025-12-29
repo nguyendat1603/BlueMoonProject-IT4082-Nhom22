@@ -21,7 +21,7 @@ public class HomeTechManagementApplication extends Application {
             // load SpringBootApp class by name to avoid compile-time resolution issues in some environments
             Class<?> appClass = Class.forName("io.github.ktpm.bluemoonmanagement.SpringBootApp");
             context = new SpringApplicationBuilder(appClass) //
-                    .web(WebApplicationType.NONE)
+                    .web(WebApplicationType.SERVLET)
                     .properties("spring.main.lazy-initialization=true")
                     .run(getParameters().getRaw().toArray(new String[0]));
             long took = System.currentTimeMillis() - start;

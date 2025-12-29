@@ -88,7 +88,7 @@ public class ThemCuDanController implements Initializable {
 
         // Setup trạng thái cư trú - có thể chọn "Cư trú" hoặc "Không cư trú"
         if (comboBoxTrangThai != null) {
-            comboBoxTrangThai.setItems(FXCollections.observableArrayList("Cư trú", "Không cư trú"));
+            comboBoxTrangThai.setItems(FXCollections.observableArrayList("Thường trú", "Tạm trú","Không cư trú"));
             comboBoxTrangThai.setValue("Cư trú"); // Default value
             // Cho phép thay đổi trạng thái
         }
