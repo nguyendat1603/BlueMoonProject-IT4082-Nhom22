@@ -62,7 +62,7 @@ public class HoaDonServiceImpl implements HoaDonService {
     public ResponseDto generateHoaDon(KhoanThuDto khoanThuDto) {
         
         // Check user permissions first
-        if (Session.getCurrentUser() == null || !Session.getCurrentUser().getVaiTro().equals("Kế toán")) {
+        if (Session.getCurrentUser() == null || !Session.hasRole("Kế toán")) {
             return new ResponseDto(false, "Bạn không có quyền tạo hóa đơn. Chỉ Kế toán mới được phép thực hiện thao tác này.");
         }
 
@@ -598,7 +598,7 @@ public class HoaDonServiceImpl implements HoaDonService {
 
     @Override
     public ResponseDto addHoaDonTuNguyen(HoaDonTuNguyenDto hoaDonTuNguyenDto, KhoanThuTuNguyenDto khoanThuTuNguyenDto) {
-        if (Session.getCurrentUser() == null || !"Kế toán".equals(Session.getCurrentUser().getVaiTro())) {
+        if (Session.getCurrentUser() == null || !Session.hasRole("Kế toán")) {
             return new ResponseDto(false, "Bạn không có quyền thêm hóa đơn tự nguyện. Chỉ Kế toán mới được phép.");
         }
         hoaDonTuNguyenDto.setTenKhoanThu(khoanThuTuNguyenDto.getTenKhoanThu());
@@ -614,7 +614,7 @@ public class HoaDonServiceImpl implements HoaDonService {
 
     @Override
     public ResponseDto importFromExcel(MultipartFile file) {
-        if (Session.getCurrentUser() == null || !"Kế toán".equals(Session.getCurrentUser().getVaiTro())) {
+        if (Session.getCurrentUser() == null || !Session.hasRole("Kế toán")) {
             return new ResponseDto(false, "Bạn không có quyền import hóa đơn. Chỉ Kế toán mới được phép.");
         }
         try {
@@ -914,8 +914,7 @@ public class HoaDonServiceImpl implements HoaDonService {
                 return new ResponseDto(false, "Vui lòng đăng nhập để thực hiện thao tác này");
             }
             
-            String userRole = Session.getCurrentUser().getVaiTro();
-            if (!"Kế toán".equals(userRole)) {
+            if (!Session.hasRole("Kế toán")) {
                 return new ResponseDto(false, "Bạn không có quyền thu phí. Chỉ Kế toán mới có thể thực hiện");
             }
             

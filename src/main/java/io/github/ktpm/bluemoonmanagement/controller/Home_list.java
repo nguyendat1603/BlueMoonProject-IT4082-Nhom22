@@ -2633,7 +2633,7 @@ public class Home_list implements Initializable {
     private void handleEditCuDan(CuDanTableData cuDan) {
         try {
             // Kiểm tra quyền
-            if (Session.getCurrentUser() == null || !"Tổ phó".equals(Session.getCurrentUser().getVaiTro())) {
+            if (Session.getCurrentUser() == null || !Session.hasRole("Tổ phó")) {
                 showError("Lỗi quyền", "Bạn không có quyền chỉnh sửa cư dân.\nChỉ người dùng có vai trò 'Tổ phó' mới được phép thực hiện thao tác này.");
                 return;
             }
@@ -2708,7 +2708,7 @@ public class Home_list implements Initializable {
                         return;
                     }
 
-                    if (!"Tổ phó".equals(Session.getCurrentUser().getVaiTro())) {
+                    if (!Session.hasRole("Tổ phó")) {
                         showError("Lỗi quyền", "Bạn không có quyền xóa cư dân.\nChỉ người dùng có vai trò 'Tổ phó' mới được phép thực hiện thao tác này.");
                         return;
                     }
@@ -3545,14 +3545,7 @@ public class Home_list implements Initializable {
      */
     private boolean hasKhoanThuEditPermission() {
         try {
-            io.github.ktpm.bluemoonmanagement.model.dto.taiKhoan.ThongTinTaiKhoanDto currentUser =
-                io.github.ktpm.bluemoonmanagement.session.Session.getCurrentUser();
-
-            if (currentUser != null && currentUser.getVaiTro() != null) {
-                String vaiTro = currentUser.getVaiTro();
-                return "Kế toán".equals(vaiTro);
-            }
-            return false;
+            return Session.hasRole("Kế toán");
         } catch (Exception e) {
             System.err.println("Lỗi khi kiểm tra quyền: " + e.getMessage());
             return false;

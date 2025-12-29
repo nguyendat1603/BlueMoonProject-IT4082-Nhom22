@@ -141,8 +141,8 @@ public class CanHoServiceImpl implements CanHoService {
     @Transactional
     public ResponseDto addCanHo(CanHoDto canHoDto) {
         // Kiểm tra quyền: chỉ 'Tổ phó' mới được thêm căn hộ
-        if (Session.getCurrentUser() == null || (!"Tổ phó".equals(Session.getCurrentUser().getVaiTro()))) {
-            return new ResponseDto(false, "Bạn không có quyền thêm căn hộ. Chỉ Tổ trưởng và Admin mới được phép.");
+        if (Session.getCurrentUser() == null || !Session.hasRole("Tổ phó")) {
+            return new ResponseDto(false, "Bạn không có quyền thêm căn hộ. Chỉ Tổ phó mới được phép.");
         }
         
         // Check if an apartment with this code already exists
@@ -226,7 +226,7 @@ public class CanHoServiceImpl implements CanHoService {
     @Override
     @Transactional
     public ResponseDto updateCanHo(CanHoDto canHoDto) {
-        if (Session.getCurrentUser() == null || !"Tổ phó".equals(Session.getCurrentUser().getVaiTro())) {
+        if (Session.getCurrentUser() == null || !Session.hasRole("Tổ phó")) {
             return new ResponseDto(false, "Bạn không có quyền cập nhật căn hộ. Chỉ Tổ phó mới được phép.");
         }
         
@@ -295,7 +295,7 @@ public class CanHoServiceImpl implements CanHoService {
     @Override
     @Transactional
     public ResponseDto deleteCanHo(CanHoDto canHoDto) {
-        if (Session.getCurrentUser() == null || !"Tổ phó".equals(Session.getCurrentUser().getVaiTro())) {
+        if (Session.getCurrentUser() == null || !Session.hasRole("Tổ phó")) {
             return new ResponseDto(false, "Bạn không có quyền xóa căn hộ. Chỉ Tổ phó mới được phép.");
         }
         
@@ -374,7 +374,7 @@ public class CanHoServiceImpl implements CanHoService {
 
     @Override
     public ResponseDto importFromExcel(MultipartFile file) {
-        if (Session.getCurrentUser() == null || !"Tổ phó".equals(Session.getCurrentUser().getVaiTro())) {
+        if (Session.getCurrentUser() == null || !Session.hasRole("Tổ phó")) {
             return new ResponseDto(false, "Bạn không có quyền nhập Excel căn hộ. Chỉ Tổ phó mới được phép.");
         }
         try {
@@ -506,7 +506,7 @@ public class CanHoServiceImpl implements CanHoService {
     }
     @Override
     public ResponseDto exportToExcel(String filePath) {
-        if (Session.getCurrentUser() == null || !"Tổ phó".equals(Session.getCurrentUser().getVaiTro())) {
+        if (Session.getCurrentUser() == null || !Session.hasRole("Tổ phó")) {
             return new ResponseDto(false, "Bạn không có quyền xuất căn hộ. Chỉ Tổ phó mới được phép.");
         }
         List<CanHoDto> canHoDtoList = getAllCanHo();

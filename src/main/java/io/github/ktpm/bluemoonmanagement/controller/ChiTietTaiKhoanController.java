@@ -85,7 +85,7 @@ public class ChiTietTaiKhoanController implements Initializable {
     private void setupComboBoxes() {
         if (comboBoxVaiTro != null) {
             comboBoxVaiTro.setItems(FXCollections.observableArrayList(
-                "Tổ trưởng", "Tổ phó", "Kế toán"
+                "admin", "Tổ trưởng", "Tổ phó", "Kế toán"
             ));
         }
     }
@@ -317,8 +317,7 @@ public class ChiTietTaiKhoanController implements Initializable {
      * Check user permission
      */
     private boolean hasPermission() {
-        return Session.getCurrentUser() != null && 
-               "Tổ trưởng".equals(Session.getCurrentUser().getVaiTro());
+        return Session.hasRole("Tổ trưởng");
     }
 
     /**
