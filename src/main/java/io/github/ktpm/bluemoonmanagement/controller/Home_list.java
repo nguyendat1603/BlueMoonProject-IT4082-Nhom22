@@ -3917,36 +3917,36 @@ public class Home_list implements Initializable {
      * Load dữ liệu cho biểu đồ
      */
     private void loadChartData() {
-        // Compute chart data off the UI thread, then update UI on FX thread
-        new Thread(() -> {
+    new Thread(() -> {
         try {
-                // Prepare bar chart series data (6 months)
-                java.time.LocalDate now = java.time.LocalDate.now();
-                javafx.scene.chart.XYChart.Series<String, Number> series = new javafx.scene.chart.XYChart.Series<>();
-                series.setName("Số cư dân");
+            java.time.LocalDate now = java.time.LocalDate.now();
+            javafx.scene.chart.XYChart.Series<String, Number> series = new javafx.scene.chart.XYChart.Series<>();
+            series.setName("Số cư dân");
 
-                // Fetch residents once to avoid repeated DB calls
-                List<io.github.ktpm.bluemoonmanagement.model.dto.cuDan.CudanDto> allCuDan = null;
-                try {
-                    if (cuDanService != null) {
-                        allCuDan = cuDanService.getAllCuDan();
-                    }
-                } catch (Exception e) {
-                    System.err.println("Error fetching allCuDan for charts: " + e.getMessage());
-                    allCuDan = null;
+            // Fetch residents once
+            List<io.github.ktpm.bluemoonmanagement.model.dto.cuDan.CudanDto> allCuDan = null;
+            try {
+                if (cuDanService != null) {
+                    allCuDan = cuDanService.getAllCuDan();
                 }
+            } catch (Exception e) {
+                System.err.println("Error fetching allCuDan for charts: " + e.getMessage());
+                allCuDan = null;
+            }
 
-                // Show last 12 months for the main chart
-                for (int i = 11; i >= 0; i--) {
-                    java.time.LocalDate month = now.minusMonths(i);
-                    String monthLabel = month.getMonth().getDisplayName(java.time.format.TextStyle.SHORT, java.util.Locale.forLanguageTag("vi")) + " " + month.getYear();
+            // Last 12 months
+            for (int i = 11; i >= 0; i--) {
+                java.time.LocalDate month = now.minusMonths(i);
+                String monthLabel =
+                        month.getMonth().getDisplayName(java.time.format.TextStyle.SHORT, java.util.Locale.forLanguageTag("vi"))
+                                + " " + month.getYear();
 
-                    int cuDanCount;
-                    if (allCuDan == null || allCuDan.isEmpty()) {
-                        cuDanCount = getTestDataForMonth(month);
-                    } else {
-                        java.time.LocalDate endOfMonth = month.withDayOfMonth(month.lengthOfMonth());
-                        long count = allCuDan.stream()
+                int cuDanCount;
+                if (allCuDan == null || allCuDan.isEmpty()) {
+                    cuDanCount = getTestDataForMonth(month);
+                } else {
+                    java.time.LocalDate endOfMonth = month.withDayOfMonth(month.lengthOfMonth());
+                    long count = allCuDan.stream()
                             .filter(cuDan -> {
                                 if (cuDan.getNgayChuyenDen() != null) {
                                     return !cuDan.getNgayChuyenDen().isAfter(endOfMonth);
@@ -3955,73 +3955,87 @@ public class Home_list implements Initializable {
                             })
                             .filter(cuDan -> {
                                 String trangThai = cuDan.getTrangThaiCuTru();
-                                if (trangThai == null || trangThai.trim().isEmpty()) {
-                                    return false;
-                                }
-                                return trangThai.contains("Đang cư trú") ||
-                                       trangThai.contains("Thường trú") ||
-                                       trangThai.contains("Tạm trú") ||
-                                       trangThai.equals("Active") ||
-                                       (!trangThai.contains("Chuyển đi") && !trangThai.contains("Inactive"));
+                                if (trangThai == null || trangThai.trim().isEmpty()) return false;
+                                return trangThai.contains("Đang cư trú")
+                                        || trangThai.contains("Thường trú")
+                                        || trangThai.contains("Tạm trú")
+                                        || trangThai.equals("Active")
+                                        || (!trangThai.contains("Chuyển đi") && !trangThai.contains("Inactive"));
                             })
                             .count();
-                        cuDanCount = count == 0 ? getTestDataForMonth(month) : (int) count;
-                    }
-                    series.getData().add(new javafx.scene.chart.XYChart.Data<>(monthLabel, cuDanCount));
+
+                    cuDanCount = count == 0 ? getTestDataForMonth(month) : (int) count;
                 }
 
+                series.getData().add(new javafx.scene.chart.XYChart.Data<>(monthLabel, cuDanCount));
+            }
 
-                // Update charts on FX thread
-                javafx.application.Platform.runLater(() -> {
-                    try {
-                        // Bar chart update
-                        if (barChartDanCu != null) {
-                            javafx.scene.chart.BarChart<String, Number> chart = (javafx.scene.chart.BarChart<String, Number>) barChartDanCu;
-                            chart.getData().clear();
-                            chart.getData().add(series);
-                            chart.setLegendVisible(false);
-                            chart.setAnimated(true);
-                            chart.setTitle("");
-                            chart.setStyle("-fx-background-color: transparent;");
-                            chart.setCategoryGap(25);
-                            chart.setBarGap(10);
-                            chart.applyCss();
-                            chart.layout();
+            // Update UI
+            javafx.application.Platform.runLater(() -> {
+                try {
+                    if (barChartDanCu == null) return;
 
-                            javafx.application.Platform.runLater(() -> {
-                                java.util.Set<javafx.scene.Node> labels =
-                                        chart.lookupAll(".axis .tick-label");
-                                for (javafx.scene.Node label : labels) {
-                                    label.setStyle("-fx-padding: 0 25 0 25;-fx-font-size: 11;");
-                                }
-                            });
-                            // color series
-                            try {
-                                for (javafx.scene.chart.XYChart.Series<String, Number> s : chart.getData()) {
-                                    for (javafx.scene.chart.XYChart.Data<String, Number> data : s.getData()) {
-                                        javafx.scene.Node node = data.getNode();
-                                        if (node != null) {
-                                            node.setStyle("-fx-bar-fill: #2196F3; -fx-background-color: #2196F3;");
-                                        }
-                                    }
-                                }
-                            } catch (Exception e) {
-                                System.err.println("Error styling bar chart: " + e.getMessage());
-                            }
+                    javafx.scene.chart.BarChart<String, Number> chart =
+                            (javafx.scene.chart.BarChart<String, Number>) barChartDanCu;
+
+                    // set data + basic config
+                    chart.getData().setAll(series);
+                    chart.setLegendVisible(false);
+                    chart.setAnimated(true);
+                    chart.setTitle("");
+                    chart.setStyle("-fx-background-color: transparent;");
+                    chart.setCategoryGap(25);
+                    chart.setBarGap(10);
+
+                    // --- style AFTER layout is ready ---
+                    Runnable afterLaidOut = () -> {
+                        chart.applyCss();
+                        chart.layout();
+
+                        // tick labels (giảm padding để không bị chật/chồng)
+                        for (javafx.scene.Node label : chart.lookupAll(".axis .tick-label")) {
+                            label.setStyle("-fx-padding: 0 6 0 6; -fx-font-size: 11px;");
                         }
 
-                    } catch (Exception e) {
-                        System.err.println("Error updating charts on FX thread: " + e.getMessage());
-                        e.printStackTrace();
-                    }
-                });
+                        // color bars (node chỉ chắc chắn tồn tại sau layout)
+                        try {
+                            for (javafx.scene.chart.XYChart.Series<String, Number> s : chart.getData()) {
+                                for (javafx.scene.chart.XYChart.Data<String, Number> d : s.getData()) {
+                                    javafx.scene.Node node = d.getNode();
+                                    if (node != null) {
+                                        node.setStyle("-fx-bar-fill: #2196F3; -fx-background-color: #2196F3;");
+                                    }
+                                }
+                            }
+                        } catch (Exception e) {
+                            System.err.println("Error styling bar chart: " + e.getMessage());
+                        }
+                    };
 
-            } catch (Exception e) {
-                System.err.println("❌ Error computing chart data: " + e.getMessage());
-                e.printStackTrace();
-            }
-        }, "HomeList-LoadCharts").start();
-    }
+                    // Nếu lần đầu vào trang chart chưa attach vào Scene -> đợi attach rồi mới style
+                    if (chart.getScene() == null) {
+                        chart.sceneProperty().addListener((obs, oldScene, newScene) -> {
+                            if (newScene != null) {
+                                javafx.application.Platform.runLater(afterLaidOut);
+                            }
+                        });
+                    } else {
+                        javafx.application.Platform.runLater(afterLaidOut);
+                    }
+
+                } catch (Exception e) {
+                    System.err.println("Error updating charts on FX thread: " + e.getMessage());
+                    e.printStackTrace();
+                }
+            });
+
+        } catch (Exception e) {
+            System.err.println("❌ Error computing chart data: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }, "HomeList-LoadCharts").start();
+}
+
 
     /**
      * Load dữ liệu cho BarChart - Biến động dân cư theo tháng

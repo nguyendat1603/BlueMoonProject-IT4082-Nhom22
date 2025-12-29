@@ -1,5 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.scene.image.*?>
+<?import de.jensd.fx.glyphs.fontawesome.*?>
+<?import java.lang.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.chart.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
 <?import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon?>
 <?import java.lang.String?>
 <?import javafx.geometry.Insets?>
@@ -24,7 +33,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<StackPane prefHeight="620.0" prefWidth="1080.0" stylesheets="@style/dashboard_style.css" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="io.github.ktpm.bluemoonmanagement.controller.Home_list">
+<StackPane prefHeight="620.0" prefWidth="1080.0" stylesheets="@style/dashboard_style.css" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="io.github.ktpm.bluemoonmanagement.controller.Home_list">
    <children>
       <GridPane fx:id="gridPaneTrangChu">
          <StackPane.margin>
@@ -53,58 +62,30 @@
                         <Insets bottom="10.0" left="15.0" right="15.0" />
                      </GridPane.margin>
                      <children>
-                        <Label fx:id="labelCanHo" layoutX="39.0" layoutY="35.0" text="Log" textFill="WHITE" AnchorPane.leftAnchor="30.0" AnchorPane.topAnchor="30.0">
+                        <Label fx:id="labelCanHo" layoutX="45.0" layoutY="80.0" text="Log" textFill="#250101" AnchorPane.leftAnchor="45.0" AnchorPane.topAnchor="80.0">
                            <font>
                               <Font name="Arial Bold" size="24.0" />
                            </font>
                         </Label>
-                        <Label fx:id="labelCanHoNumber" layoutX="30.0" layoutY="118.0" textFill="WHITE" AnchorPane.bottomAnchor="30.0" AnchorPane.leftAnchor="30.0">
-                           <font>
-                              <Font name="Arial Bold" size="24.0" />
-                           </font>
-                        </Label>
-                        <Label fx:id="labelTongSoCan" layoutX="30.0" layoutY="92.0" text="Danh sách căn hộ" textFill="WHITE" AnchorPane.bottomAnchor="60.0" AnchorPane.leftAnchor="30.0">
-                           <font>
-                              <Font size="16.0" />
-                           </font>
-                        </Label>
-                        <FontAwesomeIcon fill="WHITE" glyphName="BUILDING" layoutX="222.0" layoutY="86.0" size="80px" AnchorPane.rightAnchor="30.0" AnchorPane.topAnchor="20.0" />
-                        <Button fx:id="buttonSeeAllCanHo" layoutX="199.0" layoutY="126.0" mnemonicParsing="false" onAction="#openCanHoPopup" styleClass="button-textlike" text="Xem tất cả" textFill="WHITE" AnchorPane.bottomAnchor="25.0" AnchorPane.rightAnchor="25.0">
-                           <font>
-                              <Font name="Arial Italic" size="14.0" />
-                           </font>
-                           <padding>
-                              <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
-                           </padding>
-                        </Button>
+                        <ImageView fitHeight="100.0" fitWidth="100.0" layoutX="191.0" layoutY="44.0" pickOnBounds="true" preserveRatio="true" AnchorPane.leftAnchor="191.0">
+                           <image>
+                              <Image url="@image/log.png" />
+                           </image>
+                        </ImageView>
                      </children>
                   </AnchorPane>
                   <AnchorPane layoutX="10.0" layoutY="10.0" onMouseClicked="#openCuDanPopup" prefHeight="200.0" prefWidth="200.0" style="-fx-cursor: hand;" styleClass="dashboard-item-blue" GridPane.columnIndex="1">
                      <children>
-                        <Label fx:id="labelDanCu" layoutX="39.0" layoutY="35.0" text="Trình duyệt" textFill="WHITE" AnchorPane.leftAnchor="30.0" AnchorPane.topAnchor="30.0">
+                        <Label fx:id="labelDanCu" layoutX="41.0" layoutY="80.0" text="Trình duyệt" textFill="#360505" AnchorPane.leftAnchor="41.0" AnchorPane.topAnchor="80.0">
                            <font>
                               <Font name="Arial Bold" size="24.0" />
                            </font>
                         </Label>
-                        <Label fx:id="labelCuDanNumber" layoutX="30.0" layoutY="118.0" textFill="WHITE" AnchorPane.bottomAnchor="30.0" AnchorPane.leftAnchor="30.0">
-                           <font>
-                              <Font name="Arial Bold" size="24.0" />
-                           </font>
-                        </Label>
-                        <Label fx:id="labelTongSoCuDan" layoutX="30.0" layoutY="92.0" text="Danh sách cư dân" textFill="WHITE" AnchorPane.bottomAnchor="60.0" AnchorPane.leftAnchor="30.0">
-                           <font>
-                              <Font size="16.0" />
-                           </font>
-                        </Label>
-                        <FontAwesomeIcon fill="WHITE" glyphName="USER" layoutX="222.0" layoutY="86.0" size="80px" AnchorPane.rightAnchor="30.0" AnchorPane.topAnchor="20.0" />
-                        <Button fx:id="buttonSeeAllCuDan" layoutX="199.0" layoutY="126.0" mnemonicParsing="false" onAction="#gotoCuDan" styleClass="button-textlike" text="Xem tất cả" textFill="WHITE" AnchorPane.bottomAnchor="25.0" AnchorPane.rightAnchor="25.0">
-                           <font>
-                              <Font name="Arial Italic" size="14.0" />
-                           </font>
-                           <padding>
-                              <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
-                           </padding>
-                        </Button>
+                        <ImageView fitHeight="100.0" fitWidth="100.0" layoutX="191.0" layoutY="44.0" pickOnBounds="true" preserveRatio="true" AnchorPane.leftAnchor="191.0">
+                           <image>
+                              <Image url="@image/search-engine.png" />
+                           </image>
+                        </ImageView>
                      </children>
                      <GridPane.margin>
                         <Insets bottom="10.0" left="15.0" right="15.0" />
@@ -112,30 +93,16 @@
                   </AnchorPane>
                   <AnchorPane layoutX="372.0" layoutY="10.0" onMouseClicked="#openKhoanThuPopup" prefHeight="200.0" prefWidth="200.0" style="-fx-cursor: hand;" styleClass="dashboard-item-blue" GridPane.columnIndex="2">
                      <children>
-                        <Label fx:id="labelDanCu1" layoutX="39.0" layoutY="35.0" text="Real-time chat" textFill="WHITE" AnchorPane.leftAnchor="30.0" AnchorPane.topAnchor="30.0">
+                        <Label fx:id="labelDanCu1" layoutX="14.0" layoutY="78.0" text="Real-time chat" textFill="#320404" AnchorPane.leftAnchor="14.0" AnchorPane.topAnchor="78.0">
                            <font>
                               <Font name="Arial Bold" size="24.0" />
                            </font>
                         </Label>
-                        <Label fx:id="labelCuDanNumber1" layoutX="30.0" layoutY="118.0" textFill="WHITE" AnchorPane.bottomAnchor="30.0" AnchorPane.leftAnchor="30.0">
-                           <font>
-                              <Font name="Arial Bold" size="24.0" />
-                           </font>
-                        </Label>
-                        <Label fx:id="labelTongSoCuDan1" layoutX="30.0" layoutY="92.0" text="Danh sách khoản thu" textFill="WHITE" AnchorPane.bottomAnchor="60.0" AnchorPane.leftAnchor="30.0">
-                           <font>
-                              <Font size="16.0" />
-                           </font>
-                        </Label>
-                        <FontAwesomeIcon fill="WHITE" glyphName="BOOK" layoutX="222.0" layoutY="86.0" size="80px" AnchorPane.rightAnchor="30.0" AnchorPane.topAnchor="15.0" />
-                        <Button fx:id="buttonSeeAllKhoanThu" layoutX="199.0" layoutY="126.0" mnemonicParsing="false" onAction="#gotoKhoanThu" styleClass="button-textlike" text="Xem tất cả" textFill="WHITE" AnchorPane.bottomAnchor="25.0" AnchorPane.rightAnchor="25.0">
-                           <font>
-                              <Font name="Arial Italic" size="14.0" />
-                           </font>
-                           <padding>
-                              <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
-                           </padding>
-                        </Button>
+                        <ImageView fitHeight="100.0" fitWidth="100.0" layoutX="191.0" layoutY="44.0" pickOnBounds="true" preserveRatio="true" AnchorPane.leftAnchor="191.0">
+                           <image>
+                              <Image url="@image/chat.png" />
+                           </image>
+                        </ImageView>
                      </children>
                      <GridPane.margin>
                         <Insets bottom="15.0" left="15.0" right="15.0" />
@@ -163,7 +130,7 @@
                      <children>
                         <BarChart fx:id="barChartDanCu" maxHeight="1.7976931348623157E308" style="-fx-background-color: transparent;" AnchorPane.bottomAnchor="20.0" AnchorPane.leftAnchor="20.0" AnchorPane.rightAnchor="20.0" AnchorPane.topAnchor="60.0">
                            <xAxis>
-                              <CategoryAxis side="BOTTOM" tickLabelRotation="45"/>
+                              <CategoryAxis side="BOTTOM" tickLabelRotation="45" />
                            </xAxis>
                            <yAxis>
                               <NumberAxis minorTickCount="0" minorTickVisible="false" side="LEFT" tickLabelGap="5.0" tickMarkVisible="false" tickUnit="10.0" />
