@@ -19,7 +19,7 @@ spring:
   # JPA/Hibernate Configuration
   jpa:
     hibernate:
-      ddl-auto: validate # Chỉ thay đổi dữ liệu, không thay đổi cấu trúc bảng
+      ddl-auto: update # Tự động tạo/điều chỉnh bảng (development). Production: use migrations.
     properties:
       hibernate.dialect: org.hibernate.dialect.PostgreSQLDialect
     show-sql: false
@@ -41,5 +41,7 @@ logging:
   level:
     root: ERROR
     io.github.ktpm.bluemoonmanagement.startup.DataLoader: INFO
+    org.springframework.web.socket: DEBUG
+    org.springframework.messaging: DEBUG
   pattern:
     console: "%d{HH:mm:ss} %-5p %c{1} - %m%n"

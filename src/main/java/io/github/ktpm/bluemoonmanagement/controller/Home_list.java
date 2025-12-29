@@ -23,7 +23,6 @@ import io.github.ktpm.bluemoonmanagement.session.Session;
 import io.github.ktpm.bluemoonmanagement.util.FileMultipartUtil;
 import io.github.ktpm.bluemoonmanagement.util.FxView;
 import io.github.ktpm.bluemoonmanagement.util.FxViewLoader;
-import io.github.ktpm.bluemoonmanagement.util.PieChartDataUtil;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -34,7 +33,6 @@ import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.chart.BarChart;
-import javafx.scene.chart.PieChart;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
@@ -45,8 +43,32 @@ import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.GridPane;
+import javafx.scene.control.SplitPane;
+import javafx.scene.layout.StackPane;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.stage.Window;
+import java.util.prefs.Preferences;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.net.URI;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.Consumer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.charset.StandardCharsets;
+import java.security.KeyFactory;
+import java.security.PrivateKey;
+import java.security.Signature;
+import java.security.spec.PKCS8EncodedKeySpec;
+import java.time.Instant;
+import java.net.URLEncoder;
+import java.util.Base64;
+import javafx.scene.web.WebView;
+import javafx.scene.web.WebEngine;
 
 @Component
 public class Home_list implements Initializable {
@@ -143,6 +165,9 @@ public class Home_list implements Initializable {
     private ComboBox<?> comboBoxChartType;
 
     @FXML
+    private ComboBox<?> comboBoxYear;
+
+    @FXML
     private ComboBox<?> comboBoxTrangThaiTaiKhoan;
 
     @FXML
@@ -207,9 +232,6 @@ public class Home_list implements Initializable {
     private Label labelKetQuaHienThiKhoanThu1;
 
     @FXML
-    private Label labelKhoanThuThangNay;
-
-    @FXML
     private Label labelTongSoCan;
 
     @FXML
@@ -217,15 +239,6 @@ public class Home_list implements Initializable {
 
     @FXML
     private Label labelTongSoCuDan1;
-
-    @FXML
-    private PieChart pieChartKhoanThu;
-
-    @FXML
-    private Label labelPhanTramBatBuoc;
-
-    @FXML
-    private Label labelPhanTramTuNguyen;
 
     @FXML
     private ScrollPane scrollPaneCanHo;
@@ -508,6 +521,33 @@ public class Home_list implements Initializable {
         // Setup ComboBoxes
         setupComboBoxes();
         
+        // Load stored Gemini API key from user preferences (if any)
+        try {
+            Preferences prefs = Preferences.userNodeForPackage(Home_list.class);
+            String storedKey = prefs.get("geminiApiKey", null);
+            if (storedKey != null && !storedKey.trim().isEmpty()) {
+                geminiApiKey = storedKey.trim();
+                System.out.println("Gemini API key loaded from user preferences (hidden).");
+            }
+        } catch (Exception ignored) {}
+        
+        // Auto-load service account JSON if present in project root (common filename)
+        try {
+            Preferences prefs = Preferences.userNodeForPackage(Home_list.class);
+            String savedPath = prefs.get("serviceAccountPath", null);
+            if (savedPath != null && !savedPath.trim().isEmpty()) {
+                Path p = Path.of(savedPath);
+                if (Files.exists(p)) {
+                    loadServiceAccountFromFile(p);
+                }
+            } else {
+                Path possible = Path.of("gen-lang-client-0089106210-22d5a556445a.json");
+                if (Files.exists(possible)) {
+                    loadServiceAccountFromFile(possible);
+                }
+            }
+        } catch (Exception ignored) {}
+        
         // Setup tables (order matters to avoid conflicts)
         setupCanHoTable();
         setupCuDanTable();
@@ -529,6 +569,16 @@ public class Home_list implements Initializable {
         updateTotalStatistics();
         
         // Load dữ liệu cho biểu đồ
+        // Setup session id for activity logging
+        try {
+            if (Session.getCurrentUser() != null) {
+                currentSessionUser = Session.getCurrentUser().getHoTen();
+            } else {
+                currentSessionUser = "anonymous";
+            }
+            currentSessionId = currentSessionUser + "-" + System.currentTimeMillis();
+            writeActivityLog("LOGIN", currentSessionUser, "User logged in", "LOGIN");
+        } catch (Exception ignored) {}
         loadChartData();
         
         // Show default tab
@@ -627,6 +677,26 @@ public class Home_list implements Initializable {
                     loadBarChartData();
                 } catch (Exception e) {
                     System.err.println("Error reloading bar chart for selection change: " + e.getMessage());
+                }
+            });
+        }
+
+        // Thiết lập ComboBox chọn năm cho biểu đồ
+        if (comboBoxYear != null) {
+            @SuppressWarnings("unchecked")
+            ComboBox<String> yearCombo = (ComboBox<String>) comboBoxYear;
+            int currentYear = java.time.LocalDate.now().getYear();
+            java.util.List<String> years = new java.util.ArrayList<>();
+            for (int i = currentYear - 2; i <= currentYear + 1; i++) {
+                years.add(String.valueOf(i));
+            }
+            yearCombo.setItems(javafx.collections.FXCollections.observableArrayList(years));
+            yearCombo.setValue(String.valueOf(currentYear));
+            yearCombo.valueProperty().addListener((obs, oldVal, newVal) -> {
+                try {
+                    loadBarChartData();
+                } catch (Exception e) {
+                    System.err.println("Error reloading bar chart for year change: " + e.getMessage());
                 }
             });
         }
@@ -782,6 +852,8 @@ public class Home_list implements Initializable {
             // Sau khi đóng form thêm căn hộ, reload dữ liệu để cập nhật danh sách
             // Form closed, reloading data
             refreshApartmentData();
+            // Log action: opened add apartment form
+            try { writeActivityLog("OPEN_ADD_APARTMENT", currentSessionUser, "Opened Add Apartment form", "OPEN_FORM"); } catch (Exception ignored) {}
 
         } catch (Exception e) {
             showError("Lỗi khi mở form thêm căn hộ", "Chi tiết: " + e.getMessage());
@@ -1588,6 +1660,19 @@ public class Home_list implements Initializable {
 
     @Autowired
     private FxViewLoader fxViewLoader;
+    // In-memory runtime Gemini API key (not persisted)
+    private volatile String geminiApiKey = null;
+    private final HttpClient httpClient = HttpClient.newBuilder().version(HttpClient.Version.HTTP_1_1).build();
+    // Service Account fields
+    private volatile boolean serviceAccountLoaded = false;
+    private volatile String saPrivateKeyPem = null;
+    private volatile String saClientEmail = null;
+    private volatile String saTokenUri = null;
+    private volatile String saAccessToken = null;
+    private volatile long saAccessTokenExpiry = 0L; // epoch seconds
+    // activity logging
+    private String currentSessionId = null;
+    private String currentSessionUser = null;
     @FXML
     public void themTaiKhoanClick(ActionEvent event) {
         try {
@@ -1661,6 +1746,8 @@ public class Home_list implements Initializable {
 
             // Hiển thị cửa sổ mới
             newStage.show();
+            // Log action: opened add fee form
+            try { writeActivityLog("OPEN_ADD_FEE", currentSessionUser, "Opened Add Fee form", "OPEN_FORM"); } catch (Exception ignored) {}
 
         } catch (IOException e) {
             System.err.println("Không thể mở cửa sổ Thêm khoản thu:");
@@ -1695,12 +1782,771 @@ public class Home_list implements Initializable {
 
             // Hiển thị cửa sổ mới
             newStage.show();
+            // Log action: opened add resident form
+            try { writeActivityLog("OPEN_ADD_RESIDENT", currentSessionUser, "Opened Add Resident form", "OPEN_FORM"); } catch (Exception ignored) {}
 
         } catch (IOException e) {
             System.err.println("Không thể mở cửa sổ Thêm cư dân:");
             e.printStackTrace();
             showError("Lỗi", "Không thể mở form thêm cư dân: " + e.getMessage());
         }
+    }
+
+    /**
+     * Mở popup quản lý Căn hộ khi click ô "Căn hộ" trên trang chủ
+     */
+    @FXML
+    public void openCanHoPopup(javafx.scene.input.MouseEvent event) {
+        Window owner = null;
+        if (event != null && event.getSource() instanceof Node) {
+            owner = ((Node) event.getSource()).getScene().getWindow();
+        }
+
+        // Build sessions UI: left = ListView of sessions, right = details ListView
+        javafx.scene.layout.BorderPane root = new javafx.scene.layout.BorderPane();
+        root.setStyle("-fx-background-color: white; -fx-padding:10;");
+
+        javafx.scene.control.ListView<String> sessionListView = new javafx.scene.control.ListView<>();
+        javafx.scene.control.ListView<String> detailsListView = new javafx.scene.control.ListView<>();
+
+        javafx.scene.control.Button refreshBtn = new javafx.scene.control.Button("Làm mới");
+        javafx.scene.control.Button closeBtn = new javafx.scene.control.Button("Đóng");
+
+        javafx.scene.layout.HBox topBox = new javafx.scene.layout.HBox(8, refreshBtn, closeBtn);
+        topBox.setStyle("-fx-padding:6;");
+
+        javafx.scene.control.SplitPane split = new javafx.scene.control.SplitPane();
+        split.setDividerPositions(0.4);
+        javafx.scene.layout.VBox leftBox = new javafx.scene.layout.VBox(6, new javafx.scene.control.Label("Phiên đăng nhập"), sessionListView);
+        javafx.scene.layout.VBox rightBox = new javafx.scene.layout.VBox(6, new javafx.scene.control.Label("Chi tiết hành động"), detailsListView);
+        split.getItems().addAll(leftBox, rightBox);
+
+        root.setTop(topBox);
+        root.setCenter(split);
+
+        // Data structure for sessions
+        class SessionRecord {
+            String sessionId;
+            String user;
+            String start;
+            String end;
+            java.util.List<String> actions = new java.util.ArrayList<>();
+        }
+
+        java.util.Map<String, SessionRecord> sessions = new java.util.LinkedHashMap<>();
+
+        // Load activity log from ~/.hometech/activity_log.txt if present
+        Runnable loadSessions = () -> {
+            sessions.clear();
+            Path logPath = Path.of(System.getProperty("user.home"), ".hometech", "activity_log.txt");
+            if (Files.exists(logPath)) {
+                try {
+                    java.util.List<String> lines = Files.readAllLines(logPath, StandardCharsets.UTF_8);
+                    for (String line : lines) {
+                        // expected format: sessionId|user|timestamp|actionDescription|actionType
+                        String[] parts = line.split("\\|", 5);
+                        if (parts.length < 4) continue;
+                        String sid = parts[0];
+                        String user = parts[1];
+                        String ts = parts[2];
+                        String desc = parts.length >= 4 ? parts[3] : "";
+                        String type = parts.length >= 5 ? parts[4] : "";
+                        SessionRecord sr = sessions.computeIfAbsent(sid, k -> {
+                            SessionRecord s = new SessionRecord();
+                            s.sessionId = sid;
+                            s.user = user;
+                            s.start = ts;
+                            s.end = null;
+                            return s;
+                        });
+                        sr.actions.add(ts + " - " + desc + (type != null && !type.isEmpty() ? " (" + type + ")" : ""));
+                        // mark end if action type is LOGOUT
+                        if ("LOGOUT".equalsIgnoreCase(type)) {
+                            sr.end = ts;
+                        }
+                    }
+                } catch (Exception e) {
+                    System.err.println("Error reading activity log: " + e.getMessage());
+                    e.printStackTrace();
+                }
+            } else {
+                // fallback: create sample sessions
+                for (int i = 1; i <= 3; i++) {
+                    String sid = "S" + i;
+                    SessionRecord s = new SessionRecord();
+                    s.sessionId = sid;
+                    s.user = "user" + i;
+                    s.start = java.time.LocalDateTime.now().minusHours(i).toString();
+                    s.end = i == 1 ? null : java.time.LocalDateTime.now().minusHours(i - 1).toString();
+                    s.actions.add(s.start + " - Đăng nhập");
+                    s.actions.add(java.time.LocalDateTime.now().minusMinutes(i * 10).toString() + " - Xem danh sách căn hộ");
+                    s.actions.add(java.time.LocalDateTime.now().minusMinutes(i * 5).toString() + " - Thêm hóa đơn");
+                    sessions.put(sid, s);
+                }
+            }
+
+            javafx.application.Platform.runLater(() -> {
+                sessionListView.getItems().clear();
+                for (SessionRecord sr : sessions.values()) {
+                    String label = String.format("%s — %s (%s)%s", sr.user, sr.start, sr.sessionId, (sr.end == null ? " [Đang hoạt động]" : ""));
+                    sessionListView.getItems().add(label);
+                }
+            });
+        };
+
+        // initial load
+        loadSessions.run();
+
+        sessionListView.getSelectionModel().selectedIndexProperty().addListener((obs, oldI, newI) -> {
+            int idx = newI.intValue();
+            detailsListView.getItems().clear();
+            if (idx >= 0 && idx < sessions.size()) {
+                SessionRecord sr = new java.util.ArrayList<>(sessions.values()).get(idx);
+                detailsListView.getItems().addAll(sr.actions);
+            }
+        });
+
+        refreshBtn.setOnAction(ae -> loadSessions.run());
+        closeBtn.setOnAction(ae -> {
+            // close the titled popup stage by finding owner windows
+            for (Window w : Window.getWindows()) {
+                if (w instanceof Stage) {
+                    Stage s = (Stage) w;
+                    if (s.getTitle() != null && s.getTitle().contains("Quản lý căn hộ")) {
+                        s.close();
+                    }
+                }
+            }
+        });
+
+        showTitledPopup(owner, "Quản lý căn hộ - Phiên đăng nhập", root, 700, 420);
+    }
+
+    /**
+     * Open native realtime chat popup using STOMP client
+     */
+    @FXML
+    public void openChatPopup(javafx.scene.input.MouseEvent event) {
+        Window owner = null;
+        if (event != null && event.getSource() instanceof Node) {
+            owner = ((Node) event.getSource()).getScene().getWindow();
+        }
+
+        javafx.scene.layout.BorderPane root = new javafx.scene.layout.BorderPane();
+        root.setStyle("-fx-background-color:white; -fx-padding:10;");
+
+        javafx.scene.control.ListView<String> messagesView = new javafx.scene.control.ListView<>();
+        javafx.scene.control.TextField input = new javafx.scene.control.TextField();
+        input.setPromptText("Nhập tin nhắn...");
+        javafx.scene.control.Button send = new javafx.scene.control.Button("Gửi");
+
+        javafx.scene.layout.HBox bottom = new javafx.scene.layout.HBox(8, input, send);
+        bottom.setStyle("-fx-padding:8;");
+        root.setCenter(messagesView);
+        root.setBottom(bottom);
+
+        showTitledPopup(owner, "Chat realtime", root, 600, 500);
+
+        // Setup STOMP native client
+        // connect directly to SockJS websocket transport endpoint to avoid HTTP 400 handshake errors
+        String wsUrl = "ws://localhost:8080/ws-chat/websocket";
+        io.github.ktpm.bluemoonmanagement.chat.ChatClientManager manager = new io.github.ktpm.bluemoonmanagement.chat.ChatClientManager(wsUrl);
+        manager.connect(null, chatMessage -> {
+            javafx.application.Platform.runLater(() -> {
+                messagesView.getItems().add(String.format("%s: %s", chatMessage.getSender(), chatMessage.getContent()));
+            });
+        }, () -> {
+            javafx.application.Platform.runLater(() -> messagesView.getItems().add("[Hệ thống] Đã kết nối realtime."));
+        }, ex -> {
+            javafx.application.Platform.runLater(() -> messagesView.getItems().add("[Lỗi WS] " + ex.getMessage()));
+        });
+
+        send.setOnAction(ae -> {
+            String text = input.getText();
+            if (text == null || text.trim().isEmpty()) return;
+            // create ChatMessage entity to send
+            io.github.ktpm.bluemoonmanagement.model.entity.ChatMessage m = new io.github.ktpm.bluemoonmanagement.model.entity.ChatMessage(
+                currentSessionId != null ? currentSessionId : "s-temp", currentSessionUser != null ? currentSessionUser : "Me", text, java.time.Instant.now()
+            );
+            manager.sendMessage(m);
+            input.clear();
+        });
+    }
+
+    /**
+     * Overload để gọi từ Button onAction (ActionEvent)
+     */
+    @FXML
+    public void openCanHoPopup(javafx.event.ActionEvent event) {
+        Window owner = null;
+        if (event != null && event.getSource() instanceof Node) {
+            owner = ((Node) event.getSource()).getScene().getWindow();
+        }
+        // reuse the same log content as mouse handler
+        javafx.scene.control.TextArea ta = new javafx.scene.control.TextArea();
+        ta.setEditable(false);
+        ta.setWrapText(true);
+        StringBuilder sb = new StringBuilder();
+        sb.append("Log ghi lại hành động người dùng\n\n");
+        try {
+            String username = Session.getCurrentUser() != null ? Session.getCurrentUser().getHoTen() : "Unknown";
+            sb.append("Người dùng: ").append(username).append("\n");
+        } catch (Exception ignored) {}
+        java.time.LocalDateTime now = java.time.LocalDateTime.now();
+        for (int i = 0; i < 12; i++) {
+            sb.append(now.minusMinutes(i * 5)).append(" - Hành động mẫu #").append(i + 1).append("\n");
+        }
+        ta.setText(sb.toString());
+        javafx.scene.layout.StackPane wrapper = new javafx.scene.layout.StackPane(ta);
+        wrapper.setStyle("-fx-background-color: white; -fx-padding:10;");
+        showTitledPopup(owner, "Log hoạt động", wrapper, 700, 420);
+    }
+
+    /**
+     * Helper: hiển thị 1 cửa sổ trắng trống, modal, không có nội dung
+     */
+    private void showBlankWhitePopup(Window owner, String title, double minWidth, double minHeight) {
+        try {
+            Stage newStage = new Stage();
+            newStage.initStyle(javafx.stage.StageStyle.UNDECORATED);
+            StackPane root = new StackPane();
+            root.setStyle("-fx-background-color: white;");
+            Scene scene = new Scene(root, minWidth, minHeight);
+            newStage.setScene(scene);
+            newStage.setTitle(title);
+            newStage.initModality(Modality.APPLICATION_MODAL);
+            if (owner instanceof Stage) {
+                newStage.initOwner(owner);
+            }
+            newStage.setMinWidth(minWidth);
+            newStage.setMinHeight(minHeight);
+            newStage.show();
+        } catch (Exception e) {
+            System.err.println("Không thể mở popup trắng: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Hiển thị popup có thanh tiêu đề + nút đóng. Nội dung truyền vào là một Node.
+     */
+    private void showTitledPopup(Window owner, String title, javafx.scene.Node content, double width, double height) {
+        try {
+            Stage newStage = new Stage();
+            newStage.initStyle(javafx.stage.StageStyle.UNDECORATED);
+
+            javafx.scene.layout.BorderPane root = new javafx.scene.layout.BorderPane();
+            // Title bar
+            javafx.scene.layout.HBox titleBar = new javafx.scene.layout.HBox();
+            titleBar.setStyle("-fx-background-color: linear-gradient(#4a6fb3, #35548a); -fx-padding:8;");
+            javafx.scene.control.Label titleLabel = new javafx.scene.control.Label(title);
+            titleLabel.setStyle("-fx-text-fill: white; -fx-font-size:14px; -fx-font-weight: bold;");
+            javafx.scene.layout.Region spacer = new javafx.scene.layout.Region();
+            javafx.scene.layout.HBox.setHgrow(spacer, javafx.scene.layout.Priority.ALWAYS);
+            javafx.scene.control.Button closeBtn = new javafx.scene.control.Button("✕");
+            closeBtn.setStyle("-fx-background-color: transparent; -fx-text-fill: white; -fx-font-size:14px;");
+            closeBtn.setOnAction(ae -> newStage.close());
+            titleBar.getChildren().addAll(titleLabel, spacer, closeBtn);
+
+            root.setTop(titleBar);
+            root.setCenter(content);
+
+            Scene scene = new Scene(root, width, height);
+            newStage.setScene(scene);
+            newStage.setTitle(title);
+            newStage.initModality(Modality.APPLICATION_MODAL);
+            if (owner instanceof Stage) {
+                newStage.initOwner(owner);
+            }
+            newStage.setMinWidth(width);
+            newStage.setMinHeight(height);
+
+            // Make titleBar draggable
+            final double[] dragOffset = new double[2];
+            titleBar.setOnMousePressed(me -> {
+                dragOffset[0] = me.getSceneX();
+                dragOffset[1] = me.getSceneY();
+            });
+            titleBar.setOnMouseDragged(me -> {
+                javafx.geometry.Point2D screen = titleBar.localToScreen(me.getX(), me.getY());
+                if (screen != null) {
+                    newStage.setX(screen.getX() - dragOffset[0]);
+                    newStage.setY(screen.getY() - dragOffset[1]);
+                }
+            });
+
+            newStage.show();
+        } catch (Exception e) {
+            System.err.println("Không thể mở popup tiêu đề: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Load service account JSON from a Path (will parse private_key, client_email, token_uri).
+     */
+    private void loadServiceAccountFromFile(Path path) {
+        try {
+            String text = Files.readString(path, StandardCharsets.UTF_8);
+            loadServiceAccountFromString(text);
+            // Persist to app directory for future runs
+            try {
+                Preferences prefs = Preferences.userNodeForPackage(Home_list.class);
+                String saved = prefs.get("serviceAccountPath", null);
+                if (saved == null || saved.trim().isEmpty()) {
+                    Path savedPath = saveServiceAccountToAppDir(path);
+                    if (savedPath != null) {
+                        prefs.put("serviceAccountPath", savedPath.toAbsolutePath().toString());
+                        System.out.println("Service account persisted to: " + savedPath.toAbsolutePath());
+                    }
+                }
+            } catch (Exception ignored) {}
+        } catch (Exception e) {
+            System.err.println("Không thể đọc service account file: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    private void loadServiceAccountFromFile(String path) {
+        loadServiceAccountFromFile(Path.of(path));
+    }
+
+    private void loadServiceAccountFromString(String jsonText) {
+        try {
+            Pattern pKey = Pattern.compile("\"private_key\"\\s*:\\s*\"([\\s\\S]*?)\"", Pattern.DOTALL);
+            Pattern pEmail = Pattern.compile("\"client_email\"\\s*:\\s*\"([^\"]+)\"");
+            Pattern pToken = Pattern.compile("\"token_uri\"\\s*:\\s*\"([^\"]+)\"");
+            Matcher mKey = pKey.matcher(jsonText);
+            Matcher mEmail = pEmail.matcher(jsonText);
+            Matcher mToken = pToken.matcher(jsonText);
+            if (mKey.find() && mEmail.find() && mToken.find()) {
+                String rawKey = mKey.group(1);
+                // unescape \n sequences
+                rawKey = rawKey.replace("\\n", "\n");
+                saPrivateKeyPem = rawKey;
+                saClientEmail = mEmail.group(1);
+                saTokenUri = mToken.group(1);
+                serviceAccountLoaded = true;
+                System.out.println("Service account loaded for: " + saClientEmail);
+            } else {
+                System.err.println("Service account JSON missing required fields.");
+            }
+        } catch (Exception e) {
+            System.err.println("Error parsing service account JSON: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Save a copy of the provided service account file to the user's app directory
+     * (~/.hometech/gen-lang-service-account.json) and return the saved path.
+     */
+    private Path saveServiceAccountToAppDir(Path source) {
+        try {
+            String userHome = System.getProperty("user.home");
+            Path dir = Path.of(userHome, ".hometech");
+            if (!Files.exists(dir)) {
+                Files.createDirectories(dir);
+            }
+            Path dest = dir.resolve("gen-lang-service-account.json");
+            Files.copy(source, dest, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+            return dest;
+        } catch (Exception e) {
+            System.err.println("Failed to persist service account: " + e.getMessage());
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    /**
+     * Obtain access token from service account (cached, blocking).
+     */
+    private synchronized String getServiceAccountAccessToken() {
+        try {
+            long now = Instant.now().getEpochSecond();
+            if (saAccessToken != null && saAccessTokenExpiry - 30 > now) {
+                return saAccessToken;
+            }
+            if (!serviceAccountLoaded || saPrivateKeyPem == null || saClientEmail == null || saTokenUri == null) {
+                return null;
+            }
+            PrivateKey privateKey = getPrivateKeyFromPem(saPrivateKeyPem);
+            if (privateKey == null) {
+                return null;
+            }
+            // build JWT
+            long iat = now;
+            long exp = now + 3600;
+            String header = "{\"alg\":\"RS256\",\"typ\":\"JWT\"}";
+            // Request both cloud-platform and generative-language scopes to ensure access
+            String scopes = "https://www.googleapis.com/auth/cloud-platform https://www.googleapis.com/auth/generative-language";
+            String payload = String.format("{\"iss\":\"%s\",\"scope\":\"%s\",\"aud\":\"%s\",\"exp\":%d,\"iat\":%d}",
+                saClientEmail, scopes, saTokenUri, exp, iat);
+            String headerB64 = Base64.getUrlEncoder().withoutPadding().encodeToString(header.getBytes(StandardCharsets.UTF_8));
+            String payloadB64 = Base64.getUrlEncoder().withoutPadding().encodeToString(payload.getBytes(StandardCharsets.UTF_8));
+            String unsigned = headerB64 + "." + payloadB64;
+            Signature sig = Signature.getInstance("SHA256withRSA");
+            sig.initSign(privateKey);
+            sig.update(unsigned.getBytes(StandardCharsets.UTF_8));
+            byte[] signature = sig.sign();
+            String sigB64 = Base64.getUrlEncoder().withoutPadding().encodeToString(signature);
+            String jwt = unsigned + "." + sigB64;
+
+            String body = "grant_type=urn%3Aietf%3Aparams%3Aoauth%3Agrant-type%3Ajwt-bearer&assertion=" + URLEncoder.encode(jwt, StandardCharsets.UTF_8);
+
+            HttpRequest req = HttpRequest.newBuilder()
+                .uri(URI.create(saTokenUri))
+                .header("Content-Type", "application/x-www-form-urlencoded")
+                .POST(HttpRequest.BodyPublishers.ofString(body))
+                .build();
+            HttpResponse<String> resp = httpClient.send(req, HttpResponse.BodyHandlers.ofString());
+            if (resp.statusCode() >= 200 && resp.statusCode() < 300) {
+                String respBody = resp.body();
+                Matcher mTok = Pattern.compile("\"access_token\"\\s*:\\s*\"([^\"]+)\"").matcher(respBody);
+                Matcher mExp = Pattern.compile("\"expires_in\"\\s*:\\s*(\\d+)").matcher(respBody);
+                if (mTok.find()) {
+                    saAccessToken = mTok.group(1);
+                    long expiresIn = 3600;
+                    if (mExp.find()) {
+                        try { expiresIn = Long.parseLong(mExp.group(1)); } catch (Exception ignored) {}
+                    }
+                    saAccessTokenExpiry = Instant.now().getEpochSecond() + expiresIn;
+                    return saAccessToken;
+                } else {
+                    System.err.println("Token response missing access_token: " + respBody);
+                    return null;
+                }
+            } else {
+                System.err.println("Token request failed: HTTP " + resp.statusCode() + " body=" + resp.body());
+                return null;
+            }
+        } catch (Exception e) {
+            System.err.println("Error obtaining service account token: " + e.getMessage());
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    private PrivateKey getPrivateKeyFromPem(String pem) {
+        try {
+            String priv = pem.replace("-----BEGIN PRIVATE KEY-----", "").replace("-----END PRIVATE KEY-----", "");
+            priv = priv.replaceAll("\\s+", "");
+            byte[] decoded = Base64.getDecoder().decode(priv);
+            PKCS8EncodedKeySpec spec = new PKCS8EncodedKeySpec(decoded);
+            KeyFactory kf = KeyFactory.getInstance("RSA");
+            return kf.generatePrivate(spec);
+        } catch (Exception e) {
+            System.err.println("Error parsing private key PEM: " + e.getMessage());
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    /**
+     * Append an activity line to ~/.hometech/activity_log.txt
+     * Format: sessionId|user|timestamp|actionDescription|actionType
+     */
+    private void writeActivityLog(String actionCode, String user, String actionDescription, String actionType) {
+        try {
+            String sid = currentSessionId != null ? currentSessionId : ("s-" + System.currentTimeMillis());
+            String who = user != null ? user : (currentSessionUser != null ? currentSessionUser : "unknown");
+            String ts = java.time.Instant.now().toString();
+            String line = String.join("|", sid, who, ts, actionDescription != null ? actionDescription : actionCode, actionType != null ? actionType : "") + System.lineSeparator();
+            Path dir = Path.of(System.getProperty("user.home"), ".hometech");
+            if (!Files.exists(dir)) Files.createDirectories(dir);
+            Path log = dir.resolve("activity_log.txt");
+            Files.write(log, line.getBytes(StandardCharsets.UTF_8), java.nio.file.StandardOpenOption.CREATE, java.nio.file.StandardOpenOption.APPEND);
+        } catch (Exception e) {
+            System.err.println("Failed to write activity log: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Gọi Gemini Generative API bất đồng bộ (sử dụng API key). Kết quả trả về qua callback.
+     * Không in API key ra logs.
+     */
+    private void callGeminiAsync(String apiKey, String prompt, Consumer<String> onSuccess, Consumer<String> onError) {
+        try {
+            String endpoint = "https://generativelanguage.googleapis.com/v1beta2/models/text-bison-001:generateText";
+            String jsonBody = "{\"prompt\":{\"text\":\"" + escapeJson(prompt) + "\"},\"temperature\":0.2,\"maxOutputTokens\":512}";
+
+            HttpRequest.Builder reqBuilder = HttpRequest.newBuilder()
+                .uri(URI.create(endpoint))
+                .header("Content-Type", "application/json; charset=UTF-8")
+                .POST(HttpRequest.BodyPublishers.ofString(jsonBody));
+
+            // Prefer Service Account (Bearer) if loaded
+            if (serviceAccountLoaded) {
+                String token = getServiceAccountAccessToken();
+                if (token == null) {
+                    onError.accept("Không thể lấy access token từ Service Account.");
+                    return;
+                }
+                reqBuilder.header("Authorization", "Bearer " + token);
+            } else if (apiKey != null && !apiKey.trim().isEmpty()) {
+                // fallback to API key param
+                String endpointWithKey = endpoint + "?key=" + apiKey;
+                reqBuilder.uri(URI.create(endpointWithKey));
+            } else {
+                onError.accept("API key trống và Service Account chưa được cấu hình.");
+                return;
+            }
+
+            HttpRequest req = reqBuilder.build();
+            CompletableFuture<HttpResponse<String>> cf = httpClient.sendAsync(req, HttpResponse.BodyHandlers.ofString());
+            cf.whenComplete((resp, ex) -> {
+                if (ex != null) {
+                    onError.accept("Network error: " + ex.getMessage());
+                    return;
+                }
+                int code = resp.statusCode();
+                String body = resp.body();
+                if (code >= 200 && code < 300) {
+                    String extracted = extractTextFromResponse(body);
+                    if (extracted == null || extracted.isEmpty()) {
+                        onError.accept("Không trích được nội dung trả về từ API");
+                    } else {
+                        onSuccess.accept(extracted);
+                    }
+                } else {
+                    // Debug helpers: if using SA, fetch tokeninfo to show scopes, and try v1 fallback on 404
+                    String debugInfo = "HTTP " + code + ": " + body;
+                    if (serviceAccountLoaded) {
+                        try {
+                            String token = saAccessToken != null ? saAccessToken : getServiceAccountAccessToken();
+                            if (token != null) {
+                                String tokenInfo = fetchTokenInfo(token);
+                                debugInfo += "\nTokenInfo: " + tokenInfo;
+                            }
+                        } catch (Exception ignored) {}
+                    }
+
+                    // If 404 and using v1beta2, try v1 endpoint as fallback once
+                    if (code == 404 && endpoint.contains("/v1beta2/")) {
+                        try {
+                            String v1endpoint = endpoint.replace("/v1beta2/", "/v1/");
+                            HttpRequest.Builder fb = HttpRequest.newBuilder()
+                                .uri(URI.create(v1endpoint))
+                                .header("Content-Type", "application/json; charset=UTF-8")
+                                .POST(HttpRequest.BodyPublishers.ofString(jsonBody));
+                            if (serviceAccountLoaded) {
+                                String token = saAccessToken != null ? saAccessToken : getServiceAccountAccessToken();
+                                if (token != null) fb.header("Authorization", "Bearer " + token);
+                            } else if (apiKey != null && !apiKey.trim().isEmpty()) {
+                                fb.uri(URI.create(v1endpoint + "?key=" + apiKey));
+                            }
+                            HttpResponse<String> fbResp = httpClient.send(fb.build(), HttpResponse.BodyHandlers.ofString());
+                            if (fbResp.statusCode() >= 200 && fbResp.statusCode() < 300) {
+                                String extracted = extractTextFromResponse(fbResp.body());
+                                if (extracted == null || extracted.isEmpty()) {
+                                    onError.accept("Fallback v1: Không trích được nội dung trả về từ API");
+                                } else {
+                                    onSuccess.accept("[Fallback v1] " + extracted);
+                                }
+                                return;
+                            } else {
+                                debugInfo += "\nFallback v1 HTTP " + fbResp.statusCode() + ": " + fbResp.body();
+                            }
+                        } catch (Exception e) {
+                            debugInfo += "\nFallback v1 failed: " + e.getMessage();
+                        }
+                    }
+
+                    onError.accept(debugInfo);
+                }
+            });
+        } catch (Exception e) {
+            onError.accept("Exception: " + e.getMessage());
+        }
+    }
+
+    private static String escapeJson(String s) {
+        if (s == null) return "";
+        return s.replace("\\", "\\\\").replace("\"", "\\\"").replace("\n", "\\n").replace("\r", "\\r");
+    }
+
+    /**
+     * Fetch token info (scopes and other metadata) using Google's tokeninfo endpoint.
+     */
+    private String fetchTokenInfo(String accessToken) {
+        try {
+            String url = "https://www.googleapis.com/oauth2/v3/tokeninfo?access_token=" + URLEncoder.encode(accessToken, StandardCharsets.UTF_8);
+            HttpRequest req = HttpRequest.newBuilder().uri(URI.create(url)).GET().build();
+            HttpResponse<String> resp = httpClient.send(req, HttpResponse.BodyHandlers.ofString());
+            if (resp.statusCode() >= 200 && resp.statusCode() < 300) {
+                return resp.body();
+            } else {
+                return "tokeninfo HTTP " + resp.statusCode() + ": " + resp.body();
+            }
+        } catch (Exception e) {
+            return "tokeninfo failed: " + e.getMessage();
+        }
+    }
+
+    /**
+     * Cố gắng trích text từ response JSON trả về từ Generative API.
+     * Thử nhiều pattern phổ biến: candidates[].output | candidates[].content | text | message.content
+     */
+    private static String extractTextFromResponse(String resp) {
+        if (resp == null) return "";
+        // Try several regexes
+        String[] patterns = new String[] {
+            "\"output\"\\s*:\\s*\"([^\"]+)\"",
+            "\"content\"\\s*:\\s*\"([^\"]+)\"",
+            "\"text\"\\s*:\\s*\"([^\"]+)\"",
+            "\"message\"\\s*:\\s*\\{[^}]*\"content\"\\s*:\\s*\"([^\"]+)\""
+        };
+        for (String p : patterns) {
+            Pattern pattern = Pattern.compile(p, Pattern.DOTALL);
+            Matcher m = pattern.matcher(resp);
+            if (m.find()) {
+                String found = m.group(1);
+                // unescape simple sequences
+                return found.replace("\\n", "\n").replace("\\r", "\r").replace("\\\"", "\"").replace("\\\\", "\\");
+            }
+        }
+        // As last resort return a truncated raw body
+        return resp.length() > 1000 ? resp.substring(0, 1000) + "..." : resp;
+    }
+
+    /**
+     * Mở popup quản lý Cư dân khi click ô "Cư dân" trên trang chủ
+     */
+    @FXML
+    public void openCuDanPopup(javafx.scene.input.MouseEvent event) {
+        Window owner = null;
+        if (event != null && event.getSource() instanceof Node) {
+            owner = ((Node) event.getSource()).getScene().getWindow();
+        }
+
+        // Simple web search popup (Google, YouTube, Bing)
+        javafx.scene.layout.BorderPane root = new javafx.scene.layout.BorderPane();
+        root.setStyle("-fx-background-color: white; -fx-padding:10;");
+
+        javafx.scene.control.ComboBox<String> engineBox = new javafx.scene.control.ComboBox<>();
+        engineBox.getItems().addAll("Google", "YouTube", "Bing");
+        engineBox.setValue("Google");
+
+        javafx.scene.control.TextField queryField = new javafx.scene.control.TextField();
+        queryField.setPromptText("Nhập từ khóa tìm kiếm...");
+        queryField.setPrefWidth(420);
+
+        javafx.scene.control.Button searchBtn = new javafx.scene.control.Button("Tìm");
+        javafx.scene.control.Button openExternalBtn = new javafx.scene.control.Button("Mở ngoài trình duyệt");
+        javafx.scene.control.Button closeBtn = new javafx.scene.control.Button("Đóng");
+
+        javafx.scene.layout.HBox topBox = new javafx.scene.layout.HBox(8, engineBox, queryField, searchBtn, openExternalBtn, closeBtn);
+        topBox.setStyle("-fx-padding:8;");
+
+        WebView webView = new WebView();
+        WebEngine webEngine = webView.getEngine();
+
+        root.setTop(topBox);
+        root.setCenter(webView);
+
+        Runnable doSearch = () -> {
+            try {
+                String engine = engineBox.getValue();
+                String q = queryField.getText();
+                if (q == null) return;
+                String enc = URLEncoder.encode(q, StandardCharsets.UTF_8);
+                String url;
+                switch (engine) {
+                    case "YouTube":
+                        url = "https://www.youtube.com/results?search_query=" + enc;
+                        break;
+                    case "Bing":
+                        url = "https://www.bing.com/search?q=" + enc;
+                        break;
+                    default:
+                        url = "https://www.google.com/search?q=" + enc;
+                }
+                final String finalUrl = url;
+                javafx.application.Platform.runLater(() -> webEngine.load(finalUrl));
+            } catch (Exception e) {
+                System.err.println("Search error: " + e.getMessage());
+            }
+        };
+
+        searchBtn.setOnAction(ae -> doSearch.run());
+        queryField.setOnAction(ae -> doSearch.run());
+
+        openExternalBtn.setOnAction(ae -> {
+            try {
+                String current = webView.getEngine().getLocation();
+                if (current != null && !current.isEmpty()) {
+                    java.awt.Desktop.getDesktop().browse(new URI(current));
+                }
+            } catch (Exception e) {
+                System.err.println("Failed to open external browser: " + e.getMessage());
+            }
+        });
+
+        closeBtn.setOnAction(ae -> {
+            for (Window w : Window.getWindows()) {
+                if (w instanceof Stage) {
+                    Stage s = (Stage) w;
+                    if (s.getTitle() != null && s.getTitle().contains("Tìm kiếm Internet")) {
+                        s.close();
+                    }
+                }
+            }
+        });
+
+        showTitledPopup(owner, "Tìm kiếm Internet", root, 900, 600);
+    }
+
+    /**
+     * Mở popup Khoản thu khi click ô "Khoản thu" trên trang chủ
+     * Chat app realtime với STOMP WebSocket
+     */
+    @FXML
+    public void openKhoanThuPopup(javafx.scene.input.MouseEvent event) {
+        Window owner = null;
+        if (event != null && event.getSource() instanceof Node) {
+            owner = ((Node) event.getSource()).getScene().getWindow();
+        }
+
+        javafx.scene.layout.BorderPane root = new javafx.scene.layout.BorderPane();
+        root.setStyle("-fx-background-color:white; -fx-padding:10;");
+
+        javafx.scene.control.ListView<String> messagesView = new javafx.scene.control.ListView<>();
+        javafx.scene.control.TextField input = new javafx.scene.control.TextField();
+        input.setPromptText("Nhập tin nhắn...");
+        javafx.scene.control.Button send = new javafx.scene.control.Button("Gửi");
+
+        javafx.scene.layout.HBox bottom = new javafx.scene.layout.HBox(8, input, send);
+        bottom.setStyle("-fx-padding:8;");
+        root.setCenter(messagesView);
+        root.setBottom(bottom);
+
+        showTitledPopup(owner, "Chat Khoản thu", root, 600, 500);
+
+        // Setup STOMP native client
+        // connect directly to SockJS websocket transport endpoint to avoid HTTP 400 handshake errors
+        String wsUrl = "ws://localhost:8080/ws-chat/websocket";
+        io.github.ktpm.bluemoonmanagement.chat.ChatClientManager manager = new io.github.ktpm.bluemoonmanagement.chat.ChatClientManager(wsUrl);
+        manager.connect(null, chatMessage -> {
+            javafx.application.Platform.runLater(() -> {
+                messagesView.getItems().add(String.format("%s: %s", chatMessage.getSender(), chatMessage.getContent()));
+            });
+        }, () -> {
+            javafx.application.Platform.runLater(() -> messagesView.getItems().add("[Hệ thống] Đã kết nối chat realtime."));
+        }, ex -> {
+            javafx.application.Platform.runLater(() -> messagesView.getItems().add("[Lỗi WS] " + ex.getMessage()));
+        });
+
+        send.setOnAction(ae -> {
+            String text = input.getText();
+            if (text == null || text.trim().isEmpty()) return;
+            // create ChatMessage entity to send
+            io.github.ktpm.bluemoonmanagement.model.entity.ChatMessage m = new io.github.ktpm.bluemoonmanagement.model.entity.ChatMessage(
+                currentSessionId != null ? currentSessionId : "s-khoan-thu", currentSessionUser != null ? currentSessionUser : "User", text, java.time.Instant.now()
+            );
+            manager.sendMessage(m);
+            input.clear();
+        });
     }
 
     /**
@@ -1832,6 +2678,8 @@ public class Home_list implements Initializable {
 
             // Reload dữ liệu sau khi đóng form chỉnh sửa
             loadCuDanData();
+            // Log edit action opened
+            try { writeActivityLog("OPEN_EDIT_RESIDENT", currentSessionUser, "Opened Edit Resident: " + cuDan.getMaDinhDanh(), "EDIT_OPEN"); } catch (Exception ignored) {}
 
         } catch (IOException e) {
             System.err.println("Không thể mở cửa sổ chỉnh sửa cư dân:");
@@ -3088,7 +3936,8 @@ public class Home_list implements Initializable {
                     allCuDan = null;
                 }
 
-                for (int i = 5; i >= 0; i--) {
+                // Show last 12 months for the main chart
+                for (int i = 11; i >= 0; i--) {
                     java.time.LocalDate month = now.minusMonths(i);
                     String monthLabel = month.getMonth().getDisplayName(java.time.format.TextStyle.SHORT, java.util.Locale.forLanguageTag("vi")) + " " + month.getYear();
 
@@ -3121,15 +3970,6 @@ public class Home_list implements Initializable {
                     series.getData().add(new javafx.scene.chart.XYChart.Data<>(monthLabel, cuDanCount));
                 }
 
-                // Prepare pie chart data by calling PieChartDataUtil (may query DB)
-                java.util.Map<String, Integer> tmpFeeTypeCount = null;
-                try {
-                    tmpFeeTypeCount = PieChartDataUtil.getKhoanThuDataFromDatabase(khoanThuService);
-        } catch (Exception e) {
-                    System.err.println("Error fetching pie chart data: " + e.getMessage());
-                    tmpFeeTypeCount = null;
-                }
-                final java.util.Map<String, Integer> feeTypeCount = (tmpFeeTypeCount != null) ? tmpFeeTypeCount : java.util.Map.of();
 
                 // Update charts on FX thread
                 javafx.application.Platform.runLater(() -> {
@@ -3143,6 +3983,18 @@ public class Home_list implements Initializable {
                             chart.setAnimated(true);
                             chart.setTitle("");
                             chart.setStyle("-fx-background-color: transparent;");
+                            chart.setCategoryGap(25);
+                            chart.setBarGap(10);
+                            chart.applyCss();
+                            chart.layout();
+
+                            javafx.application.Platform.runLater(() -> {
+                                java.util.Set<javafx.scene.Node> labels =
+                                        chart.lookupAll(".axis .tick-label");
+                                for (javafx.scene.Node label : labels) {
+                                    label.setStyle("-fx-padding: 0 25 0 25;-fx-font-size: 11;");
+                                }
+                            });
                             // color series
                             try {
                                 for (javafx.scene.chart.XYChart.Series<String, Number> s : chart.getData()) {
@@ -3158,43 +4010,10 @@ public class Home_list implements Initializable {
                             }
                         }
 
-                        // Pie chart update
-                        if (pieChartKhoanThu != null) {
-                            pieChartKhoanThu.getData().clear();
-                            if (feeTypeCount != null && !feeTypeCount.isEmpty()) {
-                                for (java.util.Map.Entry<String, Integer> entry : feeTypeCount.entrySet()) {
-                                    javafx.scene.chart.PieChart.Data slice = new javafx.scene.chart.PieChart.Data(entry.getKey(), entry.getValue());
-                                    pieChartKhoanThu.getData().add(slice);
-                                }
-                            } else {
-                                javafx.scene.chart.PieChart.Data emptySlice = new javafx.scene.chart.PieChart.Data("Chưa có khoản thu nào", 1);
-                                pieChartKhoanThu.getData().add(emptySlice);
-                            }
-                            pieChartKhoanThu.setLegendVisible(false);
-                            pieChartKhoanThu.setAnimated(true);
-                            pieChartKhoanThu.setLabelsVisible(false);
-                            pieChartKhoanThu.setTitle("");
-
-                            // style pie slices
-                            try {
-                                int colorIndex = 0;
-                                for (javafx.scene.chart.PieChart.Data data : pieChartKhoanThu.getData()) {
-                                    javafx.scene.Node node = data.getNode();
-                                    if (node != null) {
-                                        String color = PieChartDataUtil.getSliceColor(data.getName(), colorIndex);
-                                        node.setStyle("-fx-pie-color: " + color + ";");
-                                        colorIndex++;
-                                    }
-                                }
-                                updateLegendPercentages();
-                            } catch (Exception e) {
-                                System.err.println("Error styling pie chart: " + e.getMessage());
-                            }
-                        }
                     } catch (Exception e) {
                         System.err.println("Error updating charts on FX thread: " + e.getMessage());
-            e.printStackTrace();
-        }
+                        e.printStackTrace();
+                    }
                 });
 
             } catch (Exception e) {
@@ -3223,6 +4042,16 @@ public class Home_list implements Initializable {
                 chartType = comboBoxChartType.getValue().toString();
             }
 
+            // Determine selected year (default to current year)
+            int selectedYear = java.time.LocalDate.now().getYear();
+            if (comboBoxYear != null && comboBoxYear.getValue() != null) {
+                try {
+                    selectedYear = Integer.parseInt(comboBoxYear.getValue().toString());
+                } catch (NumberFormatException e) {
+                    selectedYear = java.time.LocalDate.now().getYear();
+                }
+            }
+
             javafx.scene.chart.XYChart.Series<String, Number> series = new javafx.scene.chart.XYChart.Series<>();
             if (chartType.contains("Căn hộ")) {
                 series.setName("Số căn hộ");
@@ -3232,9 +4061,9 @@ public class Home_list implements Initializable {
             series.setName("Số cư dân");
             }
 
-            java.time.LocalDate now = java.time.LocalDate.now();
-            for (int i = 5; i >= 0; i--) {
-                java.time.LocalDate month = now.minusMonths(i);
+            // Show 12 months for the selected year
+            for (int i = 11; i >= 0; i--) {
+                java.time.LocalDate month = java.time.LocalDate.of(selectedYear, 12 - i, 1);
                 String monthLabel = String.format("%d/%02d", month.getMonthValue(), month.getYear() % 100);
                 int value;
                 if (series.getName().contains("căn hộ")) {
@@ -3285,71 +4114,6 @@ public class Home_list implements Initializable {
         }
     }
 
-    /**
-     * Load dữ liệu cho PieChart - Khoản thu tháng này
-     */
-    private void loadPieChartData() {
-        try {
-            if (pieChartKhoanThu == null) {
-                return;
-            }
-
-            // Xóa dữ liệu cũ
-            pieChartKhoanThu.getData().clear();
-
-            // Lấy dữ liệu thực từ database thay vì sử dụng dữ liệu mẫu
-            Map<String, Integer> feeTypeCount = PieChartDataUtil.getKhoanThuDataFromDatabase(khoanThuService);
-
-            if (feeTypeCount != null && !feeTypeCount.isEmpty()) {
-                // Tạo dữ liệu cho PieChart từ database thực
-                for (java.util.Map.Entry<String, Integer> entry : feeTypeCount.entrySet()) {
-                    javafx.scene.chart.PieChart.Data slice = new javafx.scene.chart.PieChart.Data(
-                        entry.getKey(), // Đã có label chi tiết rồi, không cần thêm nữa
-                        entry.getValue()
-                    );
-                    pieChartKhoanThu.getData().add(slice);
-                }
-
-            } else {
-                // Nếu không có dữ liệu, hiển thị thông báo với style đẹp hơn
-                javafx.scene.chart.PieChart.Data emptySlice = new javafx.scene.chart.PieChart.Data(
-                    "Chưa có khoản thu nào", 1);
-                pieChartKhoanThu.getData().add(emptySlice);
-
-            }
-
-            // Thiết lập style cho biểu đồ - Ẩn legend mặc định vì đã có chú thích tự tạo
-            pieChartKhoanThu.setLegendVisible(false);
-            pieChartKhoanThu.setAnimated(true);
-            pieChartKhoanThu.setLabelsVisible(false); // Tắt labels mặc định để tự tạo labels trong slice
-            pieChartKhoanThu.setTitle("");
-
-
-            javafx.application.Platform.runLater(() -> {
-                try {
-                    int colorIndex = 0;
-                    for (javafx.scene.chart.PieChart.Data data : pieChartKhoanThu.getData()) {
-                        javafx.scene.Node node = data.getNode();
-                        if (node != null) {
-                            String color = PieChartDataUtil.getSliceColor(data.getName(), colorIndex);
-                            node.setStyle("-fx-pie-color: " + color + ";");
-                            colorIndex++;
-                        }
-                    }
-                    
-                    
-                    updateLegendPercentages();
-
-                } catch (Exception e) {
-                    System.err.println("Error setting pie chart colors: " + e.getMessage());
-                }
-            });
-
-        } catch (Exception e) {
-            System.err.println("❌ Error loading pie chart data: " + e.getMessage());
-            e.printStackTrace();
-        }
-    }
 
     /**
      * Ensure khoanThu cache is loaded (background). If already loaded, no-op.
@@ -4122,39 +4886,4 @@ public class Home_list implements Initializable {
     /**
      * Cập nhật phần trăm cho chú thích cố định
      */
-    private void updateLegendPercentages() {
-        try {
-            // Tính tổng giá trị để tính phần trăm
-            double total = pieChartKhoanThu.getData().stream()
-                .mapToDouble(data -> data.getPieValue())
-                .sum();
-            
-            if (total > 0) {
-                for (javafx.scene.chart.PieChart.Data data : pieChartKhoanThu.getData()) {
-                    double percentage = (data.getPieValue() / total) * 100;
-                    String percentText = String.format("%.1f%%", percentage);
-                    
-                    // Cập nhật label dựa trên tên data
-                    String dataName = data.getName().toLowerCase();
-                    if (dataName.contains("bắt buộc") && labelPhanTramBatBuoc != null) {
-                        labelPhanTramBatBuoc.setText(percentText);
-                    } else if (dataName.contains("tự nguyện") && labelPhanTramTuNguyen != null) {
-                        labelPhanTramTuNguyen.setText(percentText);
-                    }
-                }
-            } else {
-                // Nếu không có dữ liệu, hiển thị 0%
-                if (labelPhanTramBatBuoc != null) {
-                    labelPhanTramBatBuoc.setText("0%");
-                }
-                if (labelPhanTramTuNguyen != null) {
-                    labelPhanTramTuNguyen.setText("0%");
-                }
-            }
-            
-            
-        } catch (Exception e) {
-            System.err.println("Error updating legend percentages: " + e.getMessage());
-        }
-    }
 }

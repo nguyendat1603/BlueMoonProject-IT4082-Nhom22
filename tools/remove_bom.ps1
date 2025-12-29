@@ -1,0 +1,2 @@
+param(\n+    [string]$path\n+)\n+try {\n+    if (-not (Test-Path $path)) {\n+        Write-Output \"MISSING: $path\"\n+        exit 0\n+    }\n+    $b = [System.IO.File]::ReadAllBytes($path)\n+    if ($b.Length -gt 3 -and $b[0] -eq 239 -and $b[1] -eq 187 -and $b[2] -eq 191) {\n+        $rest = $b[3..($b.Length - 1)]\n+        [System.IO.File]::WriteAllBytes($path, $rest)\n+        Write-Output \"CLEANED: $path\"\n+    } else {\n+        Write-Output \"NO_BOM: $path\"\n+    }\n+} catch {\n+    Write-Output \"ERR: $($_.Exception.Message)\"\n+}\n+\n*** End Patch
+
