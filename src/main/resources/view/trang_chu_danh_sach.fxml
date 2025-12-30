@@ -35,7 +35,7 @@
 
 <StackPane prefHeight="620.0" prefWidth="1080.0" stylesheets="@style/dashboard_style.css" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="io.github.ktpm.bluemoonmanagement.controller.Home_list">
    <children>
-      <GridPane fx:id="gridPaneTrangChu">
+      <GridPane fx:id="gridPaneTrangChu" visible="false">
          <StackPane.margin>
             <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
          </StackPane.margin>
@@ -149,7 +149,7 @@
             </GridPane>
          </children>
       </GridPane>
-      <ScrollPane fx:id="scrollPaneCanHo" hbarPolicy="NEVER" prefHeight="200.0" prefWidth="200.0" style="-fx-background: white;" visible="false">
+      <ScrollPane fx:id="scrollPaneCanHo" hbarPolicy="NEVER" prefHeight="200.0" prefWidth="200.0" style="-fx-background: white;">
          <StackPane.margin>
             <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
          </StackPane.margin>
@@ -504,7 +504,7 @@
                                  <columns>
                                     <TableColumn fx:id="tableColumnEmail" prefWidth="268.0000541806221" text="Email" />
                                     <TableColumn fx:id="tableColumnHoVaTenTaiKhoan" prefWidth="185.5999755859375" text="Họ và tên" />
-                                    <TableColumn fx:id="tableColumnVaiTro" prefWidth="119.20001220703125" text="Vai trÃ²" />
+                                    <TableColumn fx:id="tableColumnVaiTro" prefWidth="119.20001220703125" text="Vai trò" />
                                     <TableColumn fx:id="tableColumnNgayTaoTK" prefWidth="183.2000732421875" text="Ngày tạo" />
                                     <TableColumn fx:id="tableColumnNgayCapNhat" prefWidth="211.19998779296873" text="Ngày cập nhật" />
                                  </columns>
@@ -530,8 +530,8 @@
                   <HBox alignment="TOP_RIGHT" prefWidth="970.0" spacing="20.0">
                      <children>
                         <TextField fx:id="textFieldEmail" prefWidth="277.0" promptText="Nhập email" styleClass="text-field-normal" />
-                        <TextField fx:id="textFieldHoVaTenTaiKhoan" prefWidth="252.0" promptText="Nhập há»&#141; vÃ  tÃªn" styleClass="text-field-normal" />
-                        <ComboBox fx:id="comboBoxVaiTro" layoutX="623.0" layoutY="10.0" prefWidth="128.0" promptText="Vai trÃ²" style="-fx-background-color: transparent;" />
+                        <TextField fx:id="textFieldHoVaTenTaiKhoan" prefWidth="252.0" promptText="Nhập họ và tên" styleClass="text-field-normal" />
+                        <ComboBox fx:id="comboBoxVaiTro" layoutX="623.0" layoutY="10.0" prefWidth="128.0" promptText="Vai trò" style="-fx-background-color: transparent;" />
                         <ComboBox fx:id="comboBoxTrangThaiTaiKhoan" layoutX="722.0" layoutY="10.0" prefWidth="132.0" promptText="Trạng thái" style="-fx-background-color: transparent;" />
                         <Button fx:id="buttonTimKiemCuDan11" mnemonicParsing="false" prefWidth="104.0" text="Tìm kiếm">
                            <styleClass>
@@ -612,7 +612,7 @@
                         <TextField fx:id="textFieldMaCanHoThuPhi" prefWidth="195.0" promptText="Nhập mã căn hộ" styleClass="text-field-normal" />
                         <TextField fx:id="textFieldTenKhoanThu1" prefWidth="210.0" promptText="Nhập tên khoản thu" styleClass="text-field-normal" />
                         <ComboBox fx:id="comboBoxLoaiKhoanThu1" layoutX="722.0" layoutY="10.0" prefWidth="187.0" promptText="Bắt buộc" style="-fx-background-color: transparent;" />
-                        <DatePicker fx:id="datePickerNgayNop" promptText="Nhập ngÃ y ná»™p" />
+                        <DatePicker fx:id="datePickerNgayNop" promptText="Nhập ngày tháng năm" />
                         <Button fx:id="buttonTimKiemThuPhi" mnemonicParsing="false" prefWidth="150.0" text="Tìm kiếm">
                            <styleClass>
                               <String fx:value="action-button" />
@@ -639,7 +639,7 @@
             <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
          </StackPane.margin>
       </ScrollPane>
-      <ScrollPane fx:id="scrollPaneCanHo1" hbarPolicy="NEVER" style="-fx-background: white;" visible="false">
+      <ScrollPane fx:id="scrollPaneCanHo1" hbarPolicy="NEVER" style="-fx-background: white;">
          <padding>
             <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
          </padding>
@@ -648,7 +648,7 @@
                <children>
                   <VBox prefWidth="640.0" spacing="15.0">
                      <children>
-                        <Label styleClass="screen-title" text="ThÃ´ng tin tÃ i khoáº£n">
+                        <Label styleClass="screen-title" text="Thông tin tài khoản">
                            <VBox.margin>
                               <Insets />
                            </VBox.margin>
@@ -667,7 +667,7 @@
                               </HBox>
                               <HBox fx:id="hBoxTrangThai" alignment="CENTER_LEFT" spacing="10.0" HBox.hgrow="ALWAYS">
                                  <children>
-                                    <Label fx:id="vaiTroLabel" styleClass="text-bold" text="Vai trÃ²" />
+                                    <Label fx:id="vaiTroLabel" styleClass="text-bold" text="Vai trò" />
                                  </children>
                               </HBox>
                            </children>
@@ -677,7 +677,7 @@
                         <Insets left="10.0" top="5.0" />
                      </padding>
                   </VBox>
-                  <Button fx:id="buttonDoiMatKhau" mnemonicParsing="false" onAction="#DoiMatKhauClicked" text="Ä&#144;á»•i máº­t kháº©u">
+                  <Button fx:id="buttonDoiMatKhau" mnemonicParsing="false" onAction="#DoiMatKhauClicked" text="Đổi mật khẩu">
                      <graphic>
                         <Group>
                            <children>
