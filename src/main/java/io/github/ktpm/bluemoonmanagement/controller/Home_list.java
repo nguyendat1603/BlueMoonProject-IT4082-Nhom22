@@ -181,6 +181,8 @@ public class Home_list implements Initializable {
 
     @FXML
     private DatePicker datePickerNgayNop;
+    @FXML
+    private DatePicker datePickerNgayTaoKhoanThu;
 
     @FXML
     private GridPane gridPaneTrangChu;
@@ -625,7 +627,7 @@ public class Home_list implements Initializable {
             @SuppressWarnings("unchecked")
             ComboBox<String> trangThaiCuDanCombo = (ComboBox<String>) comboBoxTrangThaiCuDan;
             trangThaiCuDanCombo.setItems(javafx.collections.FXCollections.observableArrayList(
-                "Tất cả", "Cư trú", "Không cư trú", "Đã chuyển đi"
+                "Tất cả", "Cư trú", "Thường trú", "Tạm trú", "Không cư trú", "Đã chuyển đi"
             ));
             trangThaiCuDanCombo.setValue("Tất cả");
         }
@@ -727,12 +729,32 @@ public class Home_list implements Initializable {
             }
             case "CanHo" -> scrollPaneCanHo.setVisible(true);
             case "CuDan" -> scrollPaneCuDan.setVisible(true);
-            case "KhoanThu" -> scrollPaneKhoanThu.setVisible(true);
+            // When showing KhoanThu tab, set the shared status ComboBox to "Đã tạo"/"Chưa tạo"
+            case "KhoanThu" -> {
+                scrollPaneKhoanThu.setVisible(true);
+                try {
+                    if (comboBoxTrangThaiHoaDon != null) {
+                        @SuppressWarnings("unchecked")
+                        javafx.scene.control.ComboBox<String> cb = (javafx.scene.control.ComboBox<String>) comboBoxTrangThaiHoaDon;
+                        cb.setItems(javafx.collections.FXCollections.observableArrayList("Tất cả", "Đã tạo", "Chưa tạo"));
+                        cb.setValue("Tất cả");
+                    }
+                } catch (Exception ignored) {}
+            }
             case "LichSuThu" -> {
                 scrollPaneLichSuThu.setVisible(true);
                 // Auto-refresh invoice data when entering tab
                 refreshHoaDonData();
                 setupHoaDonTable(); // Ensure table is properly setup
+                // Ensure status ComboBox shows payment statuses for invoices
+                try {
+                    if (comboBoxTrangThaiHoaDon != null) {
+                        @SuppressWarnings("unchecked")
+                        javafx.scene.control.ComboBox<String> cb = (javafx.scene.control.ComboBox<String>) comboBoxTrangThaiHoaDon;
+                        cb.setItems(javafx.collections.FXCollections.observableArrayList("Tất cả", "Đã thanh toán", "Chưa thanh toán"));
+                        cb.setValue("Tất cả");
+                    }
+                } catch (Exception ignored) {}
             }
             case "TaiKhoan" -> scrollPaneTaiKhoan.setVisible(true);
             case "HoSo" -> scrollPaneCanHo1.setVisible(true);
@@ -3054,8 +3076,19 @@ public class Home_list implements Initializable {
                         cuDan.getMaCanHo().toLowerCase().contains(maCanHo.toLowerCase());
                     boolean matchesEmail = email.isEmpty() ||
                         cuDan.getEmail().toLowerCase().contains(email.toLowerCase());
-                    boolean matchesTrangThai = "Tất cả".equals(trangThai) || trangThai.isEmpty() ||
-                        cuDan.getTrangThaiCuTru().equals(trangThai);
+                    boolean matchesTrangThai;
+                    if ("Tất cả".equals(trangThai) || trangThai.isEmpty()) {
+                        matchesTrangThai = true;
+                    } else if ("Cư trú".equalsIgnoreCase(trangThai)) {
+                        String tt = cuDan.getTrangThaiCuTru();
+                        matchesTrangThai = tt != null && (
+                            tt.equalsIgnoreCase("Thường trú") || tt.equalsIgnoreCase("Tạm trú") ||
+                            tt.toLowerCase().contains("thường") || tt.toLowerCase().contains("tạm")
+                        );
+                    } else {
+                        String tt = cuDan.getTrangThaiCuTru();
+                        matchesTrangThai = tt != null && tt.equalsIgnoreCase(trangThai);
+                    }
 
                     return matchesMaDinhDanh && matchesHoVaTen && matchesMaCanHo && matchesEmail && matchesTrangThai;
                 })
@@ -3078,8 +3111,13 @@ public class Home_list implements Initializable {
     private void handleTimKiemKhoanThu() {
         String maKhoanThu = textFieldMaKhoanThu != null ? textFieldMaKhoanThu.getText().trim() : "";
         String tenKhoanThu = textFieldTenKhoanThu != null ? textFieldTenKhoanThu.getText().trim() : "";
+        String boPhanQuanLyFilter = textFieldBoPhanQuanLy != null ? textFieldBoPhanQuanLy.getText().trim() : "";
         String loaiKhoanThu = comboBoxLoaiKhoanThu != null && comboBoxLoaiKhoanThu.getValue() != null ?
                              comboBoxLoaiKhoanThu.getValue().toString() : "";
+        String trangThaiTao = comboBoxTrangThaiHoaDon != null && comboBoxTrangThaiHoaDon.getValue() != null ?
+                              comboBoxTrangThaiHoaDon.getValue().toString() : "";
+        String ngayTao = datePickerNgayTaoKhoanThu != null && datePickerNgayTaoKhoanThu.getValue() != null ?
+                         datePickerNgayTaoKhoanThu.getValue().toString() : "";
 
         // Nếu tất cả các điều kiện tìm kiếm đều trống thì hiển thị toàn bộ
         if (maKhoanThu.isEmpty() && tenKhoanThu.isEmpty() &&
@@ -3102,10 +3140,38 @@ public class Home_list implements Initializable {
                     boolean matchesTenKhoanThu = tenKhoanThu.isEmpty() ||
                         khoanThu.getTenKhoanThu().toLowerCase().contains(tenKhoanThu.toLowerCase());
                     boolean matchesLoaiKhoanThu = "Tất cả".equals(loaiKhoanThu) || loaiKhoanThu.isEmpty() ||
-                        khoanThu.getLoaiKhoanThu().equals(loaiKhoanThu) ||
-                        khoanThu.getLoaiKhoanThu().toLowerCase().contains(loaiKhoanThu.toLowerCase());
+                        (khoanThu.getLoaiKhoanThu() != null && (khoanThu.getLoaiKhoanThu().equals(loaiKhoanThu) ||
+                        khoanThu.getLoaiKhoanThu().toLowerCase().contains(loaiKhoanThu.toLowerCase())));
 
-                    return matchesMaKhoanThu && matchesTenKhoanThu && matchesLoaiKhoanThu;
+                    boolean matchesBoPhanQuanLy = true;
+                    if (!boPhanQuanLyFilter.isEmpty()) {
+                        String ghiChu = khoanThu.getGhiChu() != null ? khoanThu.getGhiChu() : "";
+                        matchesBoPhanQuanLy = ghiChu.toLowerCase().contains(boPhanQuanLyFilter.toLowerCase());
+                    }
+
+                    // Status filter for 'Đã tạo' / 'Chưa tạo' (uses cached dto)
+                    boolean matchesTrangThaiTao = true;
+                    if (!("Tất cả".equals(trangThaiTao) || trangThaiTao.isEmpty())) {
+                        io.github.ktpm.bluemoonmanagement.model.dto.khoanThu.KhoanThuDto dto = khoanThuById.get(khoanThu.getMaKhoanThu());
+                        boolean tao = dto != null && dto.isTaoHoaDon();
+                        if ("Đã tạo".equalsIgnoreCase(trangThaiTao)) {
+                            matchesTrangThaiTao = tao;
+                        } else if ("Chưa tạo".equalsIgnoreCase(trangThaiTao)) {
+                            matchesTrangThaiTao = !tao;
+                        } else {
+                            // fallback: try matching text
+                            matchesTrangThaiTao = dto != null && (tao ? "đã tạo".equalsIgnoreCase(trangThaiTao) : "chưa tạo".equalsIgnoreCase(trangThaiTao));
+                        }
+                    }
+
+                    // Date filter for creation date
+                    boolean matchesNgayTao = true;
+                    if (!ngayTao.isEmpty()) {
+                        String nt = khoanThu.getNgayTao() != null ? khoanThu.getNgayTao() : "";
+                        matchesNgayTao = nt.equals(ngayTao) || nt.startsWith(ngayTao);
+                    }
+
+                    return matchesMaKhoanThu && matchesTenKhoanThu && matchesLoaiKhoanThu && matchesTrangThaiTao && matchesNgayTao && matchesBoPhanQuanLy;
                 })
                 .collect(FXCollections::observableArrayList,
                         ObservableList::add,
@@ -3132,6 +3198,7 @@ public class Home_list implements Initializable {
                              comboBoxLoaiKhoanThu1.getValue().toString() : "";
         String trangThaiHoaDon = comboBoxTrangThaiHoaDon != null && comboBoxTrangThaiHoaDon.getValue() != null ?
                                 comboBoxTrangThaiHoaDon.getValue().toString() : "";
+        String ngayNopFilter = datePickerNgayNop != null && datePickerNgayNop.getValue() != null ? datePickerNgayNop.getValue().toString() : "";
 
         // Nếu tất cả các điều kiện tìm kiếm đều trống thì hiển thị toàn bộ
         if (maCanHo.isEmpty() && tenKhoanThu.isEmpty() &&
@@ -3155,12 +3222,18 @@ public class Home_list implements Initializable {
                     boolean matchesTenKhoanThu = tenKhoanThu.isEmpty() ||
                         hoaDon.getTenKhoanThu().toLowerCase().contains(tenKhoanThu.toLowerCase());
                     boolean matchesLoaiKhoanThu = "Tất cả".equals(loaiKhoanThu) || loaiKhoanThu.isEmpty() ||
-                        hoaDon.getLoaiKhoanThu().equals(loaiKhoanThu);
+                        (hoaDon.getLoaiKhoanThu() != null && hoaDon.getLoaiKhoanThu().toLowerCase().contains(loaiKhoanThu.toLowerCase()));
                     boolean matchesTrangThaiHoaDon = "Tất cả".equals(trangThaiHoaDon) || trangThaiHoaDon.isEmpty() ||
-                        hoaDon.getTrangThaiThanhToan().equals(trangThaiHoaDon);
+                        (hoaDon.getTrangThaiThanhToan() != null && hoaDon.getTrangThaiThanhToan().toLowerCase().contains(trangThaiHoaDon.toLowerCase()));
+
+                    boolean matchesNgayNop = true;
+                    if (!ngayNopFilter.isEmpty()) {
+                        String ngay = hoaDon.getNgayNop() != null ? hoaDon.getNgayNop() : "";
+                        matchesNgayNop = ngay.equals(ngayNopFilter) || ngay.startsWith(ngayNopFilter);
+                    }
 
                     return matchesMaCanHo && matchesTenKhoanThu &&
-                           matchesLoaiKhoanThu && matchesTrangThaiHoaDon;
+                           matchesLoaiKhoanThu && matchesTrangThaiHoaDon && matchesNgayNop;
                 })
                 .collect(FXCollections::observableArrayList,
                         ObservableList::add,
@@ -3223,8 +3296,21 @@ public class Home_list implements Initializable {
         if (textFieldTenKhoanThu != null) {
             textFieldTenKhoanThu.textProperty().addListener((obs, oldText, newText) -> handleTimKiemKhoanThu());
         }
+        if (textFieldBoPhanQuanLy != null) {
+            textFieldBoPhanQuanLy.textProperty().addListener((obs, oldText, newText) -> handleTimKiemKhoanThu());
+        }
         if (comboBoxLoaiKhoanThu != null) {
             comboBoxLoaiKhoanThu.valueProperty().addListener((obs, oldValue, newValue) -> handleTimKiemKhoanThu());
+        }
+        if (comboBoxTrangThaiHoaDon != null) {
+            comboBoxTrangThaiHoaDon.valueProperty().addListener((obs, oldValue, newValue) -> {
+                // Shared combo: update both invoice and khoan thu searches (visible tab will reflect)
+                handleTimKiemKhoanThu();
+                handleTimKiemThuPhi();
+            });
+        }
+        if (datePickerNgayTaoKhoanThu != null) {
+            datePickerNgayTaoKhoanThu.valueProperty().addListener((obs, oldVal, newVal) -> handleTimKiemKhoanThu());
         }
 
         // Thu phí search listeners
@@ -3237,9 +3323,10 @@ public class Home_list implements Initializable {
         if (comboBoxLoaiKhoanThu1 != null) {
             comboBoxLoaiKhoanThu1.valueProperty().addListener((obs, oldValue, newValue) -> handleTimKiemThuPhi());
         }
-        if (comboBoxTrangThaiHoaDon != null) {
-            comboBoxTrangThaiHoaDon.valueProperty().addListener((obs, oldValue, newValue) -> handleTimKiemThuPhi());
+        if (datePickerNgayNop != null) {
+            datePickerNgayNop.valueProperty().addListener((obs, oldVal, newVal) -> handleTimKiemThuPhi());
         }
+        
 
     }
 
@@ -3909,36 +3996,36 @@ public class Home_list implements Initializable {
      * Load dữ liệu cho biểu đồ
      */
     private void loadChartData() {
-    new Thread(() -> {
+        // Compute chart data off the UI thread, then update UI on FX thread
+        new Thread(() -> {
         try {
-            java.time.LocalDate now = java.time.LocalDate.now();
-            javafx.scene.chart.XYChart.Series<String, Number> series = new javafx.scene.chart.XYChart.Series<>();
-            series.setName("Số cư dân");
+                // Prepare bar chart series data (6 months)
+                java.time.LocalDate now = java.time.LocalDate.now();
+                javafx.scene.chart.XYChart.Series<String, Number> series = new javafx.scene.chart.XYChart.Series<>();
+                series.setName("Số cư dân");
 
-            // Fetch residents once
-            List<io.github.ktpm.bluemoonmanagement.model.dto.cuDan.CudanDto> allCuDan = null;
-            try {
-                if (cuDanService != null) {
-                    allCuDan = cuDanService.getAllCuDan();
+                // Fetch residents once to avoid repeated DB calls
+                List<io.github.ktpm.bluemoonmanagement.model.dto.cuDan.CudanDto> allCuDan = null;
+                try {
+                    if (cuDanService != null) {
+                        allCuDan = cuDanService.getAllCuDan();
+                    }
+                } catch (Exception e) {
+                    System.err.println("Error fetching allCuDan for charts: " + e.getMessage());
+                    allCuDan = null;
                 }
-            } catch (Exception e) {
-                System.err.println("Error fetching allCuDan for charts: " + e.getMessage());
-                allCuDan = null;
-            }
 
-            // Last 12 months
-            for (int i = 11; i >= 0; i--) {
-                java.time.LocalDate month = now.minusMonths(i);
-                String monthLabel =
-                        month.getMonth().getDisplayName(java.time.format.TextStyle.SHORT, java.util.Locale.forLanguageTag("vi"))
-                                + " " + month.getYear();
+                // Show last 12 months for the main chart
+                for (int i = 11; i >= 0; i--) {
+                    java.time.LocalDate month = now.minusMonths(i);
+                    String monthLabel = month.getMonth().getDisplayName(java.time.format.TextStyle.SHORT, java.util.Locale.forLanguageTag("vi")) + " " + month.getYear();
 
-                int cuDanCount;
-                if (allCuDan == null || allCuDan.isEmpty()) {
-                    cuDanCount = getTestDataForMonth(month);
-                } else {
-                    java.time.LocalDate endOfMonth = month.withDayOfMonth(month.lengthOfMonth());
-                    long count = allCuDan.stream()
+                    int cuDanCount;
+                    if (allCuDan == null || allCuDan.isEmpty()) {
+                        cuDanCount = getTestDataForMonth(month);
+                    } else {
+                        java.time.LocalDate endOfMonth = month.withDayOfMonth(month.lengthOfMonth());
+                        long count = allCuDan.stream()
                             .filter(cuDan -> {
                                 if (cuDan.getNgayChuyenDen() != null) {
                                     return !cuDan.getNgayChuyenDen().isAfter(endOfMonth);
@@ -3947,87 +4034,73 @@ public class Home_list implements Initializable {
                             })
                             .filter(cuDan -> {
                                 String trangThai = cuDan.getTrangThaiCuTru();
-                                if (trangThai == null || trangThai.trim().isEmpty()) return false;
-                                return trangThai.contains("Đang cư trú")
-                                        || trangThai.contains("Thường trú")
-                                        || trangThai.contains("Tạm trú")
-                                        || trangThai.equals("Active")
-                                        || (!trangThai.contains("Chuyển đi") && !trangThai.contains("Inactive"));
+                                if (trangThai == null || trangThai.trim().isEmpty()) {
+                                    return false;
+                                }
+                                return trangThai.contains("Đang cư trú") ||
+                                       trangThai.contains("Thường trú") ||
+                                       trangThai.contains("Tạm trú") ||
+                                       trangThai.equals("Active") ||
+                                       (!trangThai.contains("Chuyển đi") && !trangThai.contains("Inactive"));
                             })
                             .count();
-
-                    cuDanCount = count == 0 ? getTestDataForMonth(month) : (int) count;
+                        cuDanCount = count == 0 ? getTestDataForMonth(month) : (int) count;
+                    }
+                    series.getData().add(new javafx.scene.chart.XYChart.Data<>(monthLabel, cuDanCount));
                 }
 
-                series.getData().add(new javafx.scene.chart.XYChart.Data<>(monthLabel, cuDanCount));
-            }
 
-            // Update UI
-            javafx.application.Platform.runLater(() -> {
-                try {
-                    if (barChartDanCu == null) return;
+                // Update charts on FX thread
+                javafx.application.Platform.runLater(() -> {
+                    try {
+                        // Bar chart update
+                        if (barChartDanCu != null) {
+                            javafx.scene.chart.BarChart<String, Number> chart = (javafx.scene.chart.BarChart<String, Number>) barChartDanCu;
+                            chart.getData().clear();
+                            chart.getData().add(series);
+                            chart.setLegendVisible(false);
+                            chart.setAnimated(true);
+                            chart.setTitle("");
+                            chart.setStyle("-fx-background-color: transparent;");
+                            chart.setCategoryGap(25);
+                            chart.setBarGap(10);
+                            chart.applyCss();
+                            chart.layout();
 
-                    javafx.scene.chart.BarChart<String, Number> chart =
-                            (javafx.scene.chart.BarChart<String, Number>) barChartDanCu;
-
-                    // set data + basic config
-                    chart.getData().setAll(series);
-                    chart.setLegendVisible(false);
-                    chart.setAnimated(true);
-                    chart.setTitle("");
-                    chart.setStyle("-fx-background-color: transparent;");
-                    chart.setCategoryGap(25);
-                    chart.setBarGap(10);
-
-                    // --- style AFTER layout is ready ---
-                    Runnable afterLaidOut = () -> {
-                        chart.applyCss();
-                        chart.layout();
-
-                        // tick labels (giảm padding để không bị chật/chồng)
-                        for (javafx.scene.Node label : chart.lookupAll(".axis .tick-label")) {
-                            label.setStyle("-fx-padding: 0 6 0 6; -fx-font-size: 11px;");
-                        }
-
-                        // color bars (node chỉ chắc chắn tồn tại sau layout)
-                        try {
-                            for (javafx.scene.chart.XYChart.Series<String, Number> s : chart.getData()) {
-                                for (javafx.scene.chart.XYChart.Data<String, Number> d : s.getData()) {
-                                    javafx.scene.Node node = d.getNode();
-                                    if (node != null) {
-                                        node.setStyle("-fx-bar-fill: #2196F3; -fx-background-color: #2196F3;");
+                            javafx.application.Platform.runLater(() -> {
+                                java.util.Set<javafx.scene.Node> labels =
+                                        chart.lookupAll(".axis .tick-label");
+                                for (javafx.scene.Node label : labels) {
+                                    label.setStyle("-fx-padding: 0 25 0 25;-fx-font-size: 11;");
+                                }
+                            });
+                            // color series
+                            try {
+                                for (javafx.scene.chart.XYChart.Series<String, Number> s : chart.getData()) {
+                                    for (javafx.scene.chart.XYChart.Data<String, Number> data : s.getData()) {
+                                        javafx.scene.Node node = data.getNode();
+                                        if (node != null) {
+                                            node.setStyle("-fx-bar-fill: #2196F3; -fx-background-color: #2196F3;");
+                                        }
                                     }
                                 }
+                            } catch (Exception e) {
+                                System.err.println("Error styling bar chart: " + e.getMessage());
                             }
-                        } catch (Exception e) {
-                            System.err.println("Error styling bar chart: " + e.getMessage());
                         }
-                    };
 
-                    // Nếu lần đầu vào trang chart chưa attach vào Scene -> đợi attach rồi mới style
-                    if (chart.getScene() == null) {
-                        chart.sceneProperty().addListener((obs, oldScene, newScene) -> {
-                            if (newScene != null) {
-                                javafx.application.Platform.runLater(afterLaidOut);
-                            }
-                        });
-                    } else {
-                        javafx.application.Platform.runLater(afterLaidOut);
+                    } catch (Exception e) {
+                        System.err.println("Error updating charts on FX thread: " + e.getMessage());
+                        e.printStackTrace();
                     }
+                });
 
-                } catch (Exception e) {
-                    System.err.println("Error updating charts on FX thread: " + e.getMessage());
-                    e.printStackTrace();
-                }
-            });
-
-        } catch (Exception e) {
-            System.err.println("❌ Error computing chart data: " + e.getMessage());
-            e.printStackTrace();
-        }
-    }, "HomeList-LoadCharts").start();
-}
-
+            } catch (Exception e) {
+                System.err.println("❌ Error computing chart data: " + e.getMessage());
+                e.printStackTrace();
+            }
+        }, "HomeList-LoadCharts").start();
+    }
 
     /**
      * Load dữ liệu cho BarChart - Biến động dân cư theo tháng
