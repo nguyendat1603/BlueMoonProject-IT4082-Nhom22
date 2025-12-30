@@ -4,7 +4,7 @@ spring:
 
   # PostgreSQL Configuration
   datasource:
-    url: jdbc:postgresql://ep-late-shape-ahcz0zed-pooler.c-3.us-east-1.aws.neon.tech/neondb?user=neondb_owner&password=npg_6D5MgcNqwCvl&sslmode=require&channelBinding=require
+    url: jdbc:postgresql://ep-late-shape-ahcz0zed-pooler.c-3.us-east-1.aws.neon.tech/neondb?user=neondb_owner&password=npg_6D5MgcNqwCvl&sslmode=require&channelBinding=require&options=-c%20timezone%3DAsia/Ho_Chi_Minh
     username: neondb_owner
     password: npg_6D5MgcNqwCvl
     driver-class-name: org.postgresql.Driver
@@ -22,6 +22,7 @@ spring:
       ddl-auto: update # Tự động tạo/điều chỉnh bảng (development). Production: use migrations.
     properties:
       hibernate.dialect: org.hibernate.dialect.PostgreSQLDialect
+      hibernate.jdbc.time_zone: Asia/Ho_Chi_Minh
     show-sql: false
 
   mail:
