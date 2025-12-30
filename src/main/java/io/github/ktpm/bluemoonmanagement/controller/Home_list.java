@@ -4395,7 +4395,7 @@ public class Home_list implements Initializable {
 
                 if (hoaDonDtoList != null) {
                     for (io.github.ktpm.bluemoonmanagement.model.dto.hoaDon.HoaDonDto dto : hoaDonDtoList) {
-                        String ngayNop = dto.getNgayNop() != null ? dto.getNgayNop().toString() : "Chưa nộp";
+                        String ngayNop = dto.getNgayNop() != null ? dto.getNgayNop().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")) : "Chưa nộp";
                         String soTien = String.format("%,d VNĐ", dto.getSoTien());
                         String trangThaiThanhToan = dto.isDaNop() ? "Đã thanh toán" : "Chưa thanh toán";
 
@@ -4713,7 +4713,7 @@ public class Home_list implements Initializable {
                             row.createCell(2).setCellValue(hoaDon.getTenKhoanThu());
                             row.createCell(3).setCellValue(hoaDon.getLoaiKhoanThu() != null ? hoaDon.getLoaiKhoanThu() : "");
                             row.createCell(4).setCellValue(hoaDon.getSoTien());
-                            row.createCell(5).setCellValue(hoaDon.getNgayNop() != null ? hoaDon.getNgayNop().toString() : "Chưa nộp");
+                            row.createCell(5).setCellValue(hoaDon.getNgayNop() != null ? hoaDon.getNgayNop().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")) : "Chưa nộp");
                             row.createCell(6).setCellValue(hoaDon.isDaNop() ? "Đã thanh toán" : "Chưa thanh toán");
                         }
                     );
