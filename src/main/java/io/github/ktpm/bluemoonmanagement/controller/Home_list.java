@@ -3,6 +3,8 @@ package io.github.ktpm.bluemoonmanagement.controller;
 import java.io.IOException;
 import java.net.URL;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -1847,7 +1849,8 @@ public class Home_list implements Initializable {
                 for (io.github.ktpm.bluemoonmanagement.model.entity.ActivityLog activity : activities) {
                     String sid = activity.getSessionId();
                     String user = activity.getUser();
-                    String ts = activity.getTimestamp().toString();
+                    String ts = activity.getTimestamp().atZone(ZoneId.of("Asia/Ho_Chi_Minh")).toLocalDateTime().toString();
+                    String formattedTs = activity.getTimestamp().atZone(ZoneId.of("Asia/Ho_Chi_Minh")).toLocalDateTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
                     String desc = activity.getActionDescription();
                     String type = activity.getActionType();
                     SessionRecord sr = sessions.computeIfAbsent(sid, k -> {
@@ -1858,7 +1861,7 @@ public class Home_list implements Initializable {
                         s.end = null;
                         return s;
                     });
-                    sr.actions.add(ts + " - " + desc + (type != null && !type.isEmpty() ? " (" + type + ")" : ""));
+                    sr.actions.add(formattedTs + " - " + desc + (type != null && !type.isEmpty() ? " (" + type + ")" : ""));
                     // mark end if action type is LOGOUT
                     if ("LOGOUT".equalsIgnoreCase(type)) {
                         sr.end = ts;
@@ -1877,11 +1880,11 @@ public class Home_list implements Initializable {
                     SessionRecord s = new SessionRecord();
                     s.sessionId = sid;
                     s.user = "user" + i;
-                    s.start = java.time.LocalDateTime.now().minusHours(i).toString();
-                    s.end = i == 1 ? null : java.time.LocalDateTime.now().minusHours(i - 1).toString();
+                    s.start = java.time.LocalDateTime.now().minusHours(i).atZone(ZoneId.of("Asia/Ho_Chi_Minh")).toLocalDateTime().toString();
+                    s.end = i == 1 ? null : java.time.LocalDateTime.now().minusHours(i - 1).atZone(ZoneId.of("Asia/Ho_Chi_Minh")).toLocalDateTime().toString();
                     s.actions.add(s.start + " - Đăng nhập");
-                    s.actions.add(java.time.LocalDateTime.now().minusMinutes(i * 10).toString() + " - Xem danh sách căn hộ");
-                    s.actions.add(java.time.LocalDateTime.now().minusMinutes(i * 5).toString() + " - Thêm hóa đơn");
+                    s.actions.add(java.time.LocalDateTime.now().minusMinutes(i * 10).atZone(ZoneId.of("Asia/Ho_Chi_Minh")).toLocalDateTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")) + " - Xem danh sách căn hộ");
+                    s.actions.add(java.time.LocalDateTime.now().minusMinutes(i * 5).atZone(ZoneId.of("Asia/Ho_Chi_Minh")).toLocalDateTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")) + " - Thêm hóa đơn");
                     sessions.put(sid, s);
                 }
             }
@@ -1995,7 +1998,7 @@ public class Home_list implements Initializable {
         } catch (Exception ignored) {}
         java.time.LocalDateTime now = java.time.LocalDateTime.now();
         for (int i = 0; i < 12; i++) {
-            sb.append(now.minusMinutes(i * 5)).append(" - Hành động mẫu #").append(i + 1).append("\n");
+            sb.append(now.minusMinutes(i * 5).atZone(ZoneId.of("Asia/Ho_Chi_Minh")).toLocalDateTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))).append(" - Hành động mẫu #").append(i + 1).append("\n");
         }
         ta.setText(sb.toString());
         javafx.scene.layout.StackPane wrapper = new javafx.scene.layout.StackPane(ta);
