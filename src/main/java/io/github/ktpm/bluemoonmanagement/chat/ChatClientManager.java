@@ -49,6 +49,24 @@ public class ChatClientManager {
                         }
                     }
                 });
+                // subscribe to history topic (array payload)
+                session.subscribe("/topic/history", new StompFrameHandler() {
+                    @Override
+                    public Type getPayloadType(StompHeaders headers) {
+                        return ChatMessage[].class;
+                    }
+
+                    @Override
+                    public void handleFrame(StompHeaders headers, Object payload) {
+                        if (payload instanceof ChatMessage[]) {
+                            ChatMessage[] msgs = (ChatMessage[]) payload;
+                            // deliver history messages in order
+                            for (ChatMessage m : msgs) {
+                                messageConsumer.accept(m);
+                            }
+                        }
+                    }
+                });
                 if (onConnected != null) onConnected.run();
             }
 
@@ -86,6 +104,14 @@ public class ChatClientManager {
     public void sendMessage(ChatMessage msg) {
         if (session != null && session.isConnected()) {
             session.send("/app/chat.send", msg);
+        }
+    }
+
+    public void sendToDestination(String destination, Object payload) {
+        if (session != null && session.isConnected()) {
+            try {
+                session.send(destination, payload == null ? "" : payload);
+            } catch (Exception ignored) {}
         }
     }
 }

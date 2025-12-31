@@ -24,6 +24,16 @@ public class ChatService {
         return repository.findTop100ByOrderByCreatedAtDesc();
     }
 
+    public List<ChatMessage> getRecentMessages() {
+        List<ChatMessage> list = repository.findTop10ByOrderByCreatedAtDesc();
+        if (list == null) {
+            System.err.println("SERVER-DEBUG: repository.findTop10ByOrderByCreatedAtDesc() returned null");
+        } else {
+            System.err.println("SERVER-DEBUG: repository returned " + list.size() + " recent messages");
+        }
+        return list;
+    }
+
     public List<ChatMessage> messagesForSession(String sessionId) {
         return repository.findBySessionIdOrderByCreatedAtAsc(sessionId);
     }

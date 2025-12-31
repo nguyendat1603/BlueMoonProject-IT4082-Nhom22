@@ -22,6 +22,26 @@ public class ChatController {
         chatService.saveMessage(message.getSessionId(), message.getSender(), message.getContent());
         return message;
     }
+
+    /**
+     * Return recent chat history (up to 10) when client requests via STOMP.
+     * Client should send to /app/chat.history; server will broadcast the list to /topic/history.
+     */
+    @MessageMapping("/chat.history")
+    @SendTo("/topic/history")
+    public java.util.List<ChatMessage> history() {
+        System.err.println("SERVER-DEBUG: /app/chat.history requested");
+        java.util.List<ChatMessage> recent = chatService.getRecentMessages();
+        if (recent == null) {
+            System.err.println("SERVER-DEBUG: chatService.getRecentMessages() returned null");
+            return java.util.Collections.emptyList();
+        }
+        System.err.println("SERVER-DEBUG: chatService returned size=" + recent.size());
+        // current service returns newest-first; reverse to send oldest-first
+        java.util.Collections.reverse(recent);
+        System.err.println("SERVER-DEBUG: sending history size=" + recent.size());
+        return recent;
+    }
 }
 
 

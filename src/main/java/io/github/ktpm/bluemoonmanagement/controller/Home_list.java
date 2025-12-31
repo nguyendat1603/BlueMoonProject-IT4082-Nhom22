@@ -22,6 +22,7 @@ import io.github.ktpm.bluemoonmanagement.model.dto.taiKhoan.ThongTinTaiKhoanDto;
 import io.github.ktpm.bluemoonmanagement.service.canHo.CanHoService;
 import io.github.ktpm.bluemoonmanagement.service.taiKhoan.QuanLyTaiKhoanService;
 import io.github.ktpm.bluemoonmanagement.service.activityLog.ActivityLogService;
+import io.github.ktpm.bluemoonmanagement.service.chat.ChatService;
 import io.github.ktpm.bluemoonmanagement.session.Session;
 import io.github.ktpm.bluemoonmanagement.util.FileMultipartUtil;
 import io.github.ktpm.bluemoonmanagement.util.FxView;
@@ -72,6 +73,9 @@ import java.net.URLEncoder;
 import java.util.Base64;
 import javafx.scene.web.WebView;
 import javafx.scene.web.WebEngine;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.fasterxml.jackson.databind.SerializationFeature;
 
 @Component
 public class Home_list implements Initializable {
@@ -483,6 +487,9 @@ public class Home_list implements Initializable {
 
     @Autowired
     private ActivityLogService activityLogService;
+
+    @Autowired
+    private ChatService chatService;
 
     private List<Node> allPanes;
     private KhungController parentController;
@@ -1979,10 +1986,21 @@ public class Home_list implements Initializable {
         io.github.ktpm.bluemoonmanagement.chat.ChatClientManager manager = new io.github.ktpm.bluemoonmanagement.chat.ChatClientManager(wsUrl);
         manager.connect(null, chatMessage -> {
             javafx.application.Platform.runLater(() -> {
-                messagesView.getItems().add(String.format("%s: %s", chatMessage.getSender(), chatMessage.getContent()));
+                String currentTime = java.time.LocalDateTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss"));
+                String displayMessage = String.format("[%s] %s: %s", currentTime, chatMessage.getSender(), chatMessage.getContent());
+                messagesView.getItems().add(displayMessage);
             });
         }, () -> {
-            javafx.application.Platform.runLater(() -> messagesView.getItems().add("[Hệ thống] Đã kết nối realtime."));
+            System.err.println("DEBUG: onConnected callback invoked");
+            // After successful WebSocket connection, request history via STOMP
+            javafx.application.Platform.runLater(() -> {
+                try {
+                    manager.sendToDestination("/app/chat.history", "");
+                    System.err.println("DEBUG: Sent STOMP history request to /app/chat.history");
+                } catch (Exception e) {
+                    System.err.println("DEBUG: Failed to send STOMP history request: " + e.getMessage());
+                }
+            });
         }, ex -> {
             javafx.application.Platform.runLater(() -> messagesView.getItems().add("[Lỗi WS] " + ex.getMessage()));
         });
@@ -1995,6 +2013,13 @@ public class Home_list implements Initializable {
                 currentSessionId != null ? currentSessionId : "s-temp", currentSessionUser != null ? currentSessionUser : "Me", text, java.time.Instant.now()
             );
             manager.sendMessage(m);
+
+            // Display sent message locally with consistent format
+            String currentTime = java.time.LocalDateTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss"));
+            String sender = currentSessionUser != null ? currentSessionUser : "Me";
+            String displayMessage = String.format("[%s] %s: %s", currentTime, sender, text);
+            messagesView.getItems().add(displayMessage);
+
             input.clear();
         });
     }
