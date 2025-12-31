@@ -106,6 +106,19 @@
             <artifactId>javafx-fxml</artifactId>
             <version>${javafx.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-web</artifactId>
+            <version>${javafx.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-websocket</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.datatype</groupId>
+            <artifactId>jackson-datatype-jsr310</artifactId>
+        </dependency>
 
     </dependencies>
 
@@ -137,6 +150,7 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
+                    <mainClass>io.github.ktpm.bluemoonmanagement.HomeTechManagementApplication</mainClass>
                     <excludes>
                         <exclude>
                             <groupId>org.projectlombok</groupId>
@@ -155,7 +169,7 @@
                         <argument>--module-path</argument>
                         <argument>C:/javafx-sdk-21.0.2/lib</argument>
                         <argument>--add-modules</argument>
-                        <argument>javafx.controls,javafx.fxml</argument>
+                        <argument>javafx.controls,javafx.fxml,javafx.web</argument>
                     </arguments>
                 </configuration>
             </plugin>

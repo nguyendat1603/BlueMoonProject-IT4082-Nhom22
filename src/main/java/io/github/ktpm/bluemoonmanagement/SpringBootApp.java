@@ -2,9 +2,11 @@ package io.github.ktpm.bluemoonmanagement;
 
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
 @SpringBootApplication
+@ComponentScan("io.github.ktpm.bluemoonmanagement")
 @EntityScan("io.github.ktpm.bluemoonmanagement.model.entity")
 @EnableJpaRepositories("io.github.ktpm.bluemoonmanagement.repository")
 public class SpringBootApp {

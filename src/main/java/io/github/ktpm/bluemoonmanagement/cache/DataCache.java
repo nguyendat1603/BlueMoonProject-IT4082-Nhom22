@@ -95,8 +95,8 @@ public class DataCache {
         this.canHoList = canHoList;
         this.canHoMap.clear();
         if (canHoList != null) {
-            this.canHoMap.putAll(canHoList.stream()
-                .collect(Collectors.toMap(CanHoDto::getMaCanHo, dto -> dto)));
+        this.canHoMap.putAll(canHoList.stream()
+            .collect(Collectors.toMap(dto -> dto.getMaCanHo(), dto -> dto)));
         }
     }
     
@@ -105,7 +105,7 @@ public class DataCache {
         this.cuDanMap.clear();
         if (cuDanList != null) {
             this.cuDanMap.putAll(cuDanList.stream()
-                .collect(Collectors.toMap(CudanDto::getMaDinhDanh, dto -> dto)));
+                .collect(Collectors.toMap(dto -> dto.getMaDinhDanh(), dto -> dto)));
         }
     }
     
@@ -114,7 +114,7 @@ public class DataCache {
         this.phuongTienMap.clear();
         if (phuongTienList != null) {
             this.phuongTienMap.putAll(phuongTienList.stream()
-                .collect(Collectors.toMap(PhuongTienDto::getSoThuTu, dto -> dto)));
+                .collect(Collectors.toMap(dto -> dto.getSoThuTu(), dto -> dto)));
         }
     }
     
@@ -132,7 +132,7 @@ public class DataCache {
         this.khoanThuMap.clear();
         if (khoanThuList != null) {
             this.khoanThuMap.putAll(khoanThuList.stream()
-                .collect(Collectors.toMap(KhoanThuDto::getMaKhoanThu, dto -> dto)));
+                .collect(Collectors.toMap(dto -> dto.getMaKhoanThu(), dto -> dto)));
         }
     }
     
@@ -141,7 +141,7 @@ public class DataCache {
         this.taiKhoanMap.clear();
         if (taiKhoanList != null) {
             this.taiKhoanMap.putAll(taiKhoanList.stream()
-                .collect(Collectors.toMap(ThongTinTaiKhoanDto::getEmail, dto -> dto)));
+                .collect(Collectors.toMap(dto -> dto.getEmail(), dto -> dto)));
         }
     }
     

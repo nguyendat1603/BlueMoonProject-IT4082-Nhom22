@@ -56,8 +56,36 @@ public class CanHoServiceImpl implements CanHoService {
 
     @Override
     public List<CanHoDto> getAllCanHo() {
-        List<CanHo> canHoList = canHoRepository.findAll();
-        return canHoList.stream()
+        // Use a projection query to avoid loading full entity graphs into memory.
+        List<io.github.ktpm.bluemoonmanagement.model.dto.canHo.CanHoSummaryDto> summaries = canHoRepository.findAllSummary();
+        return summaries.stream().map(s -> {
+            io.github.ktpm.bluemoonmanagement.model.dto.canHo.CanHoDto dto = new io.github.ktpm.bluemoonmanagement.model.dto.canHo.CanHoDto();
+            dto.setMaCanHo(s.getMaCanHo());
+            dto.setToaNha(s.getToaNha());
+            dto.setTang(s.getTang());
+            dto.setSoNha(s.getSoNha());
+            dto.setDienTich(s.getDienTich());
+            dto.setDaBanChua(s.isDaBanChua());
+            dto.setTrangThaiKiThuat(s.getTrangThaiKiThuat());
+            dto.setTrangThaiSuDung(s.getTrangThaiSuDung());
+            // Create minimal ChuHoDto with name only
+            if (s.getChuHoName() != null) {
+                io.github.ktpm.bluemoonmanagement.model.dto.cuDan.ChuHoDto chu = new io.github.ktpm.bluemoonmanagement.model.dto.cuDan.ChuHoDto();
+                chu.setHoVaTen(s.getChuHoName());
+                dto.setChuHo(chu);
+            } else {
+                dto.setChuHo(null);
+            }
+            return dto;
+        }).collect(Collectors.toList());
+    }
+
+    @Override
+    public List<CanHoDto> getCanHoPage(int limit) {
+        // Use pagination to limit initial load
+        org.springframework.data.domain.PageRequest page = org.springframework.data.domain.PageRequest.of(0, Math.max(1, limit));
+        org.springframework.data.domain.Page<CanHo> pageResult = canHoRepository.findAll(page);
+        return pageResult.stream()
                 .map(canHoMapper::toCanHoDto)
                 .collect(Collectors.toList());
     }
@@ -113,8 +141,8 @@ public class CanHoServiceImpl implements CanHoService {
     @Transactional
     public ResponseDto addCanHo(CanHoDto canHoDto) {
         // Kiểm tra quyền: chỉ 'Tổ phó' mới được thêm căn hộ
-        if (Session.getCurrentUser() == null || (!"Tổ phó".equals(Session.getCurrentUser().getVaiTro()))) {
-            return new ResponseDto(false, "Bạn không có quyền thêm căn hộ. Chỉ Tổ trưởng và Admin mới được phép.");
+        if (Session.getCurrentUser() == null || !Session.hasRole("Tổ phó")) {
+            return new ResponseDto(false, "Bạn không có quyền thêm căn hộ. Chỉ Tổ phó mới được phép.");
         }
         
         // Check if an apartment with this code already exists
@@ -198,7 +226,7 @@ public class CanHoServiceImpl implements CanHoService {
     @Override
     @Transactional
     public ResponseDto updateCanHo(CanHoDto canHoDto) {
-        if (Session.getCurrentUser() == null || !"Tổ phó".equals(Session.getCurrentUser().getVaiTro())) {
+        if (Session.getCurrentUser() == null || !Session.hasRole("Tổ phó")) {
             return new ResponseDto(false, "Bạn không có quyền cập nhật căn hộ. Chỉ Tổ phó mới được phép.");
         }
         
@@ -267,7 +295,7 @@ public class CanHoServiceImpl implements CanHoService {
     @Override
     @Transactional
     public ResponseDto deleteCanHo(CanHoDto canHoDto) {
-        if (Session.getCurrentUser() == null || !"Tổ phó".equals(Session.getCurrentUser().getVaiTro())) {
+        if (Session.getCurrentUser() == null || !Session.hasRole("Tổ phó")) {
             return new ResponseDto(false, "Bạn không có quyền xóa căn hộ. Chỉ Tổ phó mới được phép.");
         }
         
@@ -346,7 +374,7 @@ public class CanHoServiceImpl implements CanHoService {
 
     @Override
     public ResponseDto importFromExcel(MultipartFile file) {
-        if (Session.getCurrentUser() == null || !"Tổ phó".equals(Session.getCurrentUser().getVaiTro())) {
+        if (Session.getCurrentUser() == null || !Session.hasRole("Tổ phó")) {
             return new ResponseDto(false, "Bạn không có quyền nhập Excel căn hộ. Chỉ Tổ phó mới được phép.");
         }
         try {
@@ -478,7 +506,7 @@ public class CanHoServiceImpl implements CanHoService {
     }
     @Override
     public ResponseDto exportToExcel(String filePath) {
-        if (Session.getCurrentUser() == null || !"Tổ phó".equals(Session.getCurrentUser().getVaiTro())) {
+        if (Session.getCurrentUser() == null || !Session.hasRole("Tổ phó")) {
             return new ResponseDto(false, "Bạn không có quyền xuất căn hộ. Chỉ Tổ phó mới được phép.");
         }
         List<CanHoDto> canHoDtoList = getAllCanHo();

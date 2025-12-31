@@ -39,7 +39,7 @@ public class QuanLyTaiKhoanServiceImpl implements QuanLyTaiKhoanService {
 
     @Override
     public ResponseDto thayDoiThongTinTaiKhoan(ThongTinTaiKhoanDto dto) {
-        if (Session.getCurrentUser() == null || !"Tổ trưởng".equals(Session.getCurrentUser().getVaiTro())) {
+        if (Session.getCurrentUser() == null || !Session.hasRole("Tổ trưởng")) {
             return new ResponseDto(false, "Bạn không có quyền thay đổi thông tin tài khoản. Chỉ Tổ trưởng mới được phép.");
         }
         TaiKhoan taiKhoan = taiKhoanRepository.findById(dto.getEmail()).orElse(null);
@@ -52,7 +52,7 @@ public class QuanLyTaiKhoanServiceImpl implements QuanLyTaiKhoanService {
 
     @Override
     public ResponseDto xoaTaiKhoan(ThongTinTaiKhoanDto thongTinTaiKhoanDto) {
-        if (Session.getCurrentUser() == null || !"Tổ trưởng".equals(Session.getCurrentUser().getVaiTro())) {
+        if (Session.getCurrentUser() == null || !Session.hasRole("Tổ trưởng")) {
             return new ResponseDto(false, "Bạn không có quyền xóa tài khoản. Chỉ Tổ trưởng mới được phép.");
         }
         taiKhoanRepository.deleteById(thongTinTaiKhoanDto.getEmail());

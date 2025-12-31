@@ -4,17 +4,25 @@ spring:
 
   # PostgreSQL Configuration
   datasource:
-    url: jdbc:postgresql://ep-late-shape-ahcz0zed-pooler.c-3.us-east-1.aws.neon.tech/neondb?user=neondb_owner&password=npg_6D5MgcNqwCvl&sslmode=require&channelBinding=require
+    url: jdbc:postgresql://ep-late-shape-ahcz0zed-pooler.c-3.us-east-1.aws.neon.tech/neondb?user=neondb_owner&password=npg_6D5MgcNqwCvl&sslmode=require&channelBinding=require&options=-c%20timezone%3DAsia/Ho_Chi_Minh
     username: neondb_owner
     password: npg_6D5MgcNqwCvl
     driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+      connection-timeout: 60000
+      idle-timeout: 300000
+      max-lifetime: 1800000
+      leak-detection-threshold: 10000
 
   # JPA/Hibernate Configuration
   jpa:
     hibernate:
-      ddl-auto: validate # Chỉ thay đổi dữ liệu, không thay đổi cấu trúc bảng
+      ddl-auto: update # Tự động tạo/điều chỉnh bảng (development). Production: use migrations.
     properties:
       hibernate.dialect: org.hibernate.dialect.PostgreSQLDialect
+      hibernate.jdbc.time_zone: Asia/Ho_Chi_Minh
     show-sql: false
 
   mail:
@@ -29,18 +37,12 @@ spring:
           starttls:
             enable: true
 
-# Logging Configuration
+# Logging Configuration (merged with debug levels)
 logging:
   level:
-    root: INFO
-    org.springframework: OFF
-    org.hibernate: OFF
-    org.springframework.web: OFF
-    org.springframework.boot.autoconfigure: OFF
-    org.springframework.context: OFF
-    org.springframework.jdbc: OFF
-    org.springframework.orm.jpa: OFF
-    org.springframework.transaction: OFF
-    org.springframework.security: OFF
-    com.zaxxer.hikari: OFF
-    com.password4j: OFF
+    root: ERROR
+    io.github.ktpm.bluemoonmanagement.startup.DataLoader: INFO
+    org.springframework.web.socket: DEBUG
+    org.springframework.messaging: DEBUG
+  pattern:
+    console: "%d{HH:mm:ss} %-5p %c{1} - %m%n"

@@ -44,7 +44,7 @@ public class ThemTaiKhoanController {
     private DangKiService dangKiService;
 
     public void initialize() {
-        vaiTroComboBox.getItems().addAll("Tổ trưởng", "Tổ phó", "Kế toán");
+        vaiTroComboBox.getItems().addAll("admin", "Tổ trưởng", "Tổ phó", "Kế toán");
     }
 
 

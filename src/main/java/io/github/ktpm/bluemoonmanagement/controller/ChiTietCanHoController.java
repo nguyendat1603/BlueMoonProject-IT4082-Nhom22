@@ -37,6 +37,8 @@ import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.css.PseudoClass;
+
 
 /**
  * Controller cho trang chi tiết căn hộ
@@ -128,6 +130,13 @@ public class ChiTietCanHoController implements Initializable {
     @FXML private Button buttonThuToanBo;
     @FXML private Button buttonXemLichSu;
     @FXML private CheckBox checkBoxKhongTinhBatBuoc;
+
+    //Nút bấm thông tin
+    @FXML private Label lblCanHo;
+    @FXML private Label lblChuSoHuu;
+
+    @FXML private AnchorPane apCanHo;
+    @FXML private AnchorPane apChuSoHuu;
     
     // Edit button in thông tin tab 
     @FXML private Button buttonChinhSua;
@@ -508,8 +517,7 @@ public class ChiTietCanHoController implements Initializable {
 
                 // Disable nút cho tất cả trừ Tổ phó (chỉ Tổ phó được phép sửa/xóa cư dân)
                 try {
-                    String userRole = getCurrentUserRole();
-                    if (!"Tổ phó".equals(userRole)) {
+                    if (!Session.hasRole("Tổ phó")) {
                         editButton.setDisable(true);
                         deleteButton.setDisable(true);
                         editButton.setOpacity(0.5);
@@ -813,74 +821,69 @@ public class ChiTietCanHoController implements Initializable {
      * @param forceFromService true để bắt buộc load từ service, false để ưu tiên cache
      */
     private void loadData(String maCanHo, boolean forceFromService) {
-        try {
-            if (maCanHo == null || maCanHo.trim().isEmpty()) {
-                showError("Lỗi dữ liệu", "Mã căn hộ không hợp lệ.");
+        if (maCanHo == null || maCanHo.trim().isEmpty()) {
+            showError("Lỗi dữ liệu", "Mã căn hộ không hợp lệ.");
+            return;
+        }
+
+        // Try cache first (fast)
+        if (!forceFromService && cacheDataService != null && cacheDataService.isCacheLoaded()) {
+            CanHoChiTietDto chiTiet = cacheDataService.getCanHoChiTietFromCache(maCanHo);
+            if (chiTiet != null) {
+                updateDetailUIFromDto(chiTiet);
                 return;
             }
+        }
 
-            CanHoChiTietDto chiTiet = null;
-            
-            if (cacheDataService != null) {
-            }
-            
-            if (!forceFromService && cacheDataService != null && cacheDataService.isCacheLoaded()) {
-                chiTiet = cacheDataService.getCanHoChiTietFromCache(maCanHo);
-
-            }
-
-            // Fallback to service if cache fails or forced
-            if (chiTiet == null) {
-                chiTiet = loadDataFromService(maCanHo);
-            }
-
-            if (chiTiet != null) {
-                currentCanHo = chiTiet;
-
-                // Load danh sách từ data và lọc chỉ hiển thị cư dân chưa bị xóa (chưa có ngày chuyển đi)
-                cuDanList.clear();
-
-
-                if (chiTiet.getCuDanList() != null) {
-
-
-                    // Hiển thị tất cả cư dân có trạng thái khác "Đã chuyển đi"
-                    // Chấp nhận: "Cư trú", "Không cư trú", hoặc null
-                    chiTiet.getCuDanList().stream()
-                        .filter(cuDan -> {
-                            String trangThai = cuDan.getTrangThaiCuTru();
-                            return trangThai == null ||
-                                   !"Đã chuyển đi".equals(trangThai);
-                        })
-                        .forEach(cuDanList::add);
-
+        // Otherwise load from service on background thread
+        new Thread(() -> {
+            try {
+                CanHoChiTietDto chiTiet = loadDataFromService(maCanHo);
+                if (chiTiet != null) {
+                    javafx.application.Platform.runLater(() -> updateDetailUIFromDto(chiTiet));
+                } else {
+                    javafx.application.Platform.runLater(() -> {
+                        showError("Không tìm thấy dữ liệu", "Không tìm thấy thông tin chi tiết cho căn hộ: " + maCanHo);
+                        clearAllData();
+                    });
                 }
-
-                phuongTienList.clear();
-                if (chiTiet.getPhuongTienList() != null) {
-                    phuongTienList.addAll(chiTiet.getPhuongTienList());
-                }
-
-                hoaDonList.clear();
-                if (chiTiet.getHoaDonList() != null) {
-                    hoaDonList.addAll(chiTiet.getHoaDonList());
-                }
-
-                // Cập nhật UI
-                updateThongTinCanHo();
-                setTableData();
-                updateTongSoTien();
-
-                // Cập nhật ComboBox với dữ liệu thực
-                updateComboBoxesWithRealData();
-
-            } else {
-                showError("Không tìm thấy dữ liệu", "Không tìm thấy thông tin chi tiết cho căn hộ: " + maCanHo);
-                clearAllData();
+            } catch (Exception e) {
+                javafx.application.Platform.runLater(() -> {
+                    showError("Lỗi kết nối", "Không thể tải dữ liệu: " + e.getMessage());
+                    clearAllData();
+                });
             }
+        }, "ChiTietCanHo-LoadData").start();
+    }
+
+    // Helper to update UI from a CanHoChiTietDto on FX thread (must be called on FX thread)
+    private void updateDetailUIFromDto(CanHoChiTietDto chiTiet) {
+        try {
+            currentCanHo = chiTiet;
+            cuDanList.clear();
+            if (chiTiet.getCuDanList() != null) {
+                chiTiet.getCuDanList().stream()
+                    .filter(cuDan -> {
+                        String trangThai = cuDan.getTrangThaiCuTru();
+                        return trangThai == null || !"Đã chuyển đi".equals(trangThai);
+                    })
+                    .forEach(cuDanList::add);
+            }
+            phuongTienList.clear();
+            if (chiTiet.getPhuongTienList() != null) {
+                phuongTienList.addAll(chiTiet.getPhuongTienList());
+            }
+            hoaDonList.clear();
+            if (chiTiet.getHoaDonList() != null) {
+                hoaDonList.addAll(chiTiet.getHoaDonList());
+            }
+            updateThongTinCanHo();
+            setTableData();
+            updateTongSoTien();
+            updateComboBoxesWithRealData();
         } catch (Exception e) {
-            showError("Lỗi kết nối", "Không thể tải dữ liệu: " + e.getMessage());
-            clearAllData();
+            System.err.println("Error updating detail UI: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
@@ -1460,8 +1463,7 @@ public class ChiTietCanHoController implements Initializable {
     private void handleThuToanBo() {
         // Kiểm tra quyền
         try {
-            String userRole = getCurrentUserRole();
-            if (!"Kế toán".equals(userRole)) {
+            if (!Session.hasRole("Kế toán")) {
                 showError("Không có quyền", "Bạn không có quyền thực hiện thu toàn bộ. Chỉ có Kế toán mới có thể thực hiện.");
                 return;
             }
@@ -1619,9 +1621,8 @@ public class ChiTietCanHoController implements Initializable {
     private void handleChinhSuaCanHo() {
         try {
 
-            // Kiểm tra quyền
-            String userRole = getCurrentUserRole();
-            if ("Tổ trưởng".equals(userRole) || "Kế toán".equals(userRole)) {
+            // Kiểm tra quyền - chỉ Tổ phó mới được chỉnh sửa căn hộ
+            if (!Session.hasRole("Tổ phó")) {
                 showError("Không có quyền", "Bạn không có quyền chỉnh sửa căn hộ. Chỉ được xem thông tin.");
                 return;
             }
@@ -2070,4 +2071,37 @@ public class ChiTietCanHoController implements Initializable {
             }
         });
   }
+  private final PseudoClass SELECTED =
+        PseudoClass.getPseudoClass("selected");
+  @FXML
+public void initialize() {
+    showCanHo(); // mặc định mở Thông tin căn hộ
+}
+@FXML
+private void showCanHo() {
+    apCanHo.setVisible(true);
+    apCanHo.setManaged(true);
+
+    apChuSoHuu.setVisible(false);
+    apChuSoHuu.setManaged(false);
+
+    setActive(lblCanHo, lblChuSoHuu);
+}
+
+@FXML
+private void showChuSoHuu() {
+    apChuSoHuu.setVisible(true);
+    apChuSoHuu.setManaged(true);
+
+    apCanHo.setVisible(false);
+    apCanHo.setManaged(false);
+
+    setActive(lblChuSoHuu, lblCanHo);
+}
+private void setActive(Label active, Label inactive) {
+    active.pseudoClassStateChanged(SELECTED, true);
+    inactive.pseudoClassStateChanged(SELECTED, false);
+}
+
+  
 } 

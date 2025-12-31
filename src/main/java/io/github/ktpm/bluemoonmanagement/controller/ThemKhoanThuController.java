@@ -453,16 +453,16 @@ public class ThemKhoanThuController {
             // Refresh khoản thu table ngay lập tức
             refreshKhoanThuTable();
             
-            // Close window after successful addition với delay ngắn hơn
-            javafx.application.Platform.runLater(() -> {
+            // Close window after successful addition with delay (do not block UI thread)
+            new Thread(() -> {
                 try {
                     Thread.sleep(1000); // Show success message for 1 second
-                    handleClose(null);
+                    javafx.application.Platform.runLater(() -> handleClose(null));
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
-                    handleClose(null);
+                    javafx.application.Platform.runLater(() -> handleClose(null));
                 }
-            });
+            }, "ThemKhoanThu-CloseDelay").start();
 
         } else {
             textError.setText("Lỗi: " + response.getMessage());
@@ -737,16 +737,16 @@ public class ThemKhoanThuController {
                 } else {
                 }
                 
-                // Đóng form chính sau khi xử lý xong
-                javafx.application.Platform.runLater(() -> {
+                // Đóng form chính sau khi xử lý xong (do not block UI thread)
+                new Thread(() -> {
                     try {
                         Thread.sleep(500);
-                        handleClose(null);
+                        javafx.application.Platform.runLater(() -> handleClose(null));
                     } catch (InterruptedException e) {
                         Thread.currentThread().interrupt();
-                        handleClose(null);
+                        javafx.application.Platform.runLater(() -> handleClose(null));
                     }
-                });
+                }, "ThemKhoanThu-CloseDelay").start();
             });
             
         } catch (Exception e) {
@@ -820,13 +820,8 @@ public class ThemKhoanThuController {
 
     private boolean hasPermission() {
         try {
-            ThongTinTaiKhoanDto currentUser = Session.getCurrentUser();
-            if (currentUser == null) {
-                return false;
-            }
-            String vaiTro = currentUser.getVaiTro();
             // Chỉ Kế toán mới được phép thêm/sửa khoản thu
-            return "Kế toán".equals(vaiTro);
+            return Session.hasRole("Kế toán");
         } catch (Exception e) {
             System.err.println("Lỗi khi kiểm tra quyền: " + e.getMessage());
             return false;
@@ -1092,16 +1087,16 @@ public class ThemKhoanThuController {
                     buttonChinhSua.setVisible(true);
                 }
                 
-                // Close window after successful update với delay ngắn hơn
-                javafx.application.Platform.runLater(() -> {
+                // Close window after successful update with delay (do not block UI thread)
+                new Thread(() -> {
                     try {
                         Thread.sleep(1000); // Show success message for 1 second
-                        handleClose(null);
+                        javafx.application.Platform.runLater(() -> handleClose(null));
                     } catch (InterruptedException e) {
                         Thread.currentThread().interrupt();
-                        handleClose(null);
+                        javafx.application.Platform.runLater(() -> handleClose(null));
                     }
-                });
+                }, "ThemKhoanThu-UpdateCloseDelay").start();
                 
             } else {
                 textError.setText("Lỗi: " + response.getMessage());
@@ -1632,11 +1627,7 @@ public class ThemKhoanThuController {
      */
     private boolean hasHoaDonPermission() {
         try {
-            ThongTinTaiKhoanDto currentUser = Session.getCurrentUser();
-            if (currentUser != null && currentUser.getVaiTro() != null) {
-                return "Kế toán".equals(currentUser.getVaiTro());
-            }
-            return false;
+            return Session.hasRole("Kế toán");
         } catch (Exception e) {
             System.err.println("Error checking invoice permission: " + e.getMessage());
             return false;
