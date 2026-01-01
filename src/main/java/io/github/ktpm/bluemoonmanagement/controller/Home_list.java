@@ -64,13 +64,8 @@ import java.util.regex.Pattern;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.charset.StandardCharsets;
-import java.security.KeyFactory;
-import java.security.PrivateKey;
-import java.security.Signature;
-import java.security.spec.PKCS8EncodedKeySpec;
 import java.time.Instant;
 import java.net.URLEncoder;
-import java.util.Base64;
 import javafx.scene.web.WebView;
 import javafx.scene.web.WebEngine;
 import io.github.ktpm.bluemoonmanagement.model.entity.ChatMessage;
@@ -549,24 +544,7 @@ public class Home_list implements Initializable {
                 System.out.println("Gemini API key loaded from user preferences (hidden).");
             }
         } catch (Exception ignored) {}
-        
-        // Auto-load service account JSON if present in project root (common filename)
-        try {
-            Preferences prefs = Preferences.userNodeForPackage(Home_list.class);
-            String savedPath = prefs.get("serviceAccountPath", null);
-            if (savedPath != null && !savedPath.trim().isEmpty()) {
-                Path p = Path.of(savedPath);
-                if (Files.exists(p)) {
-                    loadServiceAccountFromFile(p);
-                }
-            } else {
-                Path possible = Path.of("gen-lang-client-0089106210-22d5a556445a.json");
-                if (Files.exists(possible)) {
-                    loadServiceAccountFromFile(possible);
-                }
-            }
-        } catch (Exception ignored) {}
-        
+
         // Setup tables (order matters to avoid conflicts)
         setupCanHoTable();
         setupCuDanTable();
@@ -1809,13 +1787,6 @@ public class Home_list implements Initializable {
     // In-memory runtime Gemini API key (not persisted)
     private volatile String geminiApiKey = null;
     private final HttpClient httpClient = HttpClient.newBuilder().version(HttpClient.Version.HTTP_1_1).build();
-    // Service Account fields
-    private volatile boolean serviceAccountLoaded = false;
-    private volatile String saPrivateKeyPem = null;
-    private volatile String saClientEmail = null;
-    private volatile String saTokenUri = null;
-    private volatile String saAccessToken = null;
-    private volatile long saAccessTokenExpiry = 0L; // epoch seconds
     // activity logging
     private String currentSessionId = null;
     private String currentSessionUser = null;
@@ -2269,162 +2240,10 @@ public class Home_list implements Initializable {
     /**
      * Load service account JSON from a Path (will parse private_key, client_email, token_uri).
      */
-    private void loadServiceAccountFromFile(Path path) {
-        try {
-            String text = Files.readString(path, StandardCharsets.UTF_8);
-            loadServiceAccountFromString(text);
-            // Persist to app directory for future runs
-            try {
-                Preferences prefs = Preferences.userNodeForPackage(Home_list.class);
-                String saved = prefs.get("serviceAccountPath", null);
-                if (saved == null || saved.trim().isEmpty()) {
-                    Path savedPath = saveServiceAccountToAppDir(path);
-                    if (savedPath != null) {
-                        prefs.put("serviceAccountPath", savedPath.toAbsolutePath().toString());
-                        System.out.println("Service account persisted to: " + savedPath.toAbsolutePath());
-                    }
-                }
-            } catch (Exception ignored) {}
-        } catch (Exception e) {
-            System.err.println("Không thể đọc service account file: " + e.getMessage());
-            e.printStackTrace();
-        }
-    }
 
-    private void loadServiceAccountFromFile(String path) {
-        loadServiceAccountFromFile(Path.of(path));
-    }
 
-    private void loadServiceAccountFromString(String jsonText) {
-        try {
-            Pattern pKey = Pattern.compile("\"private_key\"\\s*:\\s*\"([\\s\\S]*?)\"", Pattern.DOTALL);
-            Pattern pEmail = Pattern.compile("\"client_email\"\\s*:\\s*\"([^\"]+)\"");
-            Pattern pToken = Pattern.compile("\"token_uri\"\\s*:\\s*\"([^\"]+)\"");
-            Matcher mKey = pKey.matcher(jsonText);
-            Matcher mEmail = pEmail.matcher(jsonText);
-            Matcher mToken = pToken.matcher(jsonText);
-            if (mKey.find() && mEmail.find() && mToken.find()) {
-                String rawKey = mKey.group(1);
-                // unescape \n sequences
-                rawKey = rawKey.replace("\\n", "\n");
-                saPrivateKeyPem = rawKey;
-                saClientEmail = mEmail.group(1);
-                saTokenUri = mToken.group(1);
-                serviceAccountLoaded = true;
-                System.out.println("Service account loaded for: " + saClientEmail);
-            } else {
-                System.err.println("Service account JSON missing required fields.");
-            }
-        } catch (Exception e) {
-            System.err.println("Error parsing service account JSON: " + e.getMessage());
-            e.printStackTrace();
-        }
-    }
 
-    /**
-     * Save a copy of the provided service account file to the user's app directory
-     * (~/.hometech/gen-lang-service-account.json) and return the saved path.
-     */
-    private Path saveServiceAccountToAppDir(Path source) {
-        try {
-            String userHome = System.getProperty("user.home");
-            Path dir = Path.of(userHome, ".hometech");
-            if (!Files.exists(dir)) {
-                Files.createDirectories(dir);
-            }
-            Path dest = dir.resolve("gen-lang-service-account.json");
-            Files.copy(source, dest, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
-            return dest;
-        } catch (Exception e) {
-            System.err.println("Failed to persist service account: " + e.getMessage());
-            e.printStackTrace();
-            return null;
-        }
-    }
 
-    /**
-     * Obtain access token from service account (cached, blocking).
-     */
-    private synchronized String getServiceAccountAccessToken() {
-        try {
-            long now = Instant.now().getEpochSecond();
-            if (saAccessToken != null && saAccessTokenExpiry - 30 > now) {
-                return saAccessToken;
-            }
-            if (!serviceAccountLoaded || saPrivateKeyPem == null || saClientEmail == null || saTokenUri == null) {
-                return null;
-            }
-            PrivateKey privateKey = getPrivateKeyFromPem(saPrivateKeyPem);
-            if (privateKey == null) {
-                return null;
-            }
-            // build JWT
-            long iat = now;
-            long exp = now + 3600;
-            String header = "{\"alg\":\"RS256\",\"typ\":\"JWT\"}";
-            // Request both cloud-platform and generative-language scopes to ensure access
-            String scopes = "https://www.googleapis.com/auth/cloud-platform https://www.googleapis.com/auth/generative-language";
-            String payload = String.format("{\"iss\":\"%s\",\"scope\":\"%s\",\"aud\":\"%s\",\"exp\":%d,\"iat\":%d}",
-                saClientEmail, scopes, saTokenUri, exp, iat);
-            String headerB64 = Base64.getUrlEncoder().withoutPadding().encodeToString(header.getBytes(StandardCharsets.UTF_8));
-            String payloadB64 = Base64.getUrlEncoder().withoutPadding().encodeToString(payload.getBytes(StandardCharsets.UTF_8));
-            String unsigned = headerB64 + "." + payloadB64;
-            Signature sig = Signature.getInstance("SHA256withRSA");
-            sig.initSign(privateKey);
-            sig.update(unsigned.getBytes(StandardCharsets.UTF_8));
-            byte[] signature = sig.sign();
-            String sigB64 = Base64.getUrlEncoder().withoutPadding().encodeToString(signature);
-            String jwt = unsigned + "." + sigB64;
-
-            String body = "grant_type=urn%3Aietf%3Aparams%3Aoauth%3Agrant-type%3Ajwt-bearer&assertion=" + URLEncoder.encode(jwt, StandardCharsets.UTF_8);
-
-            HttpRequest req = HttpRequest.newBuilder()
-                .uri(URI.create(saTokenUri))
-                .header("Content-Type", "application/x-www-form-urlencoded")
-                .POST(HttpRequest.BodyPublishers.ofString(body))
-                .build();
-            HttpResponse<String> resp = httpClient.send(req, HttpResponse.BodyHandlers.ofString());
-            if (resp.statusCode() >= 200 && resp.statusCode() < 300) {
-                String respBody = resp.body();
-                Matcher mTok = Pattern.compile("\"access_token\"\\s*:\\s*\"([^\"]+)\"").matcher(respBody);
-                Matcher mExp = Pattern.compile("\"expires_in\"\\s*:\\s*(\\d+)").matcher(respBody);
-                if (mTok.find()) {
-                    saAccessToken = mTok.group(1);
-                    long expiresIn = 3600;
-                    if (mExp.find()) {
-                        try { expiresIn = Long.parseLong(mExp.group(1)); } catch (Exception ignored) {}
-                    }
-                    saAccessTokenExpiry = Instant.now().getEpochSecond() + expiresIn;
-                    return saAccessToken;
-                } else {
-                    System.err.println("Token response missing access_token: " + respBody);
-                    return null;
-                }
-            } else {
-                System.err.println("Token request failed: HTTP " + resp.statusCode() + " body=" + resp.body());
-                return null;
-            }
-        } catch (Exception e) {
-            System.err.println("Error obtaining service account token: " + e.getMessage());
-            e.printStackTrace();
-            return null;
-        }
-    }
-
-    private PrivateKey getPrivateKeyFromPem(String pem) {
-        try {
-            String priv = pem.replace("-----BEGIN PRIVATE KEY-----", "").replace("-----END PRIVATE KEY-----", "");
-            priv = priv.replaceAll("\\s+", "");
-            byte[] decoded = Base64.getDecoder().decode(priv);
-            PKCS8EncodedKeySpec spec = new PKCS8EncodedKeySpec(decoded);
-            KeyFactory kf = KeyFactory.getInstance("RSA");
-            return kf.generatePrivate(spec);
-        } catch (Exception e) {
-            System.err.println("Error parsing private key PEM: " + e.getMessage());
-            e.printStackTrace();
-            return null;
-        }
-    }
 
     /**
      * Save activity to database
@@ -2455,20 +2274,12 @@ public class Home_list implements Initializable {
                 .header("Content-Type", "application/json; charset=UTF-8")
                 .POST(HttpRequest.BodyPublishers.ofString(jsonBody));
 
-            // Prefer Service Account (Bearer) if loaded
-            if (serviceAccountLoaded) {
-                String token = getServiceAccountAccessToken();
-                if (token == null) {
-                    onError.accept("Không thể lấy access token từ Service Account.");
-                    return;
-                }
-                reqBuilder.header("Authorization", "Bearer " + token);
-            } else if (apiKey != null && !apiKey.trim().isEmpty()) {
-                // fallback to API key param
+            // Use API key for authentication
+            if (apiKey != null && !apiKey.trim().isEmpty()) {
                 String endpointWithKey = endpoint + "?key=" + apiKey;
                 reqBuilder.uri(URI.create(endpointWithKey));
             } else {
-                onError.accept("API key trống và Service Account chưa được cấu hình.");
+                onError.accept("API key trống.");
                 return;
             }
 
@@ -2489,50 +2300,7 @@ public class Home_list implements Initializable {
                         onSuccess.accept(extracted);
                     }
                 } else {
-                    // Debug helpers: if using SA, fetch tokeninfo to show scopes, and try v1 fallback on 404
-                    String debugInfo = "HTTP " + code + ": " + body;
-                    if (serviceAccountLoaded) {
-                        try {
-                            String token = saAccessToken != null ? saAccessToken : getServiceAccountAccessToken();
-                            if (token != null) {
-                                String tokenInfo = fetchTokenInfo(token);
-                                debugInfo += "\nTokenInfo: " + tokenInfo;
-                            }
-                        } catch (Exception ignored) {}
-                    }
-
-                    // If 404 and using v1beta2, try v1 endpoint as fallback once
-                    if (code == 404 && endpoint.contains("/v1beta2/")) {
-                        try {
-                            String v1endpoint = endpoint.replace("/v1beta2/", "/v1/");
-                            HttpRequest.Builder fb = HttpRequest.newBuilder()
-                                .uri(URI.create(v1endpoint))
-                                .header("Content-Type", "application/json; charset=UTF-8")
-                                .POST(HttpRequest.BodyPublishers.ofString(jsonBody));
-                            if (serviceAccountLoaded) {
-                                String token = saAccessToken != null ? saAccessToken : getServiceAccountAccessToken();
-                                if (token != null) fb.header("Authorization", "Bearer " + token);
-                            } else if (apiKey != null && !apiKey.trim().isEmpty()) {
-                                fb.uri(URI.create(v1endpoint + "?key=" + apiKey));
-                            }
-                            HttpResponse<String> fbResp = httpClient.send(fb.build(), HttpResponse.BodyHandlers.ofString());
-                            if (fbResp.statusCode() >= 200 && fbResp.statusCode() < 300) {
-                                String extracted = extractTextFromResponse(fbResp.body());
-                                if (extracted == null || extracted.isEmpty()) {
-                                    onError.accept("Fallback v1: Không trích được nội dung trả về từ API");
-                                } else {
-                                    onSuccess.accept("[Fallback v1] " + extracted);
-                                }
-                                return;
-                            } else {
-                                debugInfo += "\nFallback v1 HTTP " + fbResp.statusCode() + ": " + fbResp.body();
-                            }
-                        } catch (Exception e) {
-                            debugInfo += "\nFallback v1 failed: " + e.getMessage();
-                        }
-                    }
-
-                    onError.accept(debugInfo);
+                    onError.accept("HTTP " + code + ": " + body);
                 }
             });
         } catch (Exception e) {
@@ -2545,23 +2313,6 @@ public class Home_list implements Initializable {
         return s.replace("\\", "\\\\").replace("\"", "\\\"").replace("\n", "\\n").replace("\r", "\\r");
     }
 
-    /**
-     * Fetch token info (scopes and other metadata) using Google's tokeninfo endpoint.
-     */
-    private String fetchTokenInfo(String accessToken) {
-        try {
-            String url = "https://www.googleapis.com/oauth2/v3/tokeninfo?access_token=" + URLEncoder.encode(accessToken, StandardCharsets.UTF_8);
-            HttpRequest req = HttpRequest.newBuilder().uri(URI.create(url)).GET().build();
-            HttpResponse<String> resp = httpClient.send(req, HttpResponse.BodyHandlers.ofString());
-            if (resp.statusCode() >= 200 && resp.statusCode() < 300) {
-                return resp.body();
-            } else {
-                return "tokeninfo HTTP " + resp.statusCode() + ": " + resp.body();
-            }
-        } catch (Exception e) {
-            return "tokeninfo failed: " + e.getMessage();
-        }
-    }
 
     /**
      * Cố gắng trích text từ response JSON trả về từ Generative API.
