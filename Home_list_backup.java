@@ -549,24 +549,7 @@ public class Home_list implements Initializable {
                 System.out.println("Gemini API key loaded from user preferences (hidden).");
             }
         } catch (Exception ignored) {}
-        
-        // Auto-load service account JSON if present in project root (common filename)
-        try {
-            Preferences prefs = Preferences.userNodeForPackage(Home_list.class);
-            String savedPath = prefs.get("serviceAccountPath", null);
-            if (savedPath != null && !savedPath.trim().isEmpty()) {
-                Path p = Path.of(savedPath);
-                if (Files.exists(p)) {
-                    loadServiceAccountFromFile(p);
-                }
-            } else {
-                Path possible = Path.of("gen-lang-client-0089106210-22d5a556445a.json");
-                if (Files.exists(possible)) {
-                    loadServiceAccountFromFile(possible);
-                }
-            }
-        } catch (Exception ignored) {}
-        
+
         // Setup tables (order matters to avoid conflicts)
         setupCanHoTable();
         setupCuDanTable();
@@ -1809,13 +1792,6 @@ public class Home_list implements Initializable {
     // In-memory runtime Gemini API key (not persisted)
     private volatile String geminiApiKey = null;
     private final HttpClient httpClient = HttpClient.newBuilder().version(HttpClient.Version.HTTP_1_1).build();
-    // Service Account fields
-    private volatile boolean serviceAccountLoaded = false;
-    private volatile String saPrivateKeyPem = null;
-    private volatile String saClientEmail = null;
-    private volatile String saTokenUri = null;
-    private volatile String saAccessToken = null;
-    private volatile long saAccessTokenExpiry = 0L; // epoch seconds
     // activity logging
     private String currentSessionId = null;
     private String currentSessionUser = null;
@@ -2267,9 +2243,11 @@ public class Home_list implements Initializable {
     }
 
     /**
-     * Load service account JSON from a Path (will parse private_key, client_email, token_uri).
+     * Mở popup Khoản thu khi click ô "Khoản thu" trên trang chủ
+     * Chat app realtime với STOMP WebSocket
      */
-    private void loadServiceAccountFromFile(Path path) {
+    @FXML
+    public void openKhoanThuPopup(javafx.scene.input.MouseEvent event) {
         try {
             String text = Files.readString(path, StandardCharsets.UTF_8);
             loadServiceAccountFromString(text);
@@ -2307,11 +2285,11 @@ public class Home_list implements Initializable {
                 String rawKey = mKey.group(1);
                 // unescape \n sequences
                 rawKey = rawKey.replace("\\n", "\n");
-                saPrivateKeyPem = rawKey;
-                saClientEmail = mEmail.group(1);
-                saTokenUri = mToken.group(1);
-                serviceAccountLoaded = true;
-                System.out.println("Service account loaded for: " + saClientEmail);
+                 = rawKey;
+                 = mEmail.group(1);
+                 = mToken.group(1);
+                 = true;
+                System.out.println("Service account loaded for: " + );
             } else {
                 System.err.println("Service account JSON missing required fields.");
             }
@@ -2348,13 +2326,13 @@ public class Home_list implements Initializable {
     private synchronized String getServiceAccountAccessToken() {
         try {
             long now = Instant.now().getEpochSecond();
-            if (saAccessToken != null && saAccessTokenExpiry - 30 > now) {
-                return saAccessToken;
+            if ( != null && Expiry - 30 > now) {
+                return ;
             }
-            if (!serviceAccountLoaded || saPrivateKeyPem == null || saClientEmail == null || saTokenUri == null) {
+            if (! ||  == null ||  == null ||  == null) {
                 return null;
             }
-            PrivateKey privateKey = getPrivateKeyFromPem(saPrivateKeyPem);
+            PrivateKey privateKey = getPrivateKeyFromPem();
             if (privateKey == null) {
                 return null;
             }
@@ -2365,7 +2343,7 @@ public class Home_list implements Initializable {
             // Request both cloud-platform and generative-language scopes to ensure access
             String scopes = "https://www.googleapis.com/auth/cloud-platform https://www.googleapis.com/auth/generative-language";
             String payload = String.format("{\"iss\":\"%s\",\"scope\":\"%s\",\"aud\":\"%s\",\"exp\":%d,\"iat\":%d}",
-                saClientEmail, scopes, saTokenUri, exp, iat);
+                , scopes, , exp, iat);
             String headerB64 = Base64.getUrlEncoder().withoutPadding().encodeToString(header.getBytes(StandardCharsets.UTF_8));
             String payloadB64 = Base64.getUrlEncoder().withoutPadding().encodeToString(payload.getBytes(StandardCharsets.UTF_8));
             String unsigned = headerB64 + "." + payloadB64;
@@ -2379,7 +2357,7 @@ public class Home_list implements Initializable {
             String body = "grant_type=urn%3Aietf%3Aparams%3Aoauth%3Agrant-type%3Ajwt-bearer&assertion=" + URLEncoder.encode(jwt, StandardCharsets.UTF_8);
 
             HttpRequest req = HttpRequest.newBuilder()
-                .uri(URI.create(saTokenUri))
+                .uri(URI.create())
                 .header("Content-Type", "application/x-www-form-urlencoded")
                 .POST(HttpRequest.BodyPublishers.ofString(body))
                 .build();
@@ -2389,13 +2367,13 @@ public class Home_list implements Initializable {
                 Matcher mTok = Pattern.compile("\"access_token\"\\s*:\\s*\"([^\"]+)\"").matcher(respBody);
                 Matcher mExp = Pattern.compile("\"expires_in\"\\s*:\\s*(\\d+)").matcher(respBody);
                 if (mTok.find()) {
-                    saAccessToken = mTok.group(1);
+                     = mTok.group(1);
                     long expiresIn = 3600;
                     if (mExp.find()) {
                         try { expiresIn = Long.parseLong(mExp.group(1)); } catch (Exception ignored) {}
                     }
-                    saAccessTokenExpiry = Instant.now().getEpochSecond() + expiresIn;
-                    return saAccessToken;
+                    Expiry = Instant.now().getEpochSecond() + expiresIn;
+                    return ;
                 } else {
                     System.err.println("Token response missing access_token: " + respBody);
                     return null;
@@ -2456,7 +2434,7 @@ public class Home_list implements Initializable {
                 .POST(HttpRequest.BodyPublishers.ofString(jsonBody));
 
             // Prefer Service Account (Bearer) if loaded
-            if (serviceAccountLoaded) {
+            if () {
                 String token = getServiceAccountAccessToken();
                 if (token == null) {
                     onError.accept("Không thể lấy access token từ Service Account.");
@@ -2491,9 +2469,9 @@ public class Home_list implements Initializable {
                 } else {
                     // Debug helpers: if using SA, fetch tokeninfo to show scopes, and try v1 fallback on 404
                     String debugInfo = "HTTP " + code + ": " + body;
-                    if (serviceAccountLoaded) {
+                    if () {
                         try {
-                            String token = saAccessToken != null ? saAccessToken : getServiceAccountAccessToken();
+                            String token =  != null ?  : getServiceAccountAccessToken();
                             if (token != null) {
                                 String tokenInfo = fetchTokenInfo(token);
                                 debugInfo += "\nTokenInfo: " + tokenInfo;
@@ -2509,8 +2487,8 @@ public class Home_list implements Initializable {
                                 .uri(URI.create(v1endpoint))
                                 .header("Content-Type", "application/json; charset=UTF-8")
                                 .POST(HttpRequest.BodyPublishers.ofString(jsonBody));
-                            if (serviceAccountLoaded) {
-                                String token = saAccessToken != null ? saAccessToken : getServiceAccountAccessToken();
+                            if () {
+                                String token =  != null ?  : getServiceAccountAccessToken();
                                 if (token != null) fb.header("Authorization", "Bearer " + token);
                             } else if (apiKey != null && !apiKey.trim().isEmpty()) {
                                 fb.uri(URI.create(v1endpoint + "?key=" + apiKey));

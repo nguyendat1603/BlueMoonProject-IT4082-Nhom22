@@ -92,6 +92,7 @@ public class KhungController implements Initializable{
         setAccountName(name);
         // Lazy-load center view to avoid blocking UI initialization.
         Label placeholder = new Label("Đang tải giao diện...");
+        placeholder.setStyle("-fx-text-fill: white;");
         mainBorderPane.setCenter(placeholder);
 
        

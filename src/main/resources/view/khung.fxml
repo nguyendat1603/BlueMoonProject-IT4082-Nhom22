@@ -1,21 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import java.lang.*?>
-<?import de.jensd.fx.glyphs.fontawesome.*?>
-<?import javafx.geometry.*?>
-<?import javafx.scene.*?>
-<?import javafx.scene.control.*?>
-<?import javafx.scene.image.*?>
-<?import javafx.scene.layout.*?>
-<?import javafx.scene.text.*?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.Group?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
 
-<BorderPane fx:id="mainBorderPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="720.0" prefWidth="1280.0" stylesheets="@style/dashboard_style.css" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="io.github.ktpm.bluemoonmanagement.controller.KhungController">
+<BorderPane fx:id="mainBorderPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="720.0" prefWidth="1280.0" styleClass="gray-background" stylesheets="@style/dashboard_style.css" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="io.github.ktpm.bluemoonmanagement.controller.KhungController">
    <left>
-      <AnchorPane maxWidth="-Infinity" minWidth="-Infinity" prefWidth="200.0" styleClass="white-background" BorderPane.alignment="BOTTOM_LEFT">
+      <AnchorPane maxWidth="-Infinity" minWidth="-Infinity" prefHeight="645.0" prefWidth="200.0" styleClass="black-background" BorderPane.alignment="BOTTOM_LEFT">
          <children>
             <VBox alignment="TOP_CENTER" layoutY="14.0" maxHeight="-Infinity" maxWidth="-Infinity" prefWidth="200.0" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="14.0">
                <children>
-                  <Button fx:id="buttonTrangChu" alignment="TOP_LEFT" mnemonicParsing="false" onAction="#goToTrangChu" styleClass="menu-button" text="Trang chủ">
+                  <Button fx:id="buttonTrangChu" alignment="TOP_LEFT" mnemonicParsing="false" onAction="#goToTrangChu" styleClass="menu-button" text="Trang chủ" textFill="WHITE">
                      <graphic>
                         <javafx.scene.Group>
                            <children>
@@ -28,7 +31,7 @@
                         </javafx.scene.Group>
                      </graphic>
                   </Button>
-                  <Button fx:id="buttonCanHo" alignment="TOP_LEFT" layoutX="20.0" layoutY="10.0" mnemonicParsing="false" onAction="#goToCanHo" styleClass="menu-button" text="Căn hộ">
+                  <Button fx:id="buttonCanHo" alignment="TOP_LEFT" layoutX="20.0" layoutY="10.0" mnemonicParsing="false" onAction="#goToCanHo" styleClass="menu-button" text="Căn hộ" textFill="WHITE">
                      <graphic>
                         <Group>
                            <children>
@@ -41,7 +44,7 @@
                         </Group>
                      </graphic>
                   </Button>
-                  <Button fx:id="buttonCuDan" alignment="TOP_LEFT" layoutX="20.0" layoutY="61.0" mnemonicParsing="false" onAction="#goToCuDan" styleClass="menu-button" text="Cư dân">
+                  <Button fx:id="buttonCuDan" alignment="TOP_LEFT" layoutX="20.0" layoutY="61.0" mnemonicParsing="false" onAction="#goToCuDan" styleClass="menu-button" text="Cư dân" textFill="WHITE">
                      <graphic>
                         <Group>
                            <children>
@@ -54,7 +57,7 @@
                         </Group>
                      </graphic>
                   </Button>
-                  <Button fx:id="buttonKhoanThu" alignment="TOP_LEFT" layoutX="20.0" layoutY="112.0" mnemonicParsing="false" onAction="#goToKhoanThu" styleClass="menu-button" text="Khoản thu">
+                  <Button fx:id="buttonKhoanThu" alignment="TOP_LEFT" layoutX="20.0" layoutY="112.0" mnemonicParsing="false" onAction="#goToKhoanThu" styleClass="menu-button" text="Khoản thu" textFill="WHITE">
                      <graphic>
                         <Group>
                            <children>
@@ -74,14 +77,14 @@
                            <children>
                               <ImageView fitHeight="30.0" fitWidth="30.0" pickOnBounds="true" preserveRatio="true">
                                  <image>
-                                    <Image url="@image/icons8-bill-100.png" />
+                                    <Image url="@image/pngegg.png" />
                                  </image>
                               </ImageView>
                            </children>
                         </Group>
                      </graphic>
                   </Button>
-                  <Button fx:id="buttonTaiKhoan" alignment="TOP_LEFT" layoutX="20.0" layoutY="167.0" mnemonicParsing="false" onAction="#goToTaiKhoan" styleClass="menu-button" text="Tài khoản">
+                  <Button fx:id="buttonTaiKhoan" alignment="TOP_LEFT" layoutX="20.0" layoutY="167.0" mnemonicParsing="false" onAction="#goToTaiKhoan" styleClass="menu-button" text="Tài khoản" textFill="WHITE">
                      <graphic>
                         <Group>
                            <children>
@@ -98,7 +101,7 @@
             </VBox>
             <VBox alignment="BOTTOM_CENTER" layoutY="390.0" maxHeight="-Infinity" maxWidth="-Infinity" prefWidth="200.0" AnchorPane.bottomAnchor="70.0">
                <children>
-                  <Button fx:id="buttonHoSo" alignment="TOP_LEFT" layoutX="20.0" layoutY="10.0" mnemonicParsing="false" onAction="#goToHoSo" styleClass="menu-button" text="Hồ sơ">
+                  <Button fx:id="buttonHoSo" alignment="TOP_LEFT" layoutX="20.0" layoutY="10.0" mnemonicParsing="false" onAction="#goToHoSo" styleClass="menu-button" text="Hồ sơ" textFill="WHITE">
                      <graphic>
                         <Group>
                            <children>
@@ -111,7 +114,7 @@
                         </Group>
                      </graphic>
                   </Button>
-                  <Button fx:id="buttonDangXuat" alignment="TOP_LEFT" layoutX="20.0" layoutY="167.0" mnemonicParsing="false" onAction="#handleDangXuat" styleClass="menu-button" text="Đăng xuất">
+                  <Button fx:id="buttonDangXuat" alignment="TOP_LEFT" layoutX="20.0" layoutY="167.0" mnemonicParsing="false" onAction="#handleDangXuat" styleClass="menu-button" text="Đăng xuất" textFill="WHITE">
                      <graphic>
                         <Group>
                            <children>
@@ -132,15 +135,15 @@
    <top>
       <StackPane prefHeight="120.0" prefWidth="120.0">
          <children>
-            <ImageView fitHeight="150.0" fitWidth="1280.0" pickOnBounds="true" StackPane.alignment="CENTER">
+            <ImageView fitHeight="151.0" fitWidth="1280.0" pickOnBounds="true" StackPane.alignment="CENTER">
                <image>
                   <Image url="@image/bluemoon.png" />
                </image>
                <StackPane.margin>
-                  <Insets bottom="10.0" />
+                  <Insets />
                </StackPane.margin>
             </ImageView>
-            <VBox prefHeight="130.0" prefWidth="1058.0">
+            <VBox prefHeight="120.0" prefWidth="1280.0">
                <children>
                   <ImageView fitHeight="80.0" fitWidth="80.0" pickOnBounds="true" preserveRatio="true">
                      <VBox.margin>
