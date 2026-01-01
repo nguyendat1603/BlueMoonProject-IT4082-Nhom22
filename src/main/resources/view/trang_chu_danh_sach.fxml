@@ -429,9 +429,9 @@
                         <TextField fx:id="textFieldTenKhoanThu" prefWidth="210.0" promptText="Nhập tên khoản thu" styleClass="text-field-normal" />
                         <TextField fx:id="textFieldBoPhanQuanLy" layoutX="421.0" layoutY="10.0" prefWidth="206.0" promptText="Nhập bộ phận quản lý" styleClass="text-field-normal" />
                         <ComboBox fx:id="comboBoxLoaiKhoanThu" prefWidth="187.0" promptText="Bắt buộc" style="-fx-background-color: transparent;" />
-                        <DatePicker fx:id="datePickerNgayTaoKhoanThu" promptText="Nhập ngày tạo" />
+                        <DatePicker fx:id="datePickerNgayTaoKhoanThu" promptText="Nhập hạn nộp" />
                         <ComboBox fx:id="comboBoxTrangThaiHoaDon" layoutX="722.0" layoutY="10.0" prefWidth="187.0" promptText="Trạng thái" style="-fx-background-color: transparent;" />
-                        <Button fx:id="buttonTimKiemKhoanThu" mnemonicParsing="false" prefWidth="150.0" text="Tìm kiếm">
+                        <Button fx:id="buttonTimKiemKhoanThu" mnemonicParsing="false" onAction="#handleTimKiemKhoanThu" prefWidth="150.0" text="Tìm kiếm">
                            <styleClass>
                               <String fx:value="action-button" />
                               <String fx:value="button-default-blue" />
@@ -498,14 +498,14 @@
                                  <columns>
                                     <TableColumn fx:id="tableColumnEmail" prefWidth="268.0000541806221" text="Email" />
                                     <TableColumn fx:id="tableColumnHoVaTenTaiKhoan" prefWidth="185.5999755859375" text="Họ và tên" />
-                                    <TableColumn fx:id="tableColumnVaiTro" prefWidth="119.20001220703125" text="Vai trÃ²" />
+                                    <TableColumn fx:id="tableColumnVaiTro" prefWidth="119.20001220703125" text="Vai trò" />
                                     <TableColumn fx:id="tableColumnNgayTaoTK" prefWidth="183.2000732421875" text="Ngày tạo" />
                                     <TableColumn fx:id="tableColumnNgayCapNhat" prefWidth="211.19998779296873" text="Ngày cập nhật" />
                                  </columns>
                               </TableView>
                               <AnchorPane prefWidth="970.0">
                                  <children>
-                                    <Label fx:id="labelHienThiKetQuaKhoanThu1" layoutY="8.0" text="Hiá»ƒn thá»‹ 0/0 káº¿t quáº£" AnchorPane.leftAnchor="0.0">
+                                    <Label fx:id="labelHienThiKetQuaKhoanThu1" layoutY="8.0" text="HIển thị 0/0 kết quả" AnchorPane.leftAnchor="0.0">
                                        <font>
                                           <Font name="Arial" size="14.0" />
                                        </font>
@@ -590,7 +590,7 @@
                               </TableView>
                               <AnchorPane prefWidth="970.0">
                                  <children>
-                                    <Label layoutX="768.0" layoutY="7.0" text="Số kết quả hiển thị" AnchorPane.rightAnchor="0.0">
+                                    <Label fx:id="labelHienThiKetQua1" layoutX="768.0" layoutY="7.0" text="Số kết quả hiển thị" AnchorPane.rightAnchor="0.0">
                                        <font>
                                           <Font name="Arial" size="14.0" />
                                        </font>
@@ -633,7 +633,7 @@
             <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
          </StackPane.margin>
       </ScrollPane>
-      <ScrollPane fx:id="scrollPaneCanHo1" hbarPolicy="NEVER" style="-fx-background: white;">
+      <ScrollPane fx:id="scrollPaneCanHo1" hbarPolicy="NEVER" style="-fx-background: white;" visible="false">
          <padding>
             <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
          </padding>
