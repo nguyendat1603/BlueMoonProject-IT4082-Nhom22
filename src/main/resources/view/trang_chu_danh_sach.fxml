@@ -28,7 +28,7 @@
 
 <StackPane prefHeight="620.0" prefWidth="1080.0" stylesheets="@style/dashboard_style.css" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="io.github.ktpm.bluemoonmanagement.controller.Home_list">
    <children>
-      <GridPane fx:id="gridPaneTrangChu" visible="false">
+      <GridPane fx:id="gridPaneTrangChu">
          <StackPane.margin>
             <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
          </StackPane.margin>
@@ -86,7 +86,7 @@
                   </AnchorPane>
                   <AnchorPane layoutX="372.0" layoutY="10.0" onMouseClicked="#openKhoanThuPopup" prefHeight="200.0" prefWidth="200.0" style="-fx-cursor: hand;" styleClass="dashboard-item-blue" GridPane.columnIndex="2">
                      <children>
-                        <Label fx:id="labelDanCu1" layoutX="14.0" layoutY="78.0" text="Real-time chat" textFill="#320404" AnchorPane.leftAnchor="14.0" AnchorPane.topAnchor="78.0">
+                        <Label fx:id="labelDanCu1" layoutX="68.0" layoutY="80.0" text="Chat" textFill="#320404" AnchorPane.leftAnchor="68.0" AnchorPane.topAnchor="80.0">
                            <font>
                               <Font name="Arial Bold" size="24.0" />
                            </font>
@@ -553,7 +553,7 @@
             <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
          </StackPane.margin>
       </ScrollPane>
-      <ScrollPane fx:id="scrollPaneLichSuThu" hbarPolicy="NEVER" prefHeight="200.0" prefWidth="200.0" style="-fx-background: white;">
+      <ScrollPane fx:id="scrollPaneLichSuThu" hbarPolicy="NEVER" prefHeight="200.0" prefWidth="200.0" style="-fx-background: white;" visible="false">
          <padding>
             <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
          </padding>
@@ -633,7 +633,7 @@
             <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
          </StackPane.margin>
       </ScrollPane>
-      <ScrollPane fx:id="scrollPaneCanHo1" hbarPolicy="NEVER" style="-fx-background: white;">
+      <ScrollPane fx:id="scrollPaneCanHo1" hbarPolicy="NEVER" style="-fx-background: white;" visible="false">
          <padding>
             <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
          </padding>
