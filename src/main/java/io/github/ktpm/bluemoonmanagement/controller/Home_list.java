@@ -617,6 +617,101 @@ public class Home_list implements Initializable {
     }
 
     /**
+     * Tìm kiếm / lọc danh sách tài khoản theo tên, email và vai trò
+     */
+    private void handleTimKiemTaiKhoan() {
+        String hoVaTen = textFieldHoVaTenTaiKhoan != null ? textFieldHoVaTenTaiKhoan.getText().trim() : "";
+        String email = textFieldEmail != null ? textFieldEmail.getText().trim() : "";
+        String vaiTro = comboBoxVaiTro != null && comboBoxVaiTro.getValue() != null ? comboBoxVaiTro.getValue().toString() : "";
+        String trangThai = comboBoxTrangThaiTaiKhoan != null && comboBoxTrangThaiTaiKhoan.getValue() != null ? comboBoxTrangThaiTaiKhoan.getValue().toString() : "";
+
+        if ((hoVaTen.isEmpty()) && (email.isEmpty()) && (vaiTro.isEmpty() || "Tất cả".equals(vaiTro)) && (trangThai.isEmpty() || "Tất cả".equals(trangThai))) {
+            filteredTaiKhoanList = FXCollections.observableArrayList(taiKhoanList);
+            if (tabelViewTaiKhoan != null) {
+                ((TableView<TaiKhoanTableData>) tabelViewTaiKhoan).setItems(filteredTaiKhoanList);
+            }
+            return;
+        }
+
+        if (taiKhoanList != null) {
+            ObservableList<TaiKhoanTableData> results = taiKhoanList.stream().filter(t -> {
+                boolean matchesName = hoVaTen.isEmpty() || (t.getHoVaTen() != null && t.getHoVaTen().toLowerCase().contains(hoVaTen.toLowerCase()));
+                boolean matchesEmail = email.isEmpty() || (t.getEmail() != null && t.getEmail().toLowerCase().contains(email.toLowerCase()));
+                boolean matchesVaiTro = (vaiTro.isEmpty() || "Tất cả".equals(vaiTro)) || (t.getVaiTro() != null && t.getVaiTro().equalsIgnoreCase(vaiTro));
+                boolean matchesTrangThai = (trangThai.isEmpty() || "Tất cả".equals(trangThai)) || true;
+                return matchesName && matchesEmail && matchesVaiTro && matchesTrangThai;
+            }).collect(FXCollections::observableArrayList, ObservableList::add, ObservableList::addAll);
+
+            filteredTaiKhoanList = results;
+            if (tabelViewTaiKhoan != null) {
+                ((TableView<TaiKhoanTableData>) tabelViewTaiKhoan).setItems(filteredTaiKhoanList);
+                updateTaiKhoanKetQuaLabel();
+            }
+        }
+    }
+
+    /**
+     * Cập nhật label kết quả hiển thị cho trang Tài khoản
+     */
+    private void updateTaiKhoanKetQuaLabel() {
+        if (labelHienThiKetQuaKhoanThu1 != null && filteredTaiKhoanList != null) {
+            labelHienThiKetQuaKhoanThu1.setText("Hiển thị " + filteredTaiKhoanList.size() + " tài khoản");
+        }
+    }
+
+    /**
+     * Compare a source date/time string with a picked date string (pickup expected in yyyy-MM-dd).
+     * Tries several parsing strategies (ISO datetime, ISO date, dd/MM/yyyy) and falls back to substring match.
+     */
+    private boolean matchDateStringByDate(String source, String pickedDateYmd) {
+        if (source == null || source.isEmpty() || pickedDateYmd == null || pickedDateYmd.isEmpty()) return false;
+        try {
+            java.time.LocalDate pick = java.time.LocalDate.parse(pickedDateYmd);
+            // Try parse LocalDateTime first
+            try {
+                java.time.LocalDateTime ldt = java.time.LocalDateTime.parse(source);
+                return ldt.toLocalDate().equals(pick);
+            } catch (Exception ignored) {}
+
+            // Try parse LocalDate
+            try {
+                java.time.LocalDate ld = java.time.LocalDate.parse(source);
+                return ld.equals(pick);
+            } catch (Exception ignored) {}
+
+            // Try common formats
+            String[] patterns = new String[]{"dd/MM/yyyy", "MM/dd/yyyy", "yyyy/MM/dd", "dd-MM-yyyy", "MM-dd-yyyy"};
+            for (String p : patterns) {
+                try {
+                    java.time.format.DateTimeFormatter fmt = java.time.format.DateTimeFormatter.ofPattern(p);
+                    java.time.LocalDate ld2 = java.time.LocalDate.parse(source, fmt);
+                    if (ld2.equals(pick)) return true;
+                } catch (Exception ignored) {}
+            }
+
+            // Try OffsetDateTime / ZonedDateTime / Instant
+            try {
+                java.time.OffsetDateTime odt = java.time.OffsetDateTime.parse(source);
+                if (odt.toLocalDate().equals(pick)) return true;
+            } catch (Exception ignored) {}
+            try {
+                java.time.ZonedDateTime zdt = java.time.ZonedDateTime.parse(source);
+                if (zdt.toLocalDate().equals(pick)) return true;
+            } catch (Exception ignored) {}
+            try {
+                Instant inst = Instant.parse(source);
+                if (java.time.LocalDateTime.ofInstant(inst, java.time.ZoneId.systemDefault()).toLocalDate().equals(pick)) return true;
+            } catch (Exception ignored) {}
+
+            // Fallback: check startsWith or contains
+            if (source.startsWith(pickedDateYmd) || source.contains(pickedDateYmd)) return true;
+        } catch (Exception e) {
+            // parsing pickedDateYmd failed - treat as non-match
+        }
+        return false;
+    }
+
+    /**
      * Thiết lập các ComboBox
      */
     private void setupComboBoxes() {
@@ -678,6 +773,16 @@ public class Home_list implements Initializable {
                 "Tất cả", "Hoạt động", "Không hoạt động"
             ));
             trangThaiTaiKhoanCombo.setValue("Tất cả");
+        }
+
+        // Thiết lập ComboBox Vai trò tài khoản
+        if (comboBoxVaiTro != null) {
+            @SuppressWarnings("unchecked")
+            ComboBox<String> vaiTroCombo = (ComboBox<String>) comboBoxVaiTro;
+            vaiTroCombo.setItems(javafx.collections.FXCollections.observableArrayList(
+                "Tất cả", "Tổ phó", "Kế toán", "Tổ Trưởng"
+            ));
+            vaiTroCombo.setValue("Tất cả");
         }
 
         // Thiết lập ComboBox chọn loại biểu đồ trên trang chủ (Dân cư / Căn hộ / Khoản thu)
@@ -1686,6 +1791,7 @@ public class Home_list implements Initializable {
 
                 filteredTaiKhoanList = FXCollections.observableArrayList(taiKhoanList);
                 ((TableView<TaiKhoanTableData>) tabelViewTaiKhoan).setItems(filteredTaiKhoanList);
+                updateTaiKhoanKetQuaLabel();
             } else {
                 System.err.println("TaiKhoanService is not available, cannot load data.");
             }
@@ -3186,12 +3292,15 @@ public class Home_list implements Initializable {
                              comboBoxLoaiKhoanThu.getValue().toString() : "";
         String trangThaiTao = comboBoxTrangThaiHoaDon != null && comboBoxTrangThaiHoaDon.getValue() != null ?
                               comboBoxTrangThaiHoaDon.getValue().toString() : "";
-        String ngayTao = datePickerNgayTaoKhoanThu != null && datePickerNgayTaoKhoanThu.getValue() != null ?
-                         datePickerNgayTaoKhoanThu.getValue().toString() : "";
+        // Use the date picker to filter by the fee's deadline/submit date (thoiHan), not creation date
+        String ngayHanNop = datePickerNgayTaoKhoanThu != null && datePickerNgayTaoKhoanThu.getValue() != null ?
+                 datePickerNgayTaoKhoanThu.getValue().toString() : "";
 
         // Nếu tất cả các điều kiện tìm kiếm đều trống thì hiển thị toàn bộ
-        if (maKhoanThu.isEmpty() && tenKhoanThu.isEmpty() &&
-            ("Tất cả".equals(loaiKhoanThu) || loaiKhoanThu.isEmpty())) {
+        if (maKhoanThu.isEmpty() && tenKhoanThu.isEmpty() && boPhanQuanLyFilter.isEmpty() &&
+            ("Tất cả".equals(loaiKhoanThu) || loaiKhoanThu.isEmpty()) &&
+            ("Tất cả".equals(trangThaiTao) || trangThaiTao.isEmpty()) &&
+            ngayHanNop.isEmpty()) {
 
             filteredKhoanThuList = FXCollections.observableArrayList(khoanThuList);
             if (tabelViewKhoanThu != null) {
@@ -3203,6 +3312,21 @@ public class Home_list implements Initializable {
 
         // Lọc dữ liệu dựa trên các tiêu chí tìm kiếm
         if (khoanThuList != null) {
+            System.err.println("[DEBUG] handleTimKiemKhoanThu filters -> ma:" + maKhoanThu + ", ten:" + tenKhoanThu + ", boPhan:" + boPhanQuanLyFilter + ", loai:" + loaiKhoanThu + ", trangThai:" + trangThaiTao + ", ngayThoiHan:" + ngayHanNop);
+            // Extra debug: show sample stored ngayTao values and quick match-count for the picked date
+            try {
+                int total = khoanThuList.size();
+                System.err.println("[DEBUG] KhoanThu total=" + total + ", pickedDate(thoiHan)=" + ngayHanNop);
+                for (int i = 0; i < Math.min(5, total); i++) {
+                    KhoanThuTableData sample = khoanThuList.get(i);
+                    String nt = sample.getThoiHan() != null ? sample.getThoiHan() : "";
+                    System.err.println("[DEBUG] sample[" + i + "] thoiHan='" + nt + "'");
+                }
+                long matches = khoanThuList.stream().filter(k -> matchDateStringByDate(k.getThoiHan() != null ? k.getThoiHan() : "", ngayHanNop)).count();
+                System.err.println("[DEBUG] matchDateStringByDate count=" + matches);
+            } catch (Exception e) {
+                System.err.println("[DEBUG] error printing khoanThu samples: " + e.getMessage());
+            }
             ObservableList<KhoanThuTableData> searchResults = khoanThuList.stream()
                 .filter(khoanThu -> {
                     boolean matchesMaKhoanThu = maKhoanThu.isEmpty() ||
@@ -3234,11 +3358,11 @@ public class Home_list implements Initializable {
                         }
                     }
 
-                    // Date filter for creation date
+                    // Date filter for deadline/submit date (thoiHan) - compare by calendar date
                     boolean matchesNgayTao = true;
-                    if (!ngayTao.isEmpty()) {
-                        String nt = khoanThu.getNgayTao() != null ? khoanThu.getNgayTao() : "";
-                        matchesNgayTao = nt.equals(ngayTao) || nt.startsWith(ngayTao);
+                    if (!ngayHanNop.isEmpty()) {
+                        String nt = khoanThu.getThoiHan() != null ? khoanThu.getThoiHan() : "";
+                        matchesNgayTao = matchDateStringByDate(nt, ngayHanNop);
                     }
 
                     return matchesMaKhoanThu && matchesTenKhoanThu && matchesLoaiKhoanThu && matchesTrangThaiTao && matchesNgayTao && matchesBoPhanQuanLy;
@@ -3248,6 +3372,14 @@ public class Home_list implements Initializable {
                         ObservableList::addAll);
 
             filteredKhoanThuList = searchResults;
+            // Debug counts
+            int created = 0, notCreated = 0;
+            for (KhoanThuTableData k : filteredKhoanThuList) {
+                io.github.ktpm.bluemoonmanagement.model.dto.khoanThu.KhoanThuDto dto = khoanThuById.get(k.getMaKhoanThu());
+                boolean tao = dto != null && dto.isTaoHoaDon();
+                if (tao) created++; else notCreated++;
+            }
+            System.err.println("[DEBUG] filter results: total=" + filteredKhoanThuList.size() + ", created=" + created + ", notCreated=" + notCreated);
             if (tabelViewKhoanThu != null) {
                 ((TableView<KhoanThuTableData>) tabelViewKhoanThu).setItems(filteredKhoanThuList);
             }
@@ -3273,7 +3405,8 @@ public class Home_list implements Initializable {
         // Nếu tất cả các điều kiện tìm kiếm đều trống thì hiển thị toàn bộ
         if (maCanHo.isEmpty() && tenKhoanThu.isEmpty() &&
             ("Tất cả".equals(loaiKhoanThu) || loaiKhoanThu.isEmpty()) &&
-            ("Tất cả".equals(trangThaiHoaDon) || trangThaiHoaDon.isEmpty())) {
+            ("Tất cả".equals(trangThaiHoaDon) || trangThaiHoaDon.isEmpty()) &&
+            ngayNopFilter.isEmpty()) {
 
             filteredHoaDonList = FXCollections.observableArrayList(hoaDonList);
             if (tabelViewThuPhi != null) {
@@ -3299,7 +3432,7 @@ public class Home_list implements Initializable {
                     boolean matchesNgayNop = true;
                     if (!ngayNopFilter.isEmpty()) {
                         String ngay = hoaDon.getNgayNop() != null ? hoaDon.getNgayNop() : "";
-                        matchesNgayNop = ngay.equals(ngayNopFilter) || ngay.startsWith(ngayNopFilter);
+                        matchesNgayNop = matchDateStringByDate(ngay, ngayNopFilter);
                     }
 
                     return matchesMaCanHo && matchesTenKhoanThu &&
@@ -3378,6 +3511,19 @@ public class Home_list implements Initializable {
                 handleTimKiemKhoanThu();
                 handleTimKiemThuPhi();
             });
+        }
+        // Tài khoản search listeners
+        if (textFieldHoVaTenTaiKhoan != null) {
+            textFieldHoVaTenTaiKhoan.textProperty().addListener((obs, oldText, newText) -> handleTimKiemTaiKhoan());
+        }
+        if (textFieldEmail != null) {
+            textFieldEmail.textProperty().addListener((obs, oldText, newText) -> handleTimKiemTaiKhoan());
+        }
+        if (comboBoxVaiTro != null) {
+            comboBoxVaiTro.valueProperty().addListener((obs, oldVal, newVal) -> handleTimKiemTaiKhoan());
+        }
+        if (comboBoxTrangThaiTaiKhoan != null) {
+            comboBoxTrangThaiTaiKhoan.valueProperty().addListener((obs, oldVal, newVal) -> handleTimKiemTaiKhoan());
         }
         if (datePickerNgayTaoKhoanThu != null) {
             datePickerNgayTaoKhoanThu.valueProperty().addListener((obs, oldVal, newVal) -> handleTimKiemKhoanThu());
