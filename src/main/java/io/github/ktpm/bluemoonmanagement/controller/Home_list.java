@@ -73,6 +73,7 @@ import java.net.URLEncoder;
 import java.util.Base64;
 import javafx.scene.web.WebView;
 import javafx.scene.web.WebEngine;
+import io.github.ktpm.bluemoonmanagement.model.entity.ChatMessage;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -1968,7 +1969,31 @@ public class Home_list implements Initializable {
         javafx.scene.layout.BorderPane root = new javafx.scene.layout.BorderPane();
         root.setStyle("-fx-background-color:white; -fx-padding:10;");
 
-        javafx.scene.control.ListView<String> messagesView = new javafx.scene.control.ListView<>();
+        // Create messages view for chat
+        javafx.scene.control.ListView<ChatMessage> messagesView = new javafx.scene.control.ListView<>();
+        messagesView.setCellFactory(lv -> new javafx.scene.control.ListCell<ChatMessage>() {
+            @Override
+            protected void updateItem(ChatMessage item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                    setGraphic(null);
+                } else {
+                    javafx.scene.control.Label lbl = new javafx.scene.control.Label(item.getSender() + ": " + item.getContent());
+                    String timeStr = "";
+                    try {
+                        if (item.getCreatedAt() != null) {
+                            timeStr = item.getCreatedAt().atZone(ZoneId.of("Asia/Ho_Chi_Minh"))
+                                    .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+                        }
+                    } catch (Exception ignored) {}
+                    javafx.scene.control.Tooltip tt = new javafx.scene.control.Tooltip(timeStr);
+                    lbl.setTooltip(tt);
+                    setGraphic(lbl);
+                }
+            }
+        });
+
         javafx.scene.control.TextField input = new javafx.scene.control.TextField();
         input.setPromptText("Nhập tin nhắn...");
         javafx.scene.control.Button send = new javafx.scene.control.Button("Gửi");
@@ -1986,9 +2011,7 @@ public class Home_list implements Initializable {
         io.github.ktpm.bluemoonmanagement.chat.ChatClientManager manager = new io.github.ktpm.bluemoonmanagement.chat.ChatClientManager(wsUrl);
         manager.connect(null, chatMessage -> {
             javafx.application.Platform.runLater(() -> {
-                String currentTime = java.time.LocalDateTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss"));
-                String displayMessage = String.format("[%s] %s: %s", currentTime, chatMessage.getSender(), chatMessage.getContent());
-                messagesView.getItems().add(displayMessage);
+                messagesView.getItems().add(chatMessage);
             });
         }, () -> {
             System.err.println("DEBUG: onConnected callback invoked");
@@ -2002,7 +2025,7 @@ public class Home_list implements Initializable {
                 }
             });
         }, ex -> {
-            javafx.application.Platform.runLater(() -> messagesView.getItems().add("[Lỗi WS] " + ex.getMessage()));
+            javafx.application.Platform.runLater(() -> messagesView.getItems().add(new ChatMessage("system", "[Lỗi WS]", ex.getMessage(), null)));
         });
 
         send.setOnAction(ae -> {
@@ -2018,7 +2041,7 @@ public class Home_list implements Initializable {
             String currentTime = java.time.LocalDateTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss"));
             String sender = currentSessionUser != null ? currentSessionUser : "Me";
             String displayMessage = String.format("[%s] %s: %s", currentTime, sender, text);
-            messagesView.getItems().add(displayMessage);
+            messagesView.getItems().add(m);
 
             input.clear();
         });
@@ -2557,7 +2580,29 @@ public class Home_list implements Initializable {
         javafx.scene.layout.BorderPane root = new javafx.scene.layout.BorderPane();
         root.setStyle("-fx-background-color:white; -fx-padding:10;");
 
-        javafx.scene.control.ListView<String> messagesView = new javafx.scene.control.ListView<>();
+        javafx.scene.control.ListView<ChatMessage> messagesView = new javafx.scene.control.ListView<>();
+        messagesView.setCellFactory(lv -> new javafx.scene.control.ListCell<ChatMessage>() {
+            @Override
+            protected void updateItem(ChatMessage item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                    setGraphic(null);
+                } else {
+                    javafx.scene.control.Label lbl = new javafx.scene.control.Label(item.getSender() + ": " + item.getContent());
+                    String timeStr = "";
+                    try {
+                        if (item.getCreatedAt() != null) {
+                            timeStr = item.getCreatedAt().atZone(ZoneId.of("Asia/Ho_Chi_Minh"))
+                                    .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+                        }
+                    } catch (Exception ignored) {}
+                    javafx.scene.control.Tooltip tt = new javafx.scene.control.Tooltip(timeStr);
+                    lbl.setTooltip(tt);
+                    setGraphic(lbl);
+                }
+            }
+        });
         javafx.scene.control.TextField input = new javafx.scene.control.TextField();
         input.setPromptText("Nhập tin nhắn...");
         javafx.scene.control.Button send = new javafx.scene.control.Button("Gửi");
@@ -2575,12 +2620,12 @@ public class Home_list implements Initializable {
         io.github.ktpm.bluemoonmanagement.chat.ChatClientManager manager = new io.github.ktpm.bluemoonmanagement.chat.ChatClientManager(wsUrl);
         manager.connect(null, chatMessage -> {
             javafx.application.Platform.runLater(() -> {
-                messagesView.getItems().add(String.format("%s: %s", chatMessage.getSender(), chatMessage.getContent()));
+                messagesView.getItems().add(chatMessage);
             });
         }, () -> {
-            javafx.application.Platform.runLater(() -> messagesView.getItems().add("[Hệ thống] Đã kết nối chat realtime."));
+            javafx.application.Platform.runLater(() -> messagesView.getItems().add(new ChatMessage("system", "[Hệ thống]", "Đã kết nối chat realtime.", null)));
         }, ex -> {
-            javafx.application.Platform.runLater(() -> messagesView.getItems().add("[Lỗi WS] " + ex.getMessage()));
+            javafx.application.Platform.runLater(() -> messagesView.getItems().add(new ChatMessage("system", "[Lỗi WS]", ex.getMessage(), null)));
         });
 
         send.setOnAction(ae -> {
