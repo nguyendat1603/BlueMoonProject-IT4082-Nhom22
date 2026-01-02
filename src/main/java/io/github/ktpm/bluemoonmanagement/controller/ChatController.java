@@ -42,6 +42,12 @@ public class ChatController {
         System.err.println("SERVER-DEBUG: sending history size=" + recent.size());
         return recent;
     }
+
+    @MessageMapping("/chat.ping")
+    public void ping() {
+        // Simple ping endpoint for heartbeat monitoring
+        // No response needed, just confirms connection is alive
+    }
 }
 
 

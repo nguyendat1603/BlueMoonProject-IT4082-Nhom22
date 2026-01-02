@@ -22,7 +22,6 @@ public class HomeTechManagementApplication extends Application {
             Class<?> appClass = Class.forName("io.github.ktpm.bluemoonmanagement.SpringBootApp");
             context = new SpringApplicationBuilder(appClass) //
                     .web(WebApplicationType.SERVLET)
-                    .properties("spring.main.lazy-initialization=true")
                     .run(getParameters().getRaw().toArray(new String[0]));
             long took = System.currentTimeMillis() - start;
             System.out.println("Spring context initialized in " + took + " ms");

@@ -66,6 +66,7 @@ import java.nio.file.Path;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.net.URLEncoder;
+import java.util.UUID;
 import javafx.scene.web.WebView;
 import javafx.scene.web.WebEngine;
 import io.github.ktpm.bluemoonmanagement.model.entity.ChatMessage;
@@ -2050,6 +2051,11 @@ public class Home_list implements Initializable {
         javafx.scene.layout.BorderPane root = new javafx.scene.layout.BorderPane();
         root.setStyle("-fx-background-color:white; -fx-padding:10;");
 
+        // Connection status indicator
+        javafx.scene.control.Label connectionStatus = new javafx.scene.control.Label("🔄 Đang kết nối...");
+        connectionStatus.setStyle("-fx-text-fill: orange; -fx-font-size: 11px; -fx-padding: 0 0 5 0;");
+        root.setTop(connectionStatus);
+
         // Create messages view for chat
         javafx.scene.control.ListView<ChatMessage> messagesView = new javafx.scene.control.ListView<>();
         messagesView.setCellFactory(lv -> new javafx.scene.control.ListCell<ChatMessage>() {
@@ -2086,27 +2092,63 @@ public class Home_list implements Initializable {
 
         showTitledPopup(owner, "Chat realtime", root, 600, 500);
 
+        // Generate unique chat session ID
+        String chatSessionId = "chat-" + System.currentTimeMillis() + "-" + UUID.randomUUID().toString().substring(0, 8);
+        System.out.println("CHAT: Starting new chat session: " + chatSessionId);
+
         // Setup STOMP native client
         // connect directly to SockJS websocket transport endpoint to avoid HTTP 400 handshake errors
         String wsUrl = "ws://localhost:8080/ws-chat/websocket";
         io.github.ktpm.bluemoonmanagement.chat.ChatClientManager manager = new io.github.ktpm.bluemoonmanagement.chat.ChatClientManager(wsUrl);
         manager.connect(null, chatMessage -> {
-            javafx.application.Platform.runLater(() -> {
-                messagesView.getItems().add(chatMessage);
-            });
-        }, () -> {
-            System.err.println("DEBUG: onConnected callback invoked");
-            // After successful WebSocket connection, request history via STOMP
+            System.out.println("CHAT: Received message from server: " + chatMessage.getSender() + ": " + chatMessage.getContent());
             javafx.application.Platform.runLater(() -> {
                 try {
-                    manager.sendToDestination("/app/chat.history", "");
-                    System.err.println("DEBUG: Sent STOMP history request to /app/chat.history");
+                    // Check if message already exists to prevent duplicates
+                    boolean messageExists = messagesView.getItems().stream().anyMatch(existingMsg -> {
+                        // Check by ID if available, otherwise by content and timestamp
+                        if (chatMessage.getId() != null && existingMsg.getId() != null) {
+                            return chatMessage.getId().equals(existingMsg.getId());
+                        } else {
+                            // Fallback: check by content, sender, and timestamp (within 1 second tolerance)
+                            return chatMessage.getContent().equals(existingMsg.getContent()) &&
+                                   chatMessage.getSender().equals(existingMsg.getSender()) &&
+                                   chatMessage.getCreatedAt() != null && existingMsg.getCreatedAt() != null &&
+                                   Math.abs(chatMessage.getCreatedAt().toEpochMilli() - existingMsg.getCreatedAt().toEpochMilli()) < 1000;
+                        }
+                    });
+
+                    if (!messageExists) {
+                        messagesView.getItems().add(chatMessage);
+                        // Sort messages by timestamp to ensure proper ordering
+                        sortMessagesByTimestamp(messagesView);
+                        System.out.println("CHAT: Message added and sorted in UI: " + chatMessage.getSender());
+                    } else {
+                        System.out.println("CHAT: Duplicate message ignored: " + chatMessage.getSender());
+                    }
                 } catch (Exception e) {
-                    System.err.println("DEBUG: Failed to send STOMP history request: " + e.getMessage());
+                    System.err.println("CHAT: Error adding message to UI: " + e.getMessage());
+                    e.printStackTrace();
                 }
             });
+        }, () -> {
+            System.out.println("CHAT: Connected successfully, history will be sent automatically by subscription listener...");
+            javafx.application.Platform.runLater(() -> {
+                connectionStatus.setText("🟢 Đã kết nối");
+                connectionStatus.setStyle("-fx-text-fill: green; -fx-font-size: 11px; -fx-padding: 0 0 5 0;");
+            });
+            // History will be sent automatically by ChatSubscriptionListener when client subscribes to /topic/history
         }, ex -> {
-            javafx.application.Platform.runLater(() -> messagesView.getItems().add(new ChatMessage("system", "[Lỗi WS]", ex.getMessage(), null)));
+            System.err.println("CHAT: WebSocket error: " + ex.getMessage());
+            javafx.application.Platform.runLater(() -> {
+                connectionStatus.setText("🔴 Mất kết nối - Đang thử kết nối lại...");
+                connectionStatus.setStyle("-fx-text-fill: red; -fx-font-size: 11px; -fx-padding: 0 0 5 0;");
+                try {
+                    messagesView.getItems().add(new ChatMessage("system", "[Lỗi WS]", ex.getMessage(), null));
+                } catch (Exception uiEx) {
+                    System.err.println("CHAT: Error showing error message in UI: " + uiEx.getMessage());
+                }
+            });
         });
 
         send.setOnAction(ae -> {
@@ -2114,15 +2156,10 @@ public class Home_list implements Initializable {
             if (text == null || text.trim().isEmpty()) return;
             // create ChatMessage entity to send
             io.github.ktpm.bluemoonmanagement.model.entity.ChatMessage m = new io.github.ktpm.bluemoonmanagement.model.entity.ChatMessage(
-                currentSessionId != null ? currentSessionId : "s-temp", currentSessionUser != null ? currentSessionUser : "Me", text, java.time.Instant.now()
+                chatSessionId, currentSessionUser != null ? currentSessionUser : "Me", text, java.time.Instant.now()
             );
+            System.out.println("CHAT: Sending message: " + m.getSender() + ": " + m.getContent());
             manager.sendMessage(m);
-
-            // Display sent message locally with consistent format
-            String currentTime = java.time.LocalDateTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss"));
-            String sender = currentSessionUser != null ? currentSessionUser : "Me";
-            String displayMessage = String.format("[%s] %s: %s", currentTime, sender, text);
-            messagesView.getItems().add(m);
 
             input.clear();
         });
@@ -4936,4 +4973,21 @@ public class Home_list implements Initializable {
     /**
      * Cập nhật phần trăm cho chú thích cố định
      */
+
+    /**
+     * Sort chat messages by timestamp to ensure proper ordering
+     */
+    private void sortMessagesByTimestamp(javafx.scene.control.ListView<ChatMessage> messagesView) {
+        try {
+            javafx.collections.ObservableList<ChatMessage> items = messagesView.getItems();
+            items.sort((msg1, msg2) -> {
+                if (msg1.getCreatedAt() == null && msg2.getCreatedAt() == null) return 0;
+                if (msg1.getCreatedAt() == null) return -1;
+                if (msg2.getCreatedAt() == null) return 1;
+                return msg1.getCreatedAt().compareTo(msg2.getCreatedAt());
+            });
+        } catch (Exception e) {
+            System.err.println("CHAT: Error sorting messages: " + e.getMessage());
+        }
+    }
 }
