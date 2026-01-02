@@ -28,7 +28,7 @@
 
 <StackPane prefHeight="620.0" prefWidth="1080.0" stylesheets="@style/dashboard_style.css" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="io.github.ktpm.bluemoonmanagement.controller.Home_list">
    <children>
-      <GridPane fx:id="gridPaneTrangChu" visible="false">
+      <GridPane fx:id="gridPaneTrangChu">
          <StackPane.margin>
             <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
          </StackPane.margin>
@@ -40,7 +40,7 @@
             <RowConstraints minHeight="10.0" percentHeight="66.0" prefHeight="30.0" vgrow="SOMETIMES" />
          </rowConstraints>
          <children>
-            <GridPane>
+            <GridPane visible="true">
                <columnConstraints>
                   <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
                   <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
@@ -50,7 +50,7 @@
                   <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                </rowConstraints>
                <children>
-                  <AnchorPane onMouseClicked="#openCanHoPopup" prefHeight="200.0" prefWidth="200.0" style="-fx-cursor: hand;" styleClass="dashboard-item-blue">
+                  <AnchorPane onMouseClicked="#openCanHoPopup" prefHeight="200.0" prefWidth="200.0" style="-fx-cursor: hand;" styleClass="dashboard-item-blue" visible="true">
                      <GridPane.margin>
                         <Insets bottom="10.0" left="15.0" right="15.0" />
                      </GridPane.margin>
@@ -67,7 +67,7 @@
                         </ImageView>
                      </children>
                   </AnchorPane>
-                  <AnchorPane layoutX="10.0" layoutY="10.0" onMouseClicked="#openCuDanPopup" prefHeight="200.0" prefWidth="200.0" style="-fx-cursor: hand;" styleClass="dashboard-item-blue" GridPane.columnIndex="1">
+                  <AnchorPane layoutX="10.0" layoutY="10.0" onMouseClicked="#openCuDanPopup" prefHeight="200.0" prefWidth="200.0" style="-fx-cursor: hand;" styleClass="dashboard-item-blue" visible="true" GridPane.columnIndex="1">
                      <children>
                         <Label fx:id="labelDanCu" layoutX="41.0" layoutY="80.0" text="Trình duyệt" textFill="#360505" AnchorPane.leftAnchor="41.0" AnchorPane.topAnchor="80.0">
                            <font>
@@ -84,7 +84,7 @@
                         <Insets bottom="10.0" left="15.0" right="15.0" />
                      </GridPane.margin>
                   </AnchorPane>
-                  <AnchorPane layoutX="372.0" layoutY="10.0" onMouseClicked="#openKhoanThuPopup" prefHeight="200.0" prefWidth="200.0" style="-fx-cursor: hand;" styleClass="dashboard-item-blue" GridPane.columnIndex="2">
+                  <AnchorPane layoutX="372.0" layoutY="10.0" onMouseClicked="#openKhoanThuPopup" prefHeight="200.0" prefWidth="200.0" style="-fx-cursor: hand;" styleClass="dashboard-item-blue" visible="true" GridPane.columnIndex="2">
                      <children>
                         <Label fx:id="labelDanCu1" layoutX="67.0" layoutY="77.0" text="Chat" textFill="#320404" AnchorPane.leftAnchor="67.0" AnchorPane.topAnchor="77.0">
                            <font>
@@ -103,7 +103,7 @@
                   </AnchorPane>
                </children>
             </GridPane>
-            <GridPane GridPane.rowIndex="1">
+            <GridPane visible="true" GridPane.rowIndex="1">
                <columnConstraints>
                   <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
                   <ColumnConstraints />
@@ -121,7 +121,7 @@
                         <String fx:value="round-big" />
                      </styleClass>
                      <children>
-                        <BarChart fx:id="barChartDanCu" maxHeight="1.7976931348623157E308" style="-fx-background-color: transparent;" AnchorPane.bottomAnchor="20.0" AnchorPane.leftAnchor="20.0" AnchorPane.rightAnchor="20.0" AnchorPane.topAnchor="60.0">
+                        <BarChart fx:id="barChartDanCu" maxHeight="1.7976931348623157E308" style="-fx-background-color: transparent;" visible="true" AnchorPane.bottomAnchor="20.0" AnchorPane.leftAnchor="20.0" AnchorPane.rightAnchor="20.0" AnchorPane.topAnchor="60.0">
                            <xAxis>
                               <CategoryAxis side="BOTTOM" tickLabelRotation="45" />
                            </xAxis>
@@ -129,20 +129,20 @@
                               <NumberAxis minorTickCount="0" minorTickVisible="false" side="LEFT" tickLabelGap="5.0" tickMarkVisible="false" tickUnit="10.0" />
                            </yAxis>
                         </BarChart>
-                        <Label fx:id="labelBienDongDanCu" layoutX="165.0" layoutY="27.0" text="Biến động dân cư theo tháng" AnchorPane.leftAnchor="165.0" AnchorPane.topAnchor="20.0">
+                        <Label fx:id="labelBienDongDanCu" layoutX="165.0" layoutY="27.0" text="Biến động dân cư theo tháng" visible="true" AnchorPane.leftAnchor="165.0" AnchorPane.topAnchor="20.0">
                            <font>
                               <Font name="Arial Bold" size="24.0" />
                            </font>
                         </Label>
-                        <ComboBox fx:id="comboBoxYear" layoutX="600.0" layoutY="20.0" prefWidth="120.0" promptText="Chọn năm" AnchorPane.rightAnchor="240.0" AnchorPane.topAnchor="20.0" />
-                        <ComboBox fx:id="comboBoxChartType" layoutX="740.0" layoutY="20.0" prefWidth="200.0" promptText="Chọn biểu đồ" AnchorPane.rightAnchor="20.0" AnchorPane.topAnchor="20.0" />
+                        <ComboBox fx:id="comboBoxYear" layoutX="600.0" layoutY="20.0" prefWidth="120.0" promptText="Chọn năm" visible="true" AnchorPane.rightAnchor="240.0" AnchorPane.topAnchor="20.0" />
+                        <ComboBox fx:id="comboBoxChartType" layoutX="740.0" layoutY="20.0" prefWidth="200.0" promptText="Chọn biểu đồ" visible="true" AnchorPane.rightAnchor="20.0" AnchorPane.topAnchor="20.0" />
                      </children>
                   </AnchorPane>
                </children>
             </GridPane>
          </children>
       </GridPane>
-      <ScrollPane fx:id="scrollPaneCanHo" hbarPolicy="NEVER" prefHeight="200.0" prefWidth="200.0" style="-fx-background: white;" visible="false">
+      <ScrollPane fx:id="scrollPaneCanHo" hbarPolicy="NEVER" prefHeight="200.0" prefWidth="200.0" style="-fx-background: white;">
          <StackPane.margin>
             <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
          </StackPane.margin>
@@ -193,9 +193,9 @@
                               <String fx:value="button-sky-blue" />
                            </styleClass>
                         </Button>
-                        <VBox layoutY="40.0" prefWidth="970.0" spacing="10.0" AnchorPane.topAnchor="40.0">
+                        <VBox layoutY="40.0" prefWidth="970.0" spacing="10.0" visible="true" AnchorPane.topAnchor="40.0">
                            <children>
-                              <TableView fx:id="tabelViewCanHo" prefHeight="400.0" prefWidth="970.0">
+                              <TableView fx:id="tabelViewCanHo" prefHeight="400.0" prefWidth="970.0" visible="true">
                                  <columns>
                                     <TableColumn fx:id="tableColumnMaCanHo" prefWidth="120.00003510713577" text="Mã căn hộ" />
                                     <TableColumn fx:id="tableColumnToaNha" prefWidth="64.0" text="Tòa nhà" />
@@ -212,7 +212,7 @@
                                     </TableColumn>
                                  </columns>
                               </TableView>
-                              <AnchorPane prefWidth="970.0">
+                              <AnchorPane prefWidth="970.0" visible="true">
                                  <children>
                                     <Label fx:id="labelKetQuaHienThi" layoutX="662.0" layoutY="7.0" prefHeight="16.0" text="Số kết quả hiển thị" AnchorPane.rightAnchor="0.0">
                                        <font>
@@ -225,7 +225,7 @@
                         </VBox>
                      </children>
                   </AnchorPane>
-                  <HBox alignment="TOP_RIGHT" prefWidth="970.0" spacing="20.0">
+                  <HBox alignment="TOP_RIGHT" prefWidth="970.0" spacing="20.0" visible="true">
                      <children>
                         <TextField fx:id="textFieldMaCanHo" prefWidth="215.0" promptText="Nhập mã căn hộ" styleClass="text-field-normal" />
                         <TextField fx:id="textFieldChuSoHuu" prefWidth="240.0" promptText="Nhập chủ sở hữu" styleClass="text-field-normal" />
@@ -255,7 +255,7 @@
             <String fx:value="round-big" />
          </styleClass>
       </ScrollPane>
-      <ScrollPane fx:id="scrollPaneCuDan" fitToWidth="true" hbarPolicy="NEVER" layoutX="30.0" layoutY="30.0" prefHeight="200.0" prefWidth="200.0" style="-fx-background: white;" vbarPolicy="AS_NEEDED" visible="false">
+      <ScrollPane fx:id="scrollPaneCuDan" fitToWidth="true" hbarPolicy="NEVER" layoutX="30.0" layoutY="30.0" prefHeight="200.0" prefWidth="200.0" style="-fx-background: white;" vbarPolicy="AS_NEEDED">
          <padding>
             <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
          </padding>
@@ -457,12 +457,12 @@
             <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
          </StackPane.margin>
       </ScrollPane>
-      <ScrollPane fx:id="scrollPaneTaiKhoan" hbarPolicy="NEVER" layoutX="30.0" layoutY="30.0" prefHeight="200.0" prefWidth="200.0" style="-fx-background: white;" visible="false">
+      <ScrollPane fx:id="scrollPaneTaiKhoan" hbarPolicy="NEVER" layoutX="30.0" layoutY="30.0" prefHeight="200.0" prefWidth="200.0" style="-fx-background: white;">
          <padding>
             <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
          </padding>
          <content>
-            <AnchorPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefWidth="960.0" visible="false">
+            <AnchorPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefWidth="960.0">
                <children>
                   <AnchorPane prefWidth="970.0" AnchorPane.topAnchor="40.0">
                      <children>
@@ -547,14 +547,14 @@
             <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
          </StackPane.margin>
       </ScrollPane>
-      <ScrollPane fx:id="scrollPaneLichSuThu" hbarPolicy="NEVER" prefHeight="200.0" prefWidth="200.0" style="-fx-background: white;" visible="false">
+      <ScrollPane fx:id="scrollPaneLichSuThu" hbarPolicy="NEVER" prefHeight="200.0" prefWidth="200.0" style="-fx-background: white;" visible="true">
          <padding>
             <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
          </padding>
          <content>
-            <AnchorPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefWidth="960.0">
+            <AnchorPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefWidth="960.0" visible="true">
                <children>
-                  <AnchorPane prefWidth="970.0" AnchorPane.topAnchor="40.0">
+                  <AnchorPane prefWidth="970.0" visible="true" AnchorPane.topAnchor="40.0">
                      <children>
                         <Button fx:id="buttonXuatExcelThuPhi" mnemonicParsing="false" onAction="#handleXuatExcelThuPhi" text="Xuất excel" AnchorPane.rightAnchor="0.0">
                            <graphic>
@@ -628,7 +628,7 @@
             <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
          </StackPane.margin>
       </ScrollPane>
-      <ScrollPane fx:id="scrollPaneCanHo1" hbarPolicy="NEVER" style="-fx-background: white;" visible="false">
+      <ScrollPane fx:id="scrollPaneCanHo1" hbarPolicy="NEVER" style="-fx-background: white;" visible="true">
          <padding>
             <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
          </padding>

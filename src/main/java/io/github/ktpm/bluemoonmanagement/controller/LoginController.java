@@ -103,6 +103,12 @@ void dangNhapPressed(ActionEvent event) {
                 e.printStackTrace();
                 // Xử lý lỗi nếu không thể tải file FXML
             }
+        }else{
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("Đăng nhập thất bại");
+            alert.setHeaderText(null);
+            alert.setContentText(response.getMessage());
+            alert.showAndWait();
         }
     }
 
