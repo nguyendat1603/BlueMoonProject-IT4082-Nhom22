@@ -28,7 +28,7 @@
 
 <StackPane prefHeight="620.0" prefWidth="1080.0" stylesheets="@style/dashboard_style.css" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="io.github.ktpm.bluemoonmanagement.controller.Home_list">
    <children>
-      <GridPane fx:id="gridPaneTrangChu">
+      <GridPane fx:id="gridPaneTrangChu" visible="false">
          <StackPane.margin>
             <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
          </StackPane.margin>
@@ -362,7 +362,7 @@
             <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
          </StackPane.margin>
       </ScrollPane>
-      <ScrollPane fx:id="scrollPaneKhoanThu" hbarPolicy="NEVER" layoutX="30.0" layoutY="30.0" prefHeight="200.0" prefWidth="200.0" style="-fx-background: white;" visible="false">
+      <ScrollPane fx:id="scrollPaneKhoanThu" hbarPolicy="NEVER" layoutX="30.0" layoutY="30.0" prefHeight="200.0" prefWidth="200.0" style="-fx-background: white;">
          <padding>
             <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
          </padding>
@@ -406,7 +406,7 @@
                                     <TableColumn fx:id="tableColumnTenKhoanThu" prefWidth="267.2000427246094" text="Tên khoản thu" />
                                     <TableColumn fx:id="tableColumnLoaiKhoanThu" minWidth="8.79998779296875" prefWidth="112.800048828125" text="Loại khoản thu" />
                                     <TableColumn fx:id="tableColumnBoPhanQuanLy" prefWidth="128.79998779296875" text="Bộ phận quản lý" />
-                                    <TableColumn fx:id="tableColumnNgayTao1" prefWidth="162.4000244140625" text="Ngày nộp" />
+                                    <TableColumn fx:id="tableColumnNgayTao1" prefWidth="162.4000244140625" text="Ngày hạn" />
                                     <TableColumn fx:id="tableColumnTrangThaiHoaDon" prefWidth="144.79998779296875" text="Tạo hóa đơn" />
                                  </columns>
                               </TableView>
@@ -462,7 +462,7 @@
             <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
          </padding>
          <content>
-            <AnchorPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefWidth="960.0">
+            <AnchorPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefWidth="960.0" visible="false">
                <children>
                   <AnchorPane prefWidth="970.0" AnchorPane.topAnchor="40.0">
                      <children>
@@ -589,6 +589,7 @@
                                           <Font name="Arial" size="14.0" />
                                        </font>
                                     </Label>
+                                    <Label fx:id="labelSoTienQuaHoaDon" text="Tổng số tiền" />
                                  </children>
                               </AnchorPane>
                            </children>

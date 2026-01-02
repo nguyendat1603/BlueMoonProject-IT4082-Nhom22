@@ -226,6 +226,9 @@ public class Home_list implements Initializable {
     private Label labelHienThiKetQuaKhoanThu1;
 
     @FXML
+    private Label labelSoTienQuaHoaDon;
+
+    @FXML
     private Label labelKetQuaHienThi;
 
     @FXML
@@ -524,7 +527,12 @@ public class Home_list implements Initializable {
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         // Controller initialization completed
-        
+
+        // Debug: Verify FXML injection
+        if (labelSoTienQuaHoaDon == null) {
+            System.err.println("WARNING: labelSoTienQuaHoaDon is null - check FXML injection");
+        }
+
         allPanes = List.of(gridPaneTrangChu, scrollPaneCanHo, scrollPaneCuDan, scrollPaneTaiKhoan, scrollPaneKhoanThu, scrollPaneLichSuThu, scrollPaneCanHo1);
         
         // Initialize data lists
@@ -4563,6 +4571,42 @@ public class Home_list implements Initializable {
     private void updateHoaDonKetQuaLabel() {
         if (labelHienThiKetQua1 != null && filteredHoaDonList != null) {
             labelHienThiKetQua1.setText("Hiển thị " + filteredHoaDonList.size() + " hóa đơn");
+
+            // Tính tổng tiền an toàn với error handling
+            long tongTien = 0L;
+            boolean hasValidData = false;
+
+            for (HoaDonTableData hd : filteredHoaDonList) {
+                if (hd.getSoTien() != null && !hd.getSoTien().trim().isEmpty()) {
+                    try {
+                        // Loại bỏ ký tự không phải số (VNĐ, dấu chấm, phẩy, khoảng trắng)
+                        String cleanSoTien = hd.getSoTien().replaceAll("[^\\d]", "");
+                        if (!cleanSoTien.isEmpty()) {
+                            tongTien += Long.parseLong(cleanSoTien);
+                            hasValidData = true;
+                        }
+                    } catch (NumberFormatException e) {
+                        System.err.println("Invalid soTien format for hoa don: " + hd.getSoTien());
+                        // Continue with next item instead of crashing
+                    }
+                }
+            }
+
+            // Update UI safely trên JavaFX Application Thread
+            final long finalTongTien = tongTien;
+            final boolean finalHasValidData = hasValidData;
+
+            javafx.application.Platform.runLater(() -> {
+                if (labelSoTienQuaHoaDon != null) {
+                    if (finalHasValidData) {
+                        // Format số với dấu phẩy phân cách hàng nghìn
+                        String formattedTongTien = String.format("%,d", finalTongTien);
+                        labelSoTienQuaHoaDon.setText("Tổng tiền: " + formattedTongTien + " VNĐ");
+                    } else {
+                        labelSoTienQuaHoaDon.setText("Tổng tiền: 0 VNĐ");
+                    }
+                }
+            });
         }
     }
 
