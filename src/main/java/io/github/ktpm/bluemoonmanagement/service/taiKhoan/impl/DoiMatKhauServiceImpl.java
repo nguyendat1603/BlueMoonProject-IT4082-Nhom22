@@ -28,6 +28,7 @@ public class DoiMatKhauServiceImpl implements DoiMatKhauService {
         if (!PasswordUtil.verifyPassword(doiMatKhauDto.getMatKhauCu(), taiKhoan.getMatKhau())) {
             return new ResponseDto(false, "Mật khẩu hiện tại không đúng");
         }
+        
         // Kiểm tra định dạng mật khẩu mới
         if (!PasswordUtil.isValidPasswordFormat(doiMatKhauDto.getMatKhauMoi())) {
             return new ResponseDto(false, "Mật khẩu mới không đúng định dạng. Mật khẩu phải có ít nhất một chữ hoa, một số và một ký tự đặc biệt.");
