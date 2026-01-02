@@ -2003,6 +2003,8 @@ public class Home_list implements Initializable {
 
             javafx.application.Platform.runLater(() -> {
                 sessionListView.getItems().clear();
+                sessionListView.getSelectionModel().clearSelection(); // Clear selection before repopulating
+                detailsListView.getItems().clear(); // Also clear details view
                 for (SessionRecord sr : sessions.values()) {
                     String label = String.format("%s — %s (%s)%s", sr.user, sr.start, sr.sessionId, (sr.end == null ? " [Đang hoạt động]" : ""));
                     sessionListView.getItems().add(label);
@@ -2016,13 +2018,32 @@ public class Home_list implements Initializable {
         sessionListView.getSelectionModel().selectedIndexProperty().addListener((obs, oldI, newI) -> {
             int idx = newI.intValue();
             detailsListView.getItems().clear();
-            if (idx >= 0 && idx < sessions.size()) {
-                SessionRecord sr = new java.util.ArrayList<>(sessions.values()).get(idx);
-                detailsListView.getItems().addAll(sr.actions);
+            if (idx >= 0) {
+                try {
+                    // Convert sessions.values() to ArrayList to get by index
+                    java.util.List<SessionRecord> sessionList = new java.util.ArrayList<>(sessions.values());
+                    if (idx < sessionList.size()) {
+                        SessionRecord sr = sessionList.get(idx);
+                        detailsListView.getItems().addAll(sr.actions);
+                    } else {
+                        // Index out of bounds - clear selection to be safe
+                        sessionListView.getSelectionModel().clearSelection();
+                        detailsListView.getItems().add("Lỗi: Không tìm thấy phiên này");
+                    }
+                } catch (Exception e) {
+                    System.err.println("Error accessing session at index " + idx + ": " + e.getMessage());
+                    sessionListView.getSelectionModel().clearSelection();
+                    detailsListView.getItems().add("Lỗi: " + e.getMessage());
+                }
             }
         });
 
-        refreshBtn.setOnAction(ae -> loadSessions.run());
+        refreshBtn.setOnAction(ae -> {
+            // Clear selection before refreshing
+            sessionListView.getSelectionModel().clearSelection();
+            detailsListView.getItems().clear();
+            loadSessions.run();
+        });
         closeBtn.setOnAction(ae -> {
             // close the titled popup stage by finding owner windows
             for (Window w : Window.getWindows()) {
