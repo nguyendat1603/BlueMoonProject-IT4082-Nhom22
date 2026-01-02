@@ -2539,7 +2539,7 @@ public class Home_list implements Initializable {
         root.setCenter(messagesView);
         root.setBottom(bottom);
 
-        showTitledPopup(owner, "Chat Khoản thu", root, 600, 500);
+        showTitledPopup(owner, "Chat", root, 600, 500);
 
         // Setup STOMP native client
         // connect directly to SockJS websocket transport endpoint to avoid HTTP 400 handshake errors
