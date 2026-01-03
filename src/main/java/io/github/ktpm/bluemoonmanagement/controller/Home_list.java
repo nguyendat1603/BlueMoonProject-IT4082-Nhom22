@@ -2130,30 +2130,25 @@ public class Home_list implements Initializable {
         String wsUrl = "ws://localhost:8080/ws-chat/websocket";
         io.github.ktpm.bluemoonmanagement.chat.ChatClientManager manager = new io.github.ktpm.bluemoonmanagement.chat.ChatClientManager(wsUrl);
         manager.connect(null, chatMessage -> {
-            System.out.println("CHAT: Received message from server: " + chatMessage.getSender() + ": " + chatMessage.getContent());
+            System.out.println("CHAT: Received message from server - ID: " + chatMessage.getId() + ", Sender: " + chatMessage.getSender() + ", Content: " + chatMessage.getContent() + ", Timestamp: " + chatMessage.getCreatedAt());
             javafx.application.Platform.runLater(() -> {
                 try {
                     // Check if message already exists to prevent duplicates
-                    boolean messageExists = messagesView.getItems().stream().anyMatch(existingMsg -> {
-                        // Check by ID if available, otherwise by content and timestamp
-                        if (chatMessage.getId() != null && existingMsg.getId() != null) {
-                            return chatMessage.getId().equals(existingMsg.getId());
-                        } else {
-                            // Fallback: check by content, sender, and timestamp (within 1 second tolerance)
-                            return chatMessage.getContent().equals(existingMsg.getContent()) &&
-                                   chatMessage.getSender().equals(existingMsg.getSender()) &&
-                                   chatMessage.getCreatedAt() != null && existingMsg.getCreatedAt() != null &&
-                                   Math.abs(chatMessage.getCreatedAt().toEpochMilli() - existingMsg.getCreatedAt().toEpochMilli()) < 1000;
-                        }
-                    });
+                    // Only check by ID when available, avoid content-based filtering to prevent blocking valid messages
+                    boolean messageExists = false;
+                    if (chatMessage.getId() != null) {
+                        messageExists = messagesView.getItems().stream()
+                            .anyMatch(existingMsg -> chatMessage.getId().equals(existingMsg.getId()));
+                    }
+                    // Note: Removed aggressive content-based duplicate checking that was blocking valid messages
 
                     if (!messageExists) {
                         messagesView.getItems().add(chatMessage);
                         // Sort messages by timestamp to ensure proper ordering
                         sortMessagesByTimestamp(messagesView);
-                        System.out.println("CHAT: Message added and sorted in UI: " + chatMessage.getSender());
+                        System.out.println("CHAT: Message added and sorted in UI: " + chatMessage.getSender() + ": " + chatMessage.getContent());
                     } else {
-                        System.out.println("CHAT: Duplicate message ignored: " + chatMessage.getSender());
+                        System.out.println("CHAT: Duplicate message ignored by ID: " + chatMessage.getSender() + " (ID: " + chatMessage.getId() + ")");
                     }
                 } catch (Exception e) {
                     System.err.println("CHAT: Error adding message to UI: " + e.getMessage());
