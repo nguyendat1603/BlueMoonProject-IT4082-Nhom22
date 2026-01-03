@@ -2130,12 +2130,17 @@ public class Home_list implements Initializable {
         String wsUrl = "ws://localhost:8080/ws-chat/websocket";
         io.github.ktpm.bluemoonmanagement.chat.ChatClientManager manager = new io.github.ktpm.bluemoonmanagement.chat.ChatClientManager(wsUrl);
         manager.connect(null, chatMessage -> {
-            System.out.println("CHAT: [DEBUG] Message callback triggered!");
-            System.out.println("CHAT: Received message from server - ID: " + chatMessage.getId() + ", Sender: " + chatMessage.getSender() + ", Content: " + chatMessage.getContent() + ", Timestamp: " + chatMessage.getCreatedAt());
-            System.out.println("CHAT: [DEBUG] About to call Platform.runLater...");
-            javafx.application.Platform.runLater(() -> {
-                try {
-                    System.out.println("CHAT: [DEBUG] Inside Platform.runLater - UI Thread: " + Thread.currentThread().getName());
+            try {
+                System.out.println("CHAT: [DEBUG] Message callback triggered!");
+                System.out.println("CHAT: Received message from server - ID: " + chatMessage.getId() + ", Sender: " + chatMessage.getSender() + ", Content: " + chatMessage.getContent() + ", Timestamp: " + chatMessage.getCreatedAt());
+                System.out.println("CHAT: [DEBUG] About to call Platform.runLater...");
+                javafx.application.Platform.runLater(() -> {
+                    try {
+                        System.out.println("CHAT: [DEBUG] Inside Platform.runLater - UI Thread: " + Thread.currentThread().getName());
+                        System.out.println("CHAT: [DEBUG] messagesView is null: " + (messagesView == null));
+                        if (messagesView != null) {
+                            System.out.println("CHAT: [DEBUG] messagesView items count: " + messagesView.getItems().size());
+                        }
                 try {
                     // Check if message already exists to prevent duplicates
                     // Only check by ID when available, avoid content-based filtering to prevent blocking valid messages
