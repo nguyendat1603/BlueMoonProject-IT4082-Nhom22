@@ -155,7 +155,7 @@ public class KhungController implements Initializable{
 
     public void setAccountName(String accountName) {
         if (labelAccountName != null) {
-            labelAccountName.setText(accountName);
+            labelAccountName.setText("Xin chào,"+accountName);
         }
     }
 

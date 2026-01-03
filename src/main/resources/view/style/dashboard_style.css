@@ -12,11 +12,13 @@
 }
 
 .black-background {
-    /* Nền trắng viền xám */
-    -fx-background-color: #000000;
-    /*-fx-border-color: #D9D9D9;*/
-    /*-fx-border-width: 1px;*/
+    -fx-background-color: #E3F2FD;
+    -fx-border-color: #456f92;
+    -fx-border-width: 1;
+    -fx-background-radius: 12;
+    -fx-border-radius: 12;
 }
+
 
 .gray-background {
     -fx-background-color: #323131;
@@ -78,7 +80,7 @@
     -fx-pref-height: 50px;
     -fx-padding: 10px 20px;
     -fx-font-weight: bold;
-    -fx-text-fill: #ffffff;
+    -fx-text-fill:#000000;
     -fx-font-size: 16px;
     -fx-background-radius: 10;
 }

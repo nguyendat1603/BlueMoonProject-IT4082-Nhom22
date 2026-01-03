@@ -1,5 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import java.lang.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.Group?>
 <?import javafx.scene.control.Button?>
@@ -12,7 +19,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<BorderPane fx:id="mainBorderPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="720.0" prefWidth="1280.0" styleClass="gray-background" stylesheets="@style/dashboard_style.css" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="io.github.ktpm.bluemoonmanagement.controller.KhungController">
+<BorderPane fx:id="mainBorderPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="720.0" prefWidth="1280.0" styleClass="gray-background" stylesheets="@style/dashboard_style.css" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="io.github.ktpm.bluemoonmanagement.controller.KhungController">
    <left>
       <AnchorPane maxWidth="-Infinity" minWidth="-Infinity" prefHeight="645.0" prefWidth="200.0" styleClass="black-background" BorderPane.alignment="BOTTOM_LEFT">
          <children>
@@ -145,20 +152,12 @@
             </ImageView>
             <VBox prefHeight="120.0" prefWidth="1280.0">
                <children>
-                  <ImageView fitHeight="80.0" fitWidth="80.0" pickOnBounds="true" preserveRatio="true">
-                     <VBox.margin>
-                        <Insets left="5.0" top="40.0" />
-                     </VBox.margin>
-                     <image>
-                        <Image url="@image/user.png" />
-                     </image>
-                  </ImageView>
                   <Label fx:id="labelAccountName" text="A" textAlignment="RIGHT">
                      <font>
                         <Font name="Arial Italic" size="18.0" />
                      </font>
                      <VBox.margin>
-                        <Insets left="20.0" top="10.0" />
+                        <Insets left="20.0" top="120.0" />
                      </VBox.margin>
                   </Label>
                </children>
