@@ -2130,28 +2130,27 @@ public class Home_list implements Initializable {
         String wsUrl = "ws://localhost:8080/ws-chat/websocket";
         io.github.ktpm.bluemoonmanagement.chat.ChatClientManager manager = new io.github.ktpm.bluemoonmanagement.chat.ChatClientManager(wsUrl);
         manager.connect(null, chatMessage -> {
-            try {
-                System.out.println("CHAT: [DEBUG] Message callback triggered!");
-                System.out.println("CHAT: Received message from server - ID: " + chatMessage.getId() + ", Sender: " + chatMessage.getSender() + ", Content: " + chatMessage.getContent() + ", Timestamp: " + chatMessage.getCreatedAt());
-                System.out.println("CHAT: [DEBUG] About to call Platform.runLater...");
-                System.out.println("CHAT: [DEBUG] Platform.isFxApplicationThread(): " + javafx.application.Platform.isFxApplicationThread());
-                System.out.println("CHAT: [DEBUG] Platform.isImplicitExit(): " + javafx.application.Platform.isImplicitExit());
-                javafx.application.Platform.runLater(() -> {
-                    try {
-                        System.out.println("CHAT: [DEBUG] Inside Platform.runLater - UI Thread: " + Thread.currentThread().getName());
-                        System.out.println("CHAT: [DEBUG] messagesView is null: " + (messagesView == null));
-                        if (messagesView != null) {
-                            System.out.println("CHAT: [DEBUG] messagesView items count: " + messagesView.getItems().size());
-                        }
-                        try {
+            System.out.println("CHAT: [DEBUG] Message callback triggered!");
+            System.out.println("CHAT: Received message from server - ID: " + chatMessage.getId() + ", Sender: " + chatMessage.getSender() + ", Content: " + chatMessage.getContent() + ", Timestamp: " + chatMessage.getCreatedAt());
+            System.out.println("CHAT: [DEBUG] About to call Platform.runLater...");
+            System.out.println("CHAT: [DEBUG] Platform.isFxApplicationThread(): " + javafx.application.Platform.isFxApplicationThread());
+            System.out.println("CHAT: [DEBUG] Platform.isImplicitExit(): " + javafx.application.Platform.isImplicitExit());
+
+            javafx.application.Platform.runLater(() -> {
+                try {
+                    System.out.println("CHAT: [DEBUG] Inside Platform.runLater - UI Thread: " + Thread.currentThread().getName());
+                    System.out.println("CHAT: [DEBUG] messagesView is null: " + (messagesView == null));
+                    if (messagesView != null) {
+                        System.out.println("CHAT: [DEBUG] messagesView items count: " + messagesView.getItems().size());
+                    }
+
                     // Check if message already exists to prevent duplicates
                     // Only check by ID when available, avoid content-based filtering to prevent blocking valid messages
                     boolean messageExists = false;
                     if (chatMessage.getId() != null) {
                         messageExists = messagesView.getItems().stream()
-                            .anyMatch(existingMsg -> chatMessage.getId().equals(existingMsg.getId()));
+                                .anyMatch(existingMsg -> chatMessage.getId().equals(existingMsg.getId()));
                     }
-                    // Note: Removed aggressive content-based duplicate checking that was blocking valid messages
 
                     if (!messageExists) {
                         messagesView.getItems().add(chatMessage);
@@ -2160,15 +2159,12 @@ public class Home_list implements Initializable {
                         System.out.println("CHAT: Message added and sorted in UI: " + chatMessage.getSender() + ": " + chatMessage.getContent());
                     } else {
                         System.out.println("CHAT: Duplicate message ignored by ID: " + chatMessage.getSender() + " (ID: " + chatMessage.getId() + ")");
-                        } catch (Exception e) {
-                            System.err.println("CHAT: Error adding message to UI: " + e.getMessage());
-                            e.printStackTrace();
-                        }
-                    } catch (Exception e) {
-                        System.err.println("CHAT: Platform.runLater error: " + e.getMessage());
-                        e.printStackTrace();
                     }
-                });
+                } catch (Exception e) {
+                    System.err.println("CHAT: Error in Platform.runLater handling message: " + e.getMessage());
+                    e.printStackTrace();
+                }
+            });
         }, () -> {
             System.out.println("CHAT: Connected successfully (client onConnected called). History will be sent automatically by subscription listener...");
             // Additional confirmation log for UI/subscription state
