@@ -1,5 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import de.jensd.fx.glyphs.fontawesome.*?>
+<?import java.lang.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.chart.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
 <?import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon?>
 <?import java.lang.String?>
 <?import javafx.geometry.Insets?>
@@ -26,9 +35,9 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<StackPane prefHeight="620.0" prefWidth="1080.0" stylesheets="@style/dashboard_style.css" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="io.github.ktpm.bluemoonmanagement.controller.Home_list">
+<StackPane prefHeight="620.0" prefWidth="1080.0" stylesheets="@style/dashboard_style.css" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="io.github.ktpm.bluemoonmanagement.controller.Home_list">
    <children>
-      <GridPane fx:id="gridPaneTrangChu">
+      <GridPane fx:id="gridPaneTrangChu" visible="false">
          <StackPane.margin>
             <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
          </StackPane.margin>
@@ -142,7 +151,7 @@
             </GridPane>
          </children>
       </GridPane>
-      <ScrollPane fx:id="scrollPaneCanHo" hbarPolicy="NEVER" prefHeight="200.0" prefWidth="200.0" style="-fx-background: white;">
+      <ScrollPane fx:id="scrollPaneCanHo" hbarPolicy="NEVER" prefHeight="200.0" prefWidth="200.0" style="-fx-background: white;" visible="false">
          <StackPane.margin>
             <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
          </StackPane.margin>
@@ -255,7 +264,7 @@
             <String fx:value="round-big" />
          </styleClass>
       </ScrollPane>
-      <ScrollPane fx:id="scrollPaneCuDan" fitToWidth="true" hbarPolicy="NEVER" layoutX="30.0" layoutY="30.0" prefHeight="200.0" prefWidth="200.0" style="-fx-background: white;" vbarPolicy="AS_NEEDED">
+      <ScrollPane fx:id="scrollPaneCuDan" fitToWidth="true" hbarPolicy="NEVER" layoutX="30.0" layoutY="30.0" prefHeight="200.0" prefWidth="200.0" style="-fx-background: white;" vbarPolicy="AS_NEEDED" visible="false">
          <padding>
             <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
          </padding>
@@ -362,7 +371,7 @@
             <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
          </StackPane.margin>
       </ScrollPane>
-      <ScrollPane fx:id="scrollPaneKhoanThu" hbarPolicy="NEVER" layoutX="30.0" layoutY="30.0" prefHeight="200.0" prefWidth="200.0" style="-fx-background: white;">
+      <ScrollPane fx:id="scrollPaneKhoanThu" hbarPolicy="NEVER" layoutX="30.0" layoutY="30.0" prefHeight="200.0" prefWidth="200.0" style="-fx-background: white;" visible="false">
          <padding>
             <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
          </padding>
@@ -519,7 +528,8 @@
                   <HBox alignment="TOP_RIGHT" prefWidth="970.0" spacing="20.0">
                      <children>
                         <TextField fx:id="textFieldEmail" prefWidth="277.0" promptText="Nhập email" styleClass="text-field-normal" />
-                        <TextField fx:id="textFieldHoVaTenTaiKhoan" prefWidth="252.0" promptText="Nhập họ và tên" styleClass="text-field-normal" />
+                        <TextField fx:id="textFieldHoVaTenTaiKhoan" promptText="Nhập họ và tên" styleClass="text-field-normal" />
+                        <Region prefHeight="200.0" prefWidth="200.0" />
                         <ComboBox fx:id="comboBoxVaiTro" layoutX="623.0" layoutY="10.0" prefWidth="128.0" promptText="Vai trò" style="-fx-background-color: transparent;" />
                         <Button fx:id="buttonTimKiemCuDan11" mnemonicParsing="false" prefWidth="104.0" text="Tìm kiếm">
                            <styleClass>
@@ -547,7 +557,7 @@
             <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
          </StackPane.margin>
       </ScrollPane>
-      <ScrollPane fx:id="scrollPaneLichSuThu" hbarPolicy="NEVER" prefHeight="200.0" prefWidth="200.0" style="-fx-background: white;" visible="true">
+      <ScrollPane fx:id="scrollPaneLichSuThu" hbarPolicy="NEVER" prefHeight="200.0" prefWidth="200.0" style="-fx-background: white;" visible="false">
          <padding>
             <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
          </padding>
@@ -628,7 +638,7 @@
             <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
          </StackPane.margin>
       </ScrollPane>
-      <ScrollPane fx:id="scrollPaneCanHo1" hbarPolicy="NEVER" style="-fx-background: white;" visible="true">
+      <ScrollPane fx:id="scrollPaneCanHo1" hbarPolicy="NEVER" style="-fx-background: white;" visible="false">
          <padding>
             <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
          </padding>
