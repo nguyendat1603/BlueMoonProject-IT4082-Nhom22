@@ -58,7 +58,7 @@ public class ChatClientManager {
                 // Start heartbeat monitoring
                 startHeartbeatMonitoring();
                 // subscribe to public topic
-                session.subscribe("/topic/public", new StompFrameHandler() {
+                StompSession.Subscription publicSub = session.subscribe("/topic/public", new StompFrameHandler() {
                     @Override
                     public Type getPayloadType(StompHeaders headers) {
                         return ChatMessage.class;
@@ -71,8 +71,9 @@ public class ChatClientManager {
                         }
                     }
                 });
+
                 // subscribe to history topic (array payload)
-                session.subscribe("/topic/history", new StompFrameHandler() {
+                StompSession.Subscription historySub = session.subscribe("/topic/history", new StompFrameHandler() {
                     @Override
                     public Type getPayloadType(StompHeaders headers) {
                         return ChatMessage[].class;
@@ -89,7 +90,15 @@ public class ChatClientManager {
                         }
                     }
                 });
-                System.out.println("CHAT: WebSocket connected successfully to " + url);
+
+                // Subscription debug info
+                try {
+                    System.out.println("CHAT: WebSocket connected successfully to " + url);
+                    System.out.println("CHAT: Subscribed to /topic/public -> " + publicSub);
+                    System.out.println("CHAT: Subscribed to /topic/history -> " + historySub);
+                } catch (Exception e) {
+                    System.err.println("CHAT: Error printing subscription info: " + e.getMessage());
+                }
                 if (onConnected != null) onConnected.run();
             }
 

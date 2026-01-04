@@ -43,11 +43,24 @@ public class ChatController {
         return recent;
     }
 
-    @MessageMapping("/chat.ping")
-    public void ping() {
-        // Simple ping endpoint for heartbeat monitoring
-        // No response needed, just confirms connection is alive
-    }
+@MessageMapping("/chat.ping")
+public void ping() {
+    // Simple ping endpoint for heartbeat monitoring
+    // No response needed, just confirms connection is alive
+}
+
+@MessageMapping("/chat.test")
+@SendTo("/topic/public")
+public io.github.ktpm.bluemoonmanagement.model.entity.ChatMessage testMessage() {
+    System.out.println("CHAT: [SERVER] Test message triggered from client");
+    io.github.ktpm.bluemoonmanagement.model.entity.ChatMessage testMsg =
+        new io.github.ktpm.bluemoonmanagement.model.entity.ChatMessage(
+            "test-session", "SERVER", "[TEST MESSAGE] Server broadcast test", java.time.Instant.now()
+        );
+    chatService.saveMessage(testMsg.getSessionId(), testMsg.getSender(), testMsg.getContent());
+    System.out.println("CHAT: [SERVER] Test message saved and about to broadcast");
+    return testMsg;
+}
 }
 
 

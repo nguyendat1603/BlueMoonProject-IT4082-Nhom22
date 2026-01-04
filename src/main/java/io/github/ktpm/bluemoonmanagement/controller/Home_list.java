@@ -2134,6 +2134,8 @@ public class Home_list implements Initializable {
                 System.out.println("CHAT: [DEBUG] Message callback triggered!");
                 System.out.println("CHAT: Received message from server - ID: " + chatMessage.getId() + ", Sender: " + chatMessage.getSender() + ", Content: " + chatMessage.getContent() + ", Timestamp: " + chatMessage.getCreatedAt());
                 System.out.println("CHAT: [DEBUG] About to call Platform.runLater...");
+                System.out.println("CHAT: [DEBUG] Platform.isFxApplicationThread(): " + javafx.application.Platform.isFxApplicationThread());
+                System.out.println("CHAT: [DEBUG] Platform.isImplicitExit(): " + javafx.application.Platform.isImplicitExit());
                 javafx.application.Platform.runLater(() -> {
                     try {
                         System.out.println("CHAT: [DEBUG] Inside Platform.runLater - UI Thread: " + Thread.currentThread().getName());
@@ -2141,7 +2143,7 @@ public class Home_list implements Initializable {
                         if (messagesView != null) {
                             System.out.println("CHAT: [DEBUG] messagesView items count: " + messagesView.getItems().size());
                         }
-                try {
+                        try {
                     // Check if message already exists to prevent duplicates
                     // Only check by ID when available, avoid content-based filtering to prevent blocking valid messages
                     boolean messageExists = false;
@@ -2158,14 +2160,19 @@ public class Home_list implements Initializable {
                         System.out.println("CHAT: Message added and sorted in UI: " + chatMessage.getSender() + ": " + chatMessage.getContent());
                     } else {
                         System.out.println("CHAT: Duplicate message ignored by ID: " + chatMessage.getSender() + " (ID: " + chatMessage.getId() + ")");
+                        } catch (Exception e) {
+                            System.err.println("CHAT: Error adding message to UI: " + e.getMessage());
+                            e.printStackTrace();
+                        }
+                    } catch (Exception e) {
+                        System.err.println("CHAT: Platform.runLater error: " + e.getMessage());
+                        e.printStackTrace();
                     }
-                } catch (Exception e) {
-                    System.err.println("CHAT: Error adding message to UI: " + e.getMessage());
-                    e.printStackTrace();
-                }
-            });
+                });
         }, () -> {
-            System.out.println("CHAT: Connected successfully, history will be sent automatically by subscription listener...");
+            System.out.println("CHAT: Connected successfully (client onConnected called). History will be sent automatically by subscription listener...");
+            // Additional confirmation log for UI/subscription state
+            System.out.println("CHAT: Client onConnected callback executing - chat popup should be subscribed to /topic/public and /topic/history.");
             javafx.application.Platform.runLater(() -> {
                 connectionStatus.setText("🟢 Đã kết nối");
                 connectionStatus.setStyle("-fx-text-fill: green; -fx-font-size: 11px; -fx-padding: 0 0 5 0;");
